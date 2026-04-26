@@ -36,8 +36,9 @@ namespace MCCCD_AA140
         // private DmNvxD30 _decDisp2;
         // private DmNvxD30 _decDisp3;
 
-        // Source index 1..5 → encoder stream URL. Populated when encoders come online.
-        private string[] _sourceStreamUrls = new string[6];
+        // Source index 1..4 -> encoder stream URL. Populated when encoders come online.
+        // Sources: 1=RoomPC, 2=ExtPC, 3=AirMedia, 4=Laptop (NVX-384, internal HDMI/USB-C autoswitch).
+        private string[] _sourceStreamUrls = new string[5];
 
         public NvxRoutingService(MainContract c, CrestronControlSystem cs)
         {
@@ -56,13 +57,20 @@ namespace MCCCD_AA140
             //       if (args.DeviceOnLine) _sourceStreamUrls[1] = _encRoomPc.Control.MulticastAddress.StringValue;
             //   };
             //
-            // Once all encoders + decoders are wired, attach the NVX-384 active-input
-            // feedback handler to publish to _c.NvxAutoSwitchSrc:
+            // (NvxAutoSwitchSrc removed in v1.1 - HDMI+USB-C now appears as one
+            //  Laptop button on the panel; the encoder picks active input internally.)
             //
-            //   _encHdmiUsbc.SourceVideo.OnSourceVideoChange += (dev, args) =>
-            //       _c.NvxAutoSwitchSrc.UShortValue = (ushort)Nvx384ActualInput();
+            // Wire D200 sink-connected feedback to publish per-display power state.
+            // The exact Crestron SDK property/event for HDMI sink-connected varies
+            // by SDK version. Common patterns:
+            //
+            //   _decDisp1.HdmiOut.SinkConnectedFeedback.OutputChange += (sender, args) =>
+            //       _c.Display1PowerFb.BoolValue = _decDisp1.HdmiOut.SinkConnectedFeedback.BoolValue;
+            //
+            // Repeat for Disp2 and Disp3. The panel reads these to render the
+            // green/dim power dot on each DisplayTile.
 
-            // Wire panel commands → NVX routes
+            // Wire panel commands - NVX routes
             _c.Display1Source.OnAnalogChange += (v) => RouteSourceToDisplay(v, 1);
             _c.Display2Source.OnAnalogChange += (v) => RouteSourceToDisplay(v, 2);
             _c.Display3Source.OnAnalogChange += (v) => RouteSourceToDisplay(v, 3);
@@ -73,7 +81,7 @@ namespace MCCCD_AA140
         }
 
         /// <summary>
-        /// Route a source (1..5, or 0 for none) to a display (1..3). Updates the
+        /// Route a source (1..4, or 0 for none) to a display (1..3). Updates the
         /// matching DisplayNSourceFb feedback.
         /// </summary>
         public void RouteSourceToDisplay(ushort srcIndex, int displayNum)
@@ -81,7 +89,7 @@ namespace MCCCD_AA140
             if (srcIndex == 0) {
                 // Source 0 = none. Clear the decoder URL.
                 ClearDecoderUrl(displayNum);
-            } else if (srcIndex < 1 || srcIndex > 5) {
+            } else if (srcIndex < 1 || srcIndex > 4) {
                 ErrorLog.Warn("NVX: invalid source index {0}", srcIndex);
                 return;
             } else {

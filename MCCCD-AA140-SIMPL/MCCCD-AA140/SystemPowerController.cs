@@ -56,11 +56,15 @@ namespace MCCCD_AA140
             ErrorLog.Notice("AA140: PowerUpSequence");
             _systemOn = true;
 
+            // Publish SystemPowerFb so the panel renders the enlarged Power-button
+            // primary variant immediately.
+            _c.SystemPowerFb.BoolValue = true;
+
             // Restore last-active sources to D1, D2
             _nvx.RouteSourceToDisplay(_lastD1, 1);
             _nvx.RouteSourceToDisplay(_lastD2, 2);
 
-            // D3 boot init: one-shot copy from D2 (per design spec §6 / §9)
+            // D3 boot init: one-shot copy from D2 (per design spec section 6 / 9)
             _nvx.RouteSourceToDisplay(_lastD2, 3);
 
             // Audio default: D1 owns program audio (UI can override)
@@ -75,6 +79,10 @@ namespace MCCCD_AA140
         {
             ErrorLog.Notice("AA140: PowerDownSequence");
             _systemOn = false;
+
+            // Publish SystemPowerFb so the panel renders the default-size Power button
+            // and dismisses any "system on" UI affordances.
+            _c.SystemPowerFb.BoolValue = false;
 
             // Mute master program (mic mutes are user-controlled — leave alone)
             _c.MuteAll.BoolValue = true;

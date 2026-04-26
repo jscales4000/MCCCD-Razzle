@@ -46,6 +46,20 @@ namespace MCCCD_AA140
 
             _c.CamSendToVtc.OnDigitalRise      += () => SendActiveToVtc();
             _c.CamTrackingMode.OnAnalogChange  += (v) => SetTrackingMode(v);
+
+            // Zoom — press-and-hold like PTZ
+            _c.ZoomIn.OnDigitalChange  += (v) => { if (v) StartZoom("in");  else StopZoom(); };
+            _c.ZoomOut.OnDigitalChange += (v) => { if (v) StartZoom("out"); else StopZoom(); };
+        }
+
+        private void StartZoom(string direction)
+        {
+            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/ptz?action=start&dir=zoom&direction={direction}&speed=50");
+        }
+
+        private void StopZoom()
+        {
+            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/ptz?action=stop&dir=zoom");
         }
 
         // TODO field-config: confirm 1Beyond REST endpoints + auth against firmware docs.

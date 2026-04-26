@@ -68,6 +68,61 @@ namespace MCCCD_AA140
                 _c.AudioOutputSelectFb.UShortValue = v;
                 ErrorLog.Notice("QSys: program audio follows D{0}", v);
             };
+
+            // === v1.1: Sennheiser TCCM ceiling mics + per-mic trim/lineout ===
+            // Ceiling mic mutes (settings page only)
+            _c.MicCeiling1Mute.OnDigitalChange += (v) => {
+                // _qsys.SetNamedControlBoolean("MicCeiling1.mute", v);
+                _c.MicCeiling1MuteFb.BoolValue = v;
+            };
+            _c.MicCeiling2Mute.OnDigitalChange += (v) => {
+                // _qsys.SetNamedControlBoolean("MicCeiling2.mute", v);
+                _c.MicCeiling2MuteFb.BoolValue = v;
+            };
+            _c.MicCeiling3Mute.OnDigitalChange += (v) => {
+                // _qsys.SetNamedControlBoolean("MicCeiling3.mute", v);
+                _c.MicCeiling3MuteFb.BoolValue = v;
+            };
+
+            // Mic input gain trims (5 mics, 0-100 -> Q-SYS dB range mapped at named-control level)
+            WireTrim(_c.MicLavTrim,        _c.MicLavTrimFb,        "MicLav.gain");
+            WireTrim(_c.MicHandheldTrim,   _c.MicHandheldTrimFb,   "MicHandheld.gain");
+            WireTrim(_c.MicCeiling1Trim,   _c.MicCeiling1TrimFb,   "MicCeiling1.gain");
+            WireTrim(_c.MicCeiling2Trim,   _c.MicCeiling2TrimFb,   "MicCeiling2.gain");
+            WireTrim(_c.MicCeiling3Trim,   _c.MicCeiling3TrimFb,   "MicCeiling3.gain");
+
+            // Mic line-out levels (5 mics, 0-100 -> Q-SYS fader)
+            WireTrim(_c.MicLavLineOut,        _c.MicLavLineOutFb,        "MicLav.fader");
+            WireTrim(_c.MicHandheldLineOut,   _c.MicHandheldLineOutFb,   "MicHandheld.fader");
+            WireTrim(_c.MicCeiling1LineOut,   _c.MicCeiling1LineOutFb,   "MicCeiling1.fader");
+            WireTrim(_c.MicCeiling2LineOut,   _c.MicCeiling2LineOutFb,   "MicCeiling2.fader");
+            WireTrim(_c.MicCeiling3LineOut,   _c.MicCeiling3LineOutFb,   "MicCeiling3.fader");
+
+            // TODO field-config: subscribe to Q-SYS named-control level meters and
+            // signal-present feedback, then publish to Mic*Level / Mic*Connected.
+            // The PA module typically exposes these as event-driven outputs:
+            //
+            //   _qsys.OnNamedControlChanged += (name, value) => {
+            //       switch (name) {
+            //           case "MicLav.level":      _c.MicLavLevel.UShortValue = (ushort)(value * 100); break;
+            //           case "MicLav.signal":     _c.MicLavConnected.BoolValue = value > 0; break;
+            //           ...
+            //       }
+            //   };
+            //
+            // Rate-limit the level updates (10-30 Hz max) to avoid flooding CIP.
+        }
+
+        // Wires a 0-100 panel slider to a Q-SYS named-control. Echoes back to the
+        // matching feedback signal so the panel UI stays in sync.
+        // Note: replace the placeholder PA-module call with the actual SetNamedControl*
+        // method exposed by the installed Crestron Q-SYS PA module.
+        private void WireTrim(UShortInputSig setSig, UShortOutputSig fbSig, string namedControl)
+        {
+            setSig.OnAnalogChange += (v) => {
+                // _qsys.SetNamedControlInteger(namedControl, v);
+                fbSig.UShortValue = v;
+            };
         }
     }
 }
