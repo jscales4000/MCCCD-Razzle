@@ -1,12 +1,11 @@
 import { writable } from 'svelte/store';
-import { CONTRACT, SIGNALS } from '../contract';
-import { publishDigital, subscribeAnalog, subscribeDigital } from '../CrComLib';
+import { SIGNALS } from '../contract';
+import { subscribeAnalog, subscribeDigital } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor (subscribe) or drives a command signal up (publish).
 
 export const panelOnline = writable(true);
-export const placeholderToggle = writable(false);
 
 // AA140-specific feedback stores
 export const display1SourceFb = writable<number>(0);
@@ -26,8 +25,7 @@ export const nvxAutoSwitchSrc = writable<1 | 2>(1);
 // Wire feedback subscriptions on app startup. Called from src/main.ts after
 // CrComLib is detected. Add one subscribeDigital/Analog/Serial per feedback.
 export function initSignals(): void {
-  subscribeDigital(CONTRACT.panelOnlineFeedback, (value) => panelOnline.set(value));
-  subscribeDigital(CONTRACT.placeholderFeedback, (value) => placeholderToggle.set(value));
+  subscribeDigital(SIGNALS.panelOnline, (value) => panelOnline.set(value));
 
   // AA140-specific subscriptions
   subscribeAnalog(SIGNALS.display1SourceFb,    (v) => display1SourceFb.set(v));
@@ -45,16 +43,6 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.nvxAutoSwitchSrc,    (v) => nvxAutoSwitchSrc.set(v === 2 ? 2 : 1));
 }
 
-// Action helpers wrap the publish call so components stay declarative.
-// Pattern: optimistic-update the local store, then pulse the command signal.
-export function togglePlaceholder(): void {
-  placeholderToggle.update((value) => {
-    pulseSignal(CONTRACT.placeholderToggleCommand);
-    return !value;
-  });
-}
-
-function pulseSignal(signalName: string): void {
-  publishDigital(signalName, true);
-  setTimeout(() => publishDigital(signalName, false), 120);
-}
+// Use the typed CrComLib helpers (publishDigital, publishAnalog, pulseDigital)
+// directly from page/component code to drive command signals. Stores in this
+// file are subscriptions only — they hold processor-published feedback state.

@@ -84,10 +84,3 @@ export const SIGNALS = {
   nvxAutoSwitchSrc:   `${ROOM_NAME}.NvxAutoSwitchSrc`,    // analog feedback (1=HDMI, 2=USB-C)
 } as const;
 
-// Legacy alias — kept for backward compat with the placeholder App.svelte
-export const CONTRACT = {
-  roomName:                 ROOM_NAME,
-  panelOnlineFeedback:      SIGNALS.panelOnline,
-  placeholderToggleCommand: `${ROOM_NAME}.PlaceholderToggle`,
-  placeholderFeedback:      `${ROOM_NAME}.PlaceholderActive`,
-} as const;
