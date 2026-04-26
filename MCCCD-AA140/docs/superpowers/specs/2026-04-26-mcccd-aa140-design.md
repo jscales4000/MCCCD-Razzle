@@ -58,25 +58,24 @@ The build is opinionated: single-room scope, single panel layout for all surface
 - RMC4 ↔ 1Beyond cameras: HTTP REST for control; cameras stream RTSP directly to the touchpanel `ch5-video` element (no processor in the video path)
 - RMC4 ↔ Occupancy sensor: PoE / CIP
 
-## 4. Sources (5 logical, 4 encoders)
+## 4. Sources (4 logical, 4 encoders)
 
 | # | Label | Encoder | IPID | Notes |
 |---|---|---|---|---|
 | 1 | Room PC | E30 | 0x11 | |
 | 2 | Ext PC | E30 | 0x12 | |
 | 3 | AirMedia | E30 | 0x13 | |
-| 4 | HDMI | NVX-384 (HDMI input) | 0x14 | Shares stream with USB-C |
-| 5 | USB-C | NVX-384 (USB-C input) | 0x14 | Shares stream with HDMI |
+| 4 | Laptop | NVX-384 (HDMI + USB-C) | 0x14 | One logical source; encoder auto-switches between HDMI and USB-C internally based on which is active |
 
-**Auto-switch behavior on NVX-384:** if the user selects HDMI but only USB-C is plugged in (or vice versa), the encoder auto-resolves to whichever physical input is active. The touchpanel shows the user-selected button as the "intended" source; SIMPL# subscribes to the NVX-384's active-input feedback and surfaces a small badge on the affected source button when actual ≠ selected (e.g., "HDMI selected · USB-C active").
+**Auto-switch behavior on NVX-384:** the encoder accepts both HDMI and USB-C inputs and auto-selects whichever is currently active. The touchpanel surfaces a single "Laptop" source button; the user doesn't need to know which physical port is feeding the stream. (The standalone `NvxAutoSwitchSrc` feedback signal in the original spec is removed since it's no longer needed for UX.)
 
 ## 5. Information Architecture
 
 Three pages total:
 
-1. **Home** *(default)* — display routing, audio, mics, occupancy, system power, link to Cameras
-2. **Cameras** — single-cam preview, PTZ, presets, VTC ingest, tracking modes
-3. **Settings** *(deferred to v2)* — VU meters, advanced source/display matrix, mic gain, system info
+1. **Home** *(default)* — display routing, audio, mics, occupancy, system power, link to Cameras + Settings
+2. **Cameras** — single-cam preview, PTZ + zoom, single-button presets (tap=recall, hold-3s=save), VTC ingest, tracking modes
+3. **Settings** *(v1 — mic management)* — 5-mic management surface: connection status, real-time level meter, input gain trim slider, line-out trim slider, and mute (ceiling mics only — Lav/Handheld mute lives on Home)
 
 Page navigation uses a simple `currentPage` Svelte store. No router library.
 
@@ -85,7 +84,8 @@ Page navigation uses a simple `currentPage` Svelte store. No router library.
 **Layout:** three "display tiles" side-by-side in the main area (D1, D2, D3). Each tile contains:
 
 - Display label and current source name (driven by feedback)
-- 5 source buttons in a 3×2 grid: Room PC / Ext PC / AirMedia / HDMI / USB-C
+- 4 source buttons in a 2×2 grid: Room PC / Ext PC / AirMedia / Laptop
+- Display ON/OFF indicator dot (green = on, dim = off) driven by `Display<N>PowerFb` from the NVX D200 sink-connected feedback
 - *(D1 and D2 only)* "↗ Mirror to D3" button — fires a one-shot push of this tile's current source to D3
 - *(D1 and D2 only)* Audio-output speaker icon — toggles which display owns room audio (mutually exclusive)
 
@@ -106,24 +106,40 @@ Page navigation uses a simple `currentPage` Svelte store. No router library.
 
 The Q-SYS Nano DSP owns everything audio-related. SIMPL# never drives the downstream amp directly (the amp is "dumb" — line-level in, speakers out, no control).
 
+**Microphone roster (5 mics total):**
+- Lavalier (wired or wireless w/ wired-receiver patch)
+- Handheld (wireless w/ wired-receiver patch)
+- 3× Sennheiser TCCM ceiling mics (TeamConnect Ceiling Medium — Dante/AES-67 native, but for v1 patched into Q-SYS via the existing IO)
+
 **Signal flow:**
 
 ```
 NVX-384 + E30 encoders ──AES-67──▶ Q-SYS Nano DSP ──line out──▶ dumb amp ──▶ ceiling speakers
                                        ▲
-                       Lavalier mic ───┤  (wired analog inputs)
-                       Handheld mic ───┘
+                  Lavalier mic ────────┤
+                  Handheld mic ────────┤  (wired analog / Dante inputs)
+                  TCCM Ceiling 1 ──────┤
+                  TCCM Ceiling 2 ──────┤
+                  TCCM Ceiling 3 ──────┘
 ```
 
 **Audio-follows-display:** when the user toggles the speaker icon on D1 or D2, SIMPL# tells the Q-SYS PA module to switch its program audio source to the AES-67 stream from that display's currently routed encoder. D3 cannot own room audio.
 
 **UI controls (home page footer):**
-- Master program volume slider + mute
-- Lavalier mic mute (with feedback indicator)
-- Handheld mic mute (with feedback indicator)
+- Master program volume — Vol−, Mute, Vol+ (no pill, no slider — pulse buttons)
+- Lavalier mic mute toggle
+- Handheld mic mute toggle
 - Audio-follows-display toggle is on the D1/D2 tiles (speaker icon)
 
-VU meters and advanced mix controls live on the Settings page (deferred to v2).
+> Ceiling mics do NOT appear on Home. They're managed entirely from Settings.
+
+**UI controls (settings page — Audio tab / mic management):**
+For each of the 5 mics:
+- **Connection status** indicator (green = connected, red = no signal/disconnected — driven by `Mic<Name>Connected` feedback from Q-SYS)
+- **Live level meter** (real-time analog feedback `Mic<Name>Level` from Q-SYS, 0–100 scale)
+- **Input gain (mic trim) slider** — `Mic<Name>Trim` analog set, 0–100 scale (Q-SYS named-control: input gain stage in dB or normalized)
+- **Line-out level slider** — `Mic<Name>LineOut` analog set, 0–100 scale (Q-SYS named-control: output fader to program mix)
+- **Mute toggle** (ceiling mics only — Lav and Handheld mute is on Home)
 
 ## 8. Camera UX (Cameras Page)
 
@@ -166,7 +182,13 @@ VU meters and advanced mix controls live on the Settings page (deferred to v2).
 
 Mode is per-camera and pushed to the active camera's REST endpoint when changed.
 
-**Presets row (bottom):** 3 preset slots per camera (DEFAULT, PRIMARY, SECONDARY) with Save / Recall / Delete buttons each, sent via REST.
+**Presets row (bottom):** 3 preset slots per camera (DEFAULT, PRIMARY, SECONDARY). Each preset is a **single button** with two-mode interaction:
+- **Tap (release < 3s)** → Recall preset (fires `ShotPresetRecall` analog with the preset index)
+- **Hold (≥ 3s)** → Save current camera position as preset (fires `ShotPresetSave` analog with the preset index)
+- During hold, the button shows a filling progress ring; if released before 3s, no save happens (just recall on tap-up).
+- Delete preset is **deferred** — long-press on a populated preset could open a delete confirmation modal in v2; for v1 there's no delete UI (saves overwrite).
+
+**Camera zoom (new in v1):** zoom in / zoom out icon buttons in the controls panel beside the speed sliders. Each is a transparent flat-white icon (`+` and `−` glyphs, or magnifying-glass pair). Tap = single zoom step; press-and-hold = continuous zoom. SIMPL# fires `ZoomIn` / `ZoomOut` digital signals; SIMPL# translates into 1Beyond REST `cgi-bin/ptz?action=zoom&direction=in&speed=...` calls (start on rising edge, stop on falling edge — same press-and-hold pattern as PTZ pan/tilt).
 
 ## 9. Occupancy Automation
 
@@ -180,10 +202,27 @@ PoE occupancy sensor at IPID 0x41 reports occupancy as a digital feedback. SIMPL
 | Empty (timer running) → Occupied | cancel timer, no other action |
 | Empty (timer expires) → Empty | run system-off sequence: displays off, source mute, audio mute |
 
-**UI surface:** an occupancy pill in the home-page header with three states:
+**UI surface:** a non-pill occupancy indicator in the home-page header (rendered as a tagged status block in the chosen button style — no pill / capsule shapes). Three states:
 - Green "Occupied"
 - Amber "Vacant"
-- Red "Vacant — shutting down in N min" (only when timer is running, with live countdown from `ShutdownCountdown` analog feedback)
+- Red "Vacant — shutting down in N min" (live countdown from `ShutdownCountdown` analog feedback)
+
+## 9b. System Power Confirmation Modal
+
+The home-page Power button has two states and an interaction confirmation flow:
+
+- **System OFF state:** Power button at default size in the footer.
+- **System ON state:** Power button rendered in the **enlarged** primary variant (per the chosen button style — typically ~84-88px tall with a stronger accent treatment) so the operator can see at a glance the system is live.
+- **Tap when ON:** opens a modal "Are you sure you want to shut down?" with:
+  - Title: "Shutdown AA140"
+  - Body copy: "The system will power off in N seconds." with a 30-second countdown timer.
+  - **Yes** button (danger variant — destructive)
+  - **No** button (ghost / cancel)
+  - Tapping **Yes** OR letting the timer hit 0 → fires `DisplayPower` pulse to SIMPL# `SystemPowerController.PowerDownSequence()`.
+  - Tapping **No** → modal closes, no signals sent, no state change.
+- **Tap when OFF:** immediately fires `DisplayPower` pulse to power the system on (no confirmation).
+
+This protects against accidental shutdowns mid-class while still giving instructors the ability to do a fast power-up.
 
 ## 10. Personas (Archon project)
 
@@ -200,31 +239,79 @@ PoE occupancy sensor at IPID 0x41 reports occupancy as a digital feedback. SIMPL
 
 The scaffold gives us three layouts that map nearly 1:1 to our needs. Build plan:
 
-- **`src/pages/Home.svelte`** — composes from `layouts/App.dual-display.svelte` (per-display source picker pattern, audio toggle) plus a third display tile and per-tile mirror buttons. Source list trimmed to our 5 sources.
-- **`src/pages/Cameras.svelte`** — adapted from `layouts/App.ptz-director.svelte`. Camera labels swapped to 1Beyond hardware (Front / Back-L / Back-R). Preview placeholder swapped for a real `ch5-video` element. Add: "Send to VTC" button, Tracking Mode radio group. Mic meters can stay as a nice-to-have driven by Q-SYS feedback.
-- **`src/App.svelte`** — becomes a thin router that swaps between Home and Cameras based on a `currentPage` store.
+- **`src/pages/Home.svelte`** — three display tiles (each with 4 source buttons + display-power-FB indicator dot + audio-out toggle on D1/D2 + mirror-to-D3 on D1/D2), header with non-pill occupancy block + online status, footer with Power (with confirm modal) + Vol−/Mute/Vol+ + Lav/Handheld mic mutes + Cameras link + Settings link.
+- **`src/pages/Cameras.svelte`** — camera selector sidebar, `ch5-video` preview with transparent PTZ + zoom overlay, Send-to-VTC button, tracking mode radio group, **single-button presets** (tap=recall, hold-3s=save) with progress-ring during hold.
+- **`src/pages/Settings.svelte`** — 5-mic management surface, one row per mic with: connection-status dot, real-time level meter, input-trim slider, line-out slider, mute toggle (ceiling mics only).
+- **`src/components/`** — DisplayTile, ConfirmShutdownModal, MicChannel (used in Settings), PresetButton (with hold-to-save behavior).
+- **`src/App.svelte`** — thin router across Home / Cameras / Settings.
 
 The eight `layouts/*.svelte` files stay in the scaffold as reference but aren't loaded.
 
+## 11b. Button Styling
+
+Style **#3 Hairline Schematic** (UI Designer's mockup, with `prefers-reduced-motion` clamping merged in from #5):
+
+- Base button: 1px hairline border on faint dark surface. Corner ticks via `::before`/`::after` pseudo-elements.
+- **Active:** cyan border + cyan glow + corner ticks bloom from 8×8 to 12×12.
+- **Pressed:** `scale(0.96)` + inset cyan stroke.
+- **Icon buttons (`.icon-btn`):** transparent background, flat-white icon glyph, circular outline only on press / active. **No colored borders, no fills.**
+- **Primary / power-on (`.btn.primary`):** ~88px tall, cyan border + glow, larger corner ticks (14×14). Used for the Power button when system is ON, and for confirmation-modal primary CTAs.
+- **Danger (`.btn.danger`):** red corner ticks + red border, used for "Yes / Shutdown" in the confirm modal.
+- **Ghost (`.btn.ghost`):** faint border only — used for "No / Cancel" in the modal.
+- **Reduced-motion:** all button transitions clamp to 0ms when `prefers-reduced-motion: reduce`.
+- **No pills:** every interactive surface uses `border-radius ≤ 6px`. The occupancy indicator and online-status block use the same border-radius (no `9999px` capsules).
+
+Full CSS lives in `src/global.css` under the `/* AA140 Hairline Schematic button system */` block. Mockups doc with all 10 considered options at [`docs/Lessons-Learned/Button-Style-Mockups.md`](../../Lessons-Learned/Button-Style-Mockups.md).
+
 ## 12. Signal Contract Additions
 
-The seed contract has most of what we need. Additions to `contracts/MCCCD-AA140.cce` (build via Crestron Contract Editor — never hand-author the `.cse2j`):
+The contract delta in `contracts/MCCCD-AA140.cce` (revised after the audio scope expansion + power modal + zoom + display power FB):
 
-| Signal | Type | Purpose |
-|---|---|---|
-| `${ROOM_NAME}.D1MirrorToD3` | digital pulse | Mirror button on D1 tile |
-| `${ROOM_NAME}.D2MirrorToD3` | digital pulse | Mirror button on D2 tile |
-| `${ROOM_NAME}.Display3Source` | analog | D3 source selection (1–5) |
-| `${ROOM_NAME}.Display3SourceFb` | analog feedback | D3 active source |
-| `${ROOM_NAME}.MicLavMute` | digital toggle | Lavalier mute (with feedback) |
-| `${ROOM_NAME}.MicHandheldMute` | digital toggle | Handheld mute (with feedback) |
-| `${ROOM_NAME}.OccupancyState` | analog feedback | 0=vacant, 1=occupied, 2=shutdown-pending |
-| `${ROOM_NAME}.ShutdownCountdown` | analog feedback | Minutes remaining (UI shows in pill) |
-| `${ROOM_NAME}.CamSendToVtc` | digital pulse | Set active camera as VTC ingest |
-| `${ROOM_NAME}.CamTrackingMode` | analog | 1=People, 2=Group, 3=VX AutoSwitch |
-| `${ROOM_NAME}.NvxAutoSwitchSrc` | analog feedback | NVX-384 actual active input (1=HDMI, 2=USB-C) |
+**Signals dropped vs. earlier design:**
+- `NvxAutoSwitchSrc` — no longer needed since HDMI/USB-C merged into one logical "Laptop" source.
 
-The seed contract already covers: power, source selects for D1/D2, audio output select, master volume up/down/mute/set, mic mute (generic — split into Lav/Handheld in v1), camera select, PTZ up/down/left/right, shot preset recall/save/delete, ISMI connect, displayRoute_1..N (multi-routing — won't be used in v1 since we're per-tile), zone volume/mute, scene recall, lights toggle, record enable.
+**New / updated signals:**
+
+| Signal | Direction | Type | Purpose |
+|---|---|---|---|
+| `${ROOM_NAME}.D1MirrorToD3` | command | digital pulse | Mirror D1 source to D3 |
+| `${ROOM_NAME}.D2MirrorToD3` | command | digital pulse | Mirror D2 source to D3 |
+| `${ROOM_NAME}.Display3Source` / `.Display3SourceFb` | command + fb | analog | D3 source select (1–4) + feedback |
+| `${ROOM_NAME}.Display1PowerFb` / `.Display2PowerFb` / `.Display3PowerFb` | feedback | digital | Each display's actual power state (driven by NVX D200 sink-connected feedback) |
+| `${ROOM_NAME}.MicLavMute` / `.MicLavMuteFb` | command + fb | digital | Lav mute toggle |
+| `${ROOM_NAME}.MicHandheldMute` / `.MicHandheldMuteFb` | command + fb | digital | Handheld mute toggle |
+| `${ROOM_NAME}.MicCeiling1Mute` / `.MicCeiling1MuteFb` | command + fb | digital | TCCM ceiling 1 mute (settings only) |
+| `${ROOM_NAME}.MicCeiling2Mute` / `.MicCeiling2MuteFb` | command + fb | digital | TCCM ceiling 2 mute |
+| `${ROOM_NAME}.MicCeiling3Mute` / `.MicCeiling3MuteFb` | command + fb | digital | TCCM ceiling 3 mute |
+| `${ROOM_NAME}.MicLavTrim` / `.MicLavTrimFb` | command + fb | analog | Lav input gain trim (0–100) |
+| `${ROOM_NAME}.MicHandheldTrim` / `.MicHandheldTrimFb` | command + fb | analog | Handheld input gain trim |
+| `${ROOM_NAME}.MicCeiling1Trim` / `.MicCeiling1TrimFb` | command + fb | analog | Ceiling 1 input gain |
+| `${ROOM_NAME}.MicCeiling2Trim` / `.MicCeiling2TrimFb` | command + fb | analog | Ceiling 2 input gain |
+| `${ROOM_NAME}.MicCeiling3Trim` / `.MicCeiling3TrimFb` | command + fb | analog | Ceiling 3 input gain |
+| `${ROOM_NAME}.MicLavLineOut` / `.MicLavLineOutFb` | command + fb | analog | Lav line-out level |
+| `${ROOM_NAME}.MicHandheldLineOut` / `.MicHandheldLineOutFb` | command + fb | analog | Handheld line-out level |
+| `${ROOM_NAME}.MicCeiling1LineOut` / `.MicCeiling1LineOutFb` | command + fb | analog | Ceiling 1 line-out |
+| `${ROOM_NAME}.MicCeiling2LineOut` / `.MicCeiling2LineOutFb` | command + fb | analog | Ceiling 2 line-out |
+| `${ROOM_NAME}.MicCeiling3LineOut` / `.MicCeiling3LineOutFb` | command + fb | analog | Ceiling 3 line-out |
+| `${ROOM_NAME}.MicLavLevel` | feedback | analog | Real-time level (0–100, ~10–30 Hz update) |
+| `${ROOM_NAME}.MicHandheldLevel` | feedback | analog | |
+| `${ROOM_NAME}.MicCeiling1Level` | feedback | analog | |
+| `${ROOM_NAME}.MicCeiling2Level` | feedback | analog | |
+| `${ROOM_NAME}.MicCeiling3Level` | feedback | analog | |
+| `${ROOM_NAME}.MicLavConnected` | feedback | digital | Mic detected (Q-SYS signal-present or input level above noise floor) |
+| `${ROOM_NAME}.MicHandheldConnected` | feedback | digital | |
+| `${ROOM_NAME}.MicCeiling1Connected` | feedback | digital | |
+| `${ROOM_NAME}.MicCeiling2Connected` | feedback | digital | |
+| `${ROOM_NAME}.MicCeiling3Connected` | feedback | digital | |
+| `${ROOM_NAME}.OccupancyState` | feedback | analog | 0=vacant, 1=occupied, 2=shutdown-pending |
+| `${ROOM_NAME}.ShutdownCountdown` | feedback | analog | Minutes remaining |
+| `${ROOM_NAME}.CamSendToVtc` | command | digital pulse | Set active cam as VTC ingest |
+| `${ROOM_NAME}.CamTrackingMode` / `.CamTrackingModeFb` | command + fb | analog | 1=People, 2=Group, 3=VX AutoSwitch |
+| `${ROOM_NAME}.ZoomIn` | command | digital level | Press-and-hold zoom in (rising = start, falling = stop) |
+| `${ROOM_NAME}.ZoomOut` | command | digital level | Press-and-hold zoom out |
+| `${ROOM_NAME}.SystemPowerFb` | feedback | digital | True when system is ON (drives the home Power button's enlarged variant) |
+
+The seed contract already covers: power, source selects for D1/D2, audio output select, master volume up/down/mute/set, camera select, PTZ up/down/left/right, shot preset recall/save/delete, ISMI connect.
 
 **Two-place contract maintenance:** every new signal added to `contracts/MCCCD-AA140.cce` must also be added to the `SIGNALS` object in `src/lib/contract.ts`. The `.cce` is the source of truth (Crestron Contract Editor builds it into `.cse2j` for the panel + `.g.cs` for SIMPL#); `src/lib/contract.ts` is the hand-maintained TypeScript mirror used by the Svelte components. Drift between the two will result in silent signal failures.
 
@@ -232,11 +319,13 @@ The seed contract already covers: power, source selects for D1/D2, audio output 
 
 - Lighting control (none specified in this room)
 - Shade / blinds control (none specified)
-- VU meters and advanced audio matrix (defer to Settings page in v2)
+- Advanced source/display matrix (the existing `App.multi-routing.svelte` layout — defer to v2)
 - Fusion enterprise reporting
 - VTC dialing UX (only the "Send to VTC" handoff — the actual VC system is downstream, not driven by this panel)
 - Multi-zone audio (single program zone in this room)
 - Per-panel UI variants (all panels run identical layout for now)
+- Preset **delete** UI on Cameras page (saves overwrite for v1 — long-press-to-delete-with-confirm deferred to v2)
+- Mic VU peak-hold + spectrum analyzer (the v1 level meter is a single-bar amplitude indicator)
 
 ## 14. Open Items (need confirmation before/during implementation)
 
