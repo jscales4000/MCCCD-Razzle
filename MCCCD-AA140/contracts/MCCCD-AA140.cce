@@ -2,7 +2,7 @@
 	"Errors": [],
 	"id": "_jsw9gauhu",
 	"name": "MCCCD_AA140",
-	"description": "MCCCD room AA140 — CH5-Svelte panel + SIMPL# Pro control system. 3 NVX D200 displays, 5 logical sources via 3xE30+1xNVX-384 (HDMI/USB-C combo), 3 1Beyond cameras (Front i20 + 2x Back i12), Q-SYS Nano DSP, PoE occupancy.",
+	"description": "AA140 panel: 3 displays, 5 sources, 3 cameras, Q-SYS audio.",
 	"company": "MCCCD",
 	"client": "MCCCD",
 	"author": "Jordan Scales",
@@ -27,56 +27,56 @@
 			"id": "_0bnxx3lcs",
 			"name": "Main",
 			"commands": [
-				{ "Errors": [], "name": "DisplayPower",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse — toggles system on/off",                       "id": "_a001", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "DisplayPower",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse - toggles system on/off",                       "id": "_a001", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "Display1Source",      "siblingId": "_b002",  "dataType": 2, "notes": "Analog set — D1 source (1=RoomPC, 2=ExtPC, 3=AirMedia, 4=HDMI, 5=USBC)", "id": "_a002", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "Display2Source",      "siblingId": "_b003",  "dataType": 2, "notes": "Analog set — D2 source",                                       "id": "_a003", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "Display3Source",      "siblingId": "_b004",  "dataType": 2, "notes": "Analog set — D3 source (independent after boot init)",          "id": "_a004", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "Display1Source",      "siblingId": "_b002",  "dataType": 2, "notes": "Analog set - D1 source (1=RoomPC, 2=ExtPC, 3=AirMedia, 4=HDMI, 5=USBC)", "id": "_a002", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "Display2Source",      "siblingId": "_b003",  "dataType": 2, "notes": "Analog set - D2 source",                                       "id": "_a003", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "Display3Source",      "siblingId": "_b004",  "dataType": 2, "notes": "Analog set - D3 source (independent after boot init)",          "id": "_a004", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "D1MirrorToD3",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse — one-shot push of D1 source to D3",            "id": "_a005", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "D2MirrorToD3",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse — one-shot push of D2 source to D3",            "id": "_a006", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "D1MirrorToD3",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse - one-shot push of D1 source to D3",            "id": "_a005", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "D2MirrorToD3",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse - one-shot push of D2 source to D3",            "id": "_a006", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "AudioOutputSelect",   "siblingId": "_b005",  "dataType": 2, "notes": "Analog set — 1=D1 owns audio, 2=D2 owns audio (D3 never)",     "id": "_a007", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "AudioOutputSelect",   "siblingId": "_b005",  "dataType": 2, "notes": "Analog set - 1=D1 owns audio, 2=D2 owns audio (D3 never)",     "id": "_a007", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "VolumeUp",            "siblingId": "",       "dataType": 1, "notes": "Digital pulse — master program volume up",                    "id": "_a008", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "VolumeDown",          "siblingId": "",       "dataType": 1, "notes": "Digital pulse — master program volume down",                  "id": "_a009", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "MuteAll",             "siblingId": "",       "dataType": 1, "notes": "Digital pulse — toggle master program mute",                  "id": "_a010", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "VolumeUp",            "siblingId": "",       "dataType": 1, "notes": "Digital pulse - master program volume up",                    "id": "_a008", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "VolumeDown",          "siblingId": "",       "dataType": 1, "notes": "Digital pulse - master program volume down",                  "id": "_a009", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "MuteAll",             "siblingId": "",       "dataType": 1, "notes": "Digital pulse - toggle master program mute",                  "id": "_a010", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "MicLavMute",          "siblingId": "_b006",  "dataType": 1, "notes": "Digital level — lav mic mute on/off",                         "id": "_a011", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "MicHandheldMute",     "siblingId": "_b007",  "dataType": 1, "notes": "Digital level — handheld mic mute on/off",                    "id": "_a012", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "MicLavMute",          "siblingId": "_b006",  "dataType": 1, "notes": "Digital level - lav mic mute on/off",                         "id": "_a011", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "MicHandheldMute",     "siblingId": "_b007",  "dataType": 1, "notes": "Digital level - handheld mic mute on/off",                    "id": "_a012", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "CameraSelect",        "siblingId": "",       "dataType": 2, "notes": "Analog set — 1=Front i20, 2=BackL i12, 3=BackR i12",            "id": "_a013", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "CameraSelect",        "siblingId": "",       "dataType": 2, "notes": "Analog set - 1=Front i20, 2=BackL i12, 3=BackR i12",            "id": "_a013", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "PtzUp",               "siblingId": "",       "dataType": 1, "notes": "Digital pulse — pan/tilt up on active camera",                "id": "_a014", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "PtzDown",             "siblingId": "",       "dataType": 1, "notes": "Digital pulse — pan/tilt down",                               "id": "_a015", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "PtzLeft",             "siblingId": "",       "dataType": 1, "notes": "Digital pulse — pan/tilt left",                               "id": "_a016", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "PtzRight",            "siblingId": "",       "dataType": 1, "notes": "Digital pulse — pan/tilt right",                              "id": "_a017", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "PtzUp",               "siblingId": "",       "dataType": 1, "notes": "Digital pulse - pan/tilt up on active camera",                "id": "_a014", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "PtzDown",             "siblingId": "",       "dataType": 1, "notes": "Digital pulse - pan/tilt down",                               "id": "_a015", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "PtzLeft",             "siblingId": "",       "dataType": 1, "notes": "Digital pulse - pan/tilt left",                               "id": "_a016", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "PtzRight",            "siblingId": "",       "dataType": 1, "notes": "Digital pulse - pan/tilt right",                              "id": "_a017", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "ShotPresetRecall",    "siblingId": "",       "dataType": 2, "notes": "Analog set — recall preset 1/2/3 on active camera",            "id": "_a018", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "ShotPresetSave",      "siblingId": "",       "dataType": 2, "notes": "Analog set — save preset 1/2/3 on active camera",              "id": "_a019", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "ShotPresetDelete",    "siblingId": "",       "dataType": 2, "notes": "Analog set — delete preset 1/2/3 on active camera",            "id": "_a020", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "ShotPresetRecall",    "siblingId": "",       "dataType": 2, "notes": "Analog set - recall preset 1/2/3 on active camera",            "id": "_a018", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "ShotPresetSave",      "siblingId": "",       "dataType": 2, "notes": "Analog set - save preset 1/2/3 on active camera",              "id": "_a019", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "ShotPresetDelete",    "siblingId": "",       "dataType": 2, "notes": "Analog set - delete preset 1/2/3 on active camera",            "id": "_a020", "parentId": "_0bnxx3lcs", "attributeType": 0 },
 
-				{ "Errors": [], "name": "CamSendToVtc",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse — set active camera as VTC ingest source",       "id": "_a021", "parentId": "_0bnxx3lcs", "attributeType": 0 },
-				{ "Errors": [], "name": "CamTrackingMode",     "siblingId": "_b008",  "dataType": 2, "notes": "Analog set — 1=People, 2=Group, 3=VX AutoSwitch",              "id": "_a022", "parentId": "_0bnxx3lcs", "attributeType": 0 }
+				{ "Errors": [], "name": "CamSendToVtc",        "siblingId": "",       "dataType": 1, "notes": "Digital pulse - set active camera as VTC ingest source",       "id": "_a021", "parentId": "_0bnxx3lcs", "attributeType": 0 },
+				{ "Errors": [], "name": "CamTrackingMode",     "siblingId": "_b008",  "dataType": 2, "notes": "Analog set - 1=People, 2=Group, 3=VX AutoSwitch",              "id": "_a022", "parentId": "_0bnxx3lcs", "attributeType": 0 }
 			],
 			"feedbacks": [
-				{ "Errors": [], "name": "PanelOnline",         "siblingId": "",       "dataType": 1, "notes": "Digital feedback — true when processor sees this panel",       "id": "_b001", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "PanelOnline",         "siblingId": "",       "dataType": 1, "notes": "Digital feedback - true when processor sees this panel",       "id": "_b001", "parentId": "_0bnxx3lcs", "attributeType": 1 },
 
-				{ "Errors": [], "name": "Display1SourceFb",    "siblingId": "_a002",  "dataType": 2, "notes": "Analog feedback — D1 active source",                          "id": "_b002", "parentId": "_0bnxx3lcs", "attributeType": 1 },
-				{ "Errors": [], "name": "Display2SourceFb",    "siblingId": "_a003",  "dataType": 2, "notes": "Analog feedback — D2 active source",                          "id": "_b003", "parentId": "_0bnxx3lcs", "attributeType": 1 },
-				{ "Errors": [], "name": "Display3SourceFb",    "siblingId": "_a004",  "dataType": 2, "notes": "Analog feedback — D3 active source",                          "id": "_b004", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "Display1SourceFb",    "siblingId": "_a002",  "dataType": 2, "notes": "Analog feedback - D1 active source",                          "id": "_b002", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "Display2SourceFb",    "siblingId": "_a003",  "dataType": 2, "notes": "Analog feedback - D2 active source",                          "id": "_b003", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "Display3SourceFb",    "siblingId": "_a004",  "dataType": 2, "notes": "Analog feedback - D3 active source",                          "id": "_b004", "parentId": "_0bnxx3lcs", "attributeType": 1 },
 
-				{ "Errors": [], "name": "AudioOutputSelectFb", "siblingId": "_a007",  "dataType": 2, "notes": "Analog feedback — 1=D1 owns audio, 2=D2 owns audio",          "id": "_b005", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "AudioOutputSelectFb", "siblingId": "_a007",  "dataType": 2, "notes": "Analog feedback - 1=D1 owns audio, 2=D2 owns audio",          "id": "_b005", "parentId": "_0bnxx3lcs", "attributeType": 1 },
 
-				{ "Errors": [], "name": "MicLavMuteFb",        "siblingId": "_a011",  "dataType": 1, "notes": "Digital feedback — lav mic muted state",                     "id": "_b006", "parentId": "_0bnxx3lcs", "attributeType": 1 },
-				{ "Errors": [], "name": "MicHandheldMuteFb",   "siblingId": "_a012",  "dataType": 1, "notes": "Digital feedback — handheld mic muted state",                "id": "_b007", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "MicLavMuteFb",        "siblingId": "_a011",  "dataType": 1, "notes": "Digital feedback - lav mic muted state",                     "id": "_b006", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "MicHandheldMuteFb",   "siblingId": "_a012",  "dataType": 1, "notes": "Digital feedback - handheld mic muted state",                "id": "_b007", "parentId": "_0bnxx3lcs", "attributeType": 1 },
 
-				{ "Errors": [], "name": "CamTrackingModeFb",   "siblingId": "_a022",  "dataType": 2, "notes": "Analog feedback — current tracking mode (1/2/3)",            "id": "_b008", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "CamTrackingModeFb",   "siblingId": "_a022",  "dataType": 2, "notes": "Analog feedback - current tracking mode (1/2/3)",            "id": "_b008", "parentId": "_0bnxx3lcs", "attributeType": 1 },
 
-				{ "Errors": [], "name": "OccupancyState",      "siblingId": "",       "dataType": 2, "notes": "Analog feedback — 0=vacant, 1=occupied, 2=shutdown-pending", "id": "_b009", "parentId": "_0bnxx3lcs", "attributeType": 1 },
-				{ "Errors": [], "name": "ShutdownCountdown",   "siblingId": "",       "dataType": 2, "notes": "Analog feedback — minutes remaining until system-off",        "id": "_b010", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "OccupancyState",      "siblingId": "",       "dataType": 2, "notes": "Analog feedback - 0=vacant, 1=occupied, 2=shutdown-pending", "id": "_b009", "parentId": "_0bnxx3lcs", "attributeType": 1 },
+				{ "Errors": [], "name": "ShutdownCountdown",   "siblingId": "",       "dataType": 2, "notes": "Analog feedback - minutes remaining until system-off",        "id": "_b010", "parentId": "_0bnxx3lcs", "attributeType": 1 },
 
-				{ "Errors": [], "name": "NvxAutoSwitchSrc",    "siblingId": "",       "dataType": 2, "notes": "Analog feedback — NVX-384 actually-active input (1=HDMI, 2=USB-C)", "id": "_b011", "parentId": "_0bnxx3lcs", "attributeType": 1 }
+				{ "Errors": [], "name": "NvxAutoSwitchSrc",    "siblingId": "",       "dataType": 2, "notes": "Analog feedback - NVX-384 actually-active input (1=HDMI, 2=USB-C)", "id": "_b011", "parentId": "_0bnxx3lcs", "attributeType": 1 }
 			],
 			"specifications": []
 		}
