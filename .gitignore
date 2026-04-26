@@ -1,0 +1,16 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/settings.local.json
+.idea/
+
+# Build outputs (panel scaffold has its own .gitignore for node_modules/dist/output)
+*.log
+
+# SIMPL# Pro build outputs (will populate once project is created in Phase 5)
+MCCCD-AA140-SIMPL/**/bin/
+MCCCD-AA140-SIMPL/**/obj/
+MCCCD-AA140-SIMPL/**/.vs/
+MCCCD-AA140-SIMPL/**/*.user
+MCCCD-AA140-SIMPL/**/*.suo

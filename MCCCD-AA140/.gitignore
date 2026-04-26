@@ -1,0 +1,11 @@
+node_modules/
+dist/
+output/
+
+*.ch5z
+vite-dev*.log
+
+tmp-*.json
+
+.DS_Store
+Thumbs.db

@@ -1,0 +1,177 @@
+{
+	"Errors": [],
+	"id": "_jsw9gauhu",
+	"name": "blank_contract",
+	"description": "Starter Contract that FRED can use to build a contract through an LLM",
+	"company": "FRED",
+	"client": "TEMPLATE",
+	"author": "FRED",
+	"version": "1.0.0.0",
+	"schemaVersion": 1,
+	"subContractLinks": [],
+	"subContracts": [],
+	"specifications": [
+		{
+			"Errors": [],
+			"parentId": "_jsw9gauhu",
+			"id": "_geqop2xl6",
+			"componentId": "_0bnxx3lcs",
+			"instanceName": "Main",
+			"numberOfInstances": 1
+		},
+		{
+			"Errors": [],
+			"parentId": "_jsw9gauhu",
+			"id": "_4q0wwfz06",
+			"componentId": "_jnll505hu",
+			"instanceName": "SubContract",
+			"numberOfInstances": 1
+		}
+	],
+	"components": [
+		{
+			"Errors": [],
+			"parentId": "_jsw9gauhu",
+			"id": "_0bnxx3lcs",
+			"name": "Main",
+			"commands": [
+				{
+					"Errors": [],
+					"name": "Bool State Placeholder",
+					"siblingId": "_njbmgyhb1",
+					"dataType": 1,
+					"notes": "",
+					"id": "_lzq6n1m49",
+					"parentId": "_0bnxx3lcs",
+					"attributeType": 0
+				},
+				{
+					"Errors": [],
+					"name": "Ana State Placeholder",
+					"siblingId": "_054vl8oy9",
+					"dataType": 2,
+					"notes": "",
+					"id": "_z05joljbz",
+					"parentId": "_0bnxx3lcs",
+					"attributeType": 0
+				},
+				{
+					"Errors": [],
+					"name": "String State Placeholder",
+					"siblingId": "_kbm42b5sm",
+					"dataType": 3,
+					"notes": "",
+					"id": "_stfss9wt8",
+					"parentId": "_0bnxx3lcs",
+					"attributeType": 0
+				}
+			],
+			"feedbacks": [
+				{
+					"Errors": [],
+					"name": "Bool Event Placeholder",
+					"siblingId": "_lzq6n1m49",
+					"dataType": 1,
+					"notes": "",
+					"id": "_njbmgyhb1",
+					"parentId": "_0bnxx3lcs",
+					"attributeType": 1
+				},
+				{
+					"Errors": [],
+					"name": "Ana Event Placeholder",
+					"siblingId": "_z05joljbz",
+					"dataType": 2,
+					"notes": "",
+					"id": "_054vl8oy9",
+					"parentId": "_0bnxx3lcs",
+					"attributeType": 1
+				},
+				{
+					"Errors": [],
+					"name": "String Event Placeholder",
+					"siblingId": "_stfss9wt8",
+					"dataType": 3,
+					"notes": "",
+					"id": "_kbm42b5sm",
+					"parentId": "_0bnxx3lcs",
+					"attributeType": 1
+				}
+			],
+			"specifications": []
+		},
+		{
+			"Errors": [],
+			"parentId": "_jsw9gauhu",
+			"id": "_jnll505hu",
+			"name": "SubContract",
+			"description": "Subcontract PlaceHolder for FRED",
+			"commands": [
+				{
+					"Errors": [],
+					"name": "Bool State Placeholder",
+					"siblingId": "_zduvkut8n",
+					"dataType": 1,
+					"notes": "",
+					"id": "_qrgmnclep",
+					"parentId": "_jnll505hu",
+					"attributeType": 0
+				},
+				{
+					"Errors": [],
+					"name": "Ana State Placeholder",
+					"siblingId": "_o8d4dtj1x",
+					"dataType": 2,
+					"notes": "",
+					"id": "_19f5uags5",
+					"parentId": "_jnll505hu",
+					"attributeType": 0
+				},
+				{
+					"Errors": [],
+					"name": "String State Placeholder",
+					"siblingId": "_xhgk77qag",
+					"dataType": 3,
+					"notes": "",
+					"id": "_abajxgy8m",
+					"parentId": "_jnll505hu",
+					"attributeType": 0
+				}
+			],
+			"feedbacks": [
+				{
+					"Errors": [],
+					"name": "Bool Event Placeholder",
+					"siblingId": "_qrgmnclep",
+					"dataType": 1,
+					"notes": "",
+					"id": "_zduvkut8n",
+					"parentId": "_jnll505hu",
+					"attributeType": 1
+				},
+				{
+					"Errors": [],
+					"name": "Ana Event Placeholder",
+					"siblingId": "_19f5uags5",
+					"dataType": 2,
+					"notes": "",
+					"id": "_o8d4dtj1x",
+					"parentId": "_jnll505hu",
+					"attributeType": 1
+				},
+				{
+					"Errors": [],
+					"name": "String Event Placeholder",
+					"siblingId": "_abajxgy8m",
+					"dataType": 3,
+					"notes": "",
+					"id": "_xhgk77qag",
+					"parentId": "_jnll505hu",
+					"attributeType": 1
+				}
+			],
+			"specifications": []
+		}
+	],
+	"allComponentsForAllContracts": []
+}
