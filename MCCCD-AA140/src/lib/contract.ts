@@ -58,6 +58,30 @@ export const SIGNALS = {
 
   // Multi-routing
   displayRoute:       `${ROOM_NAME}.DisplayRoute`,  // suffix _1..8 appended at runtime
+
+  // AA140-specific additions
+  d1MirrorToD3:       `${ROOM_NAME}.D1MirrorToD3`,        // digital pulse
+  d2MirrorToD3:       `${ROOM_NAME}.D2MirrorToD3`,        // digital pulse
+  display3Source:     `${ROOM_NAME}.Display3Source`,      // analog set
+  display3SourceFb:   `${ROOM_NAME}.Display3SourceFb`,    // analog feedback
+
+  display1SourceFb:   `${ROOM_NAME}.Display1SourceFb`,    // analog feedback
+  display2SourceFb:   `${ROOM_NAME}.Display2SourceFb`,    // analog feedback
+  audioOutputSelectFb:`${ROOM_NAME}.AudioOutputSelectFb`, // analog feedback (1=D1, 2=D2)
+
+  micLavMute:         `${ROOM_NAME}.MicLavMute`,          // digital toggle
+  micLavMuteFb:       `${ROOM_NAME}.MicLavMuteFb`,
+  micHandheldMute:    `${ROOM_NAME}.MicHandheldMute`,
+  micHandheldMuteFb:  `${ROOM_NAME}.MicHandheldMuteFb`,
+
+  occupancyState:     `${ROOM_NAME}.OccupancyState`,      // analog feedback (0/1/2)
+  shutdownCountdown:  `${ROOM_NAME}.ShutdownCountdown`,   // analog feedback (minutes)
+
+  camSendToVtc:       `${ROOM_NAME}.CamSendToVtc`,        // digital pulse
+  camTrackingMode:    `${ROOM_NAME}.CamTrackingMode`,     // analog set (1/2/3)
+  camTrackingModeFb:  `${ROOM_NAME}.CamTrackingModeFb`,
+
+  nvxAutoSwitchSrc:   `${ROOM_NAME}.NvxAutoSwitchSrc`,    // analog feedback (1=HDMI, 2=USB-C)
 } as const;
 
 // Legacy alias — kept for backward compat with the placeholder App.svelte
