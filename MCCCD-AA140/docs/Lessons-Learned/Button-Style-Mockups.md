@@ -23,7 +23,15 @@ Pick by **style number** and I'll apply across the panel codebase as a single st
 
 ---
 
-## My Recommendation: **#3 Hairline Schematic** with #5's reduced-motion discipline merged in
+## ✅ Picked: **Style #2 Signal Tile** (applied to live panel as of 2026-04-26)
+
+User selected #2 over the original recommendation (#3) for the channel-strip clarity at distance — left-edge accent bar that fills horizontally on activation gives unambiguous "which is selected" feedback for radio groups (source picker, camera tracking modes).
+
+Applied at: `src/global.css` under the `/* === Signal Tile button system (#2) === */` block. Tokens in `:root`: `--btn-surface`, `--btn-surface-hi`, `--btn-bar-w`, `--btn-fg`, `--btn-accent`. Override anywhere by redefining those tokens (e.g. theme-per-room via `:root[data-room="OCO-201"]`).
+
+---
+
+## Original Recommendation (preserved for reference): **#3 Hairline Schematic** with #5's reduced-motion discipline merged in
 
 **Why #3:**
 - Camera page is going to be visually busy (live RTSP feed + transparent PTZ overlay + tracking + zoom + presets). Buttons should step out of the way until needed, then bloom unmistakably. #3's "near-invisible at rest, glow when active" is the only style that actively defers to the video.

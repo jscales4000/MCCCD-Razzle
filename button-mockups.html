@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AA140 — 10 Button Style Mockups</title>
+<style>
+  /* === SHARED CONTEXT (mimics the panel's glass-card aesthetic) === */
+  :root {
+    --color-accent: #38bdf8;
+    --color-success: #22c55e;
+    --color-copy: #e2e8f0;
+    --color-copy-soft: #94a3b8;
+    --color-copy-muted: #64748b;
+    --color-border: rgba(148, 163, 184, 0.22);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: var(--color-copy);
+    background:
+      radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent 28%),
+      radial-gradient(circle at top right, rgba(14,165,233,0.12), transparent 30%),
+      linear-gradient(180deg, #020617 0%, #0f172a 100%);
+    min-height: 100vh;
+    padding: 24px 24px 80px;
+  }
+
+  .page-header {
+    max-width: 1280px;
+    margin: 0 auto 24px;
+    padding: 24px 28px;
+    background: linear-gradient(180deg, rgba(15,23,42,0.96), rgba(15,23,42,0.82));
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    box-shadow: 0 18px 48px rgba(2,6,23,0.35);
+  }
+  .page-header h1 { margin: 0 0 6px; font-size: 26px; font-weight: 700; letter-spacing: 0.01em; }
+  .page-header .sub { margin: 0; color: var(--color-copy-soft); font-size: 14px; line-height: 1.5; }
+  .nav { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .nav a {
+    padding: 6px 12px;
+    color: var(--color-copy);
+    text-decoration: none;
+    background: rgba(15,23,42,0.6);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .nav a:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .nav a.recommended { border-color: var(--color-success); color: #bbf7d0; }
+
+  .style-card {
+    max-width: 1280px;
+    margin: 32px auto;
+    padding: 28px;
+    background: linear-gradient(180deg, rgba(15,23,42,0.96), rgba(15,23,42,0.82));
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    box-shadow: 0 18px 48px rgba(2,6,23,0.35);
+  }
+  .style-card.recommended {
+    border-color: var(--color-success);
+    box-shadow: 0 18px 48px rgba(2,6,23,0.35), 0 0 0 1px rgba(34,197,94,0.2);
+  }
+  .style-card-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .style-card-header h2 { margin: 0; font-size: 22px; font-weight: 700; }
+  .style-card-header .author { color: var(--color-copy-muted); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .style-card-header .badge {
+    padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.4); color: #bbf7d0;
+  }
+  .style-card .description { margin: 0 0 20px; color: var(--color-copy-soft); font-size: 14px; line-height: 1.55; max-width: 800px; }
+
+  .demo-grid {
+    background: rgba(15,23,42,0.5);
+    border: 1px solid rgba(148,163,184,0.15);
+    border-radius: 10px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  .demo-cell { display: flex; flex-direction: column; gap: 10px; }
+  .demo-label {
+    color: var(--color-copy-muted); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+  /* === STYLE 1: CONSOLE BEZEL === */
+  .style-1 .btn {
+    min-height: 56px; min-width: 56px; padding: 0 18px;
+    font: 600 15px/1 "Inter", system-ui, sans-serif;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: #e2e8f0; background: rgba(30,41,59,0.55);
+    border: 1px solid rgba(148,163,184,0.25); border-radius: 4px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 1px 0 rgba(0,0,0,0.4);
+    transition: background 120ms ease, border-color 120ms ease, transform 80ms ease, box-shadow 80ms ease;
+    cursor: pointer;
+  }
+  .style-1 .btn.active {
+    border: 2px solid var(--color-accent);
+    background: rgba(34,211,238,0.12); color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px rgba(34,211,238,0.35);
+  }
+  .style-1 .btn:active { transform: translateY(1px); background: rgba(15,23,42,0.85); box-shadow: inset 0 2px 6px rgba(0,0,0,0.5); }
+  .style-1 .icon-btn {
+    width: 48px; height: 48px; background: transparent; border: none;
+    color: #ffffff; border-radius: 4px; display: inline-grid; place-items: center; cursor: pointer;
+    transition: background 120ms ease, transform 80ms ease;
+  }
+  .style-1 .icon-btn:active { transform: scale(0.92); background: rgba(0,0,0,0.35); }
+  .style-1 .icon-btn.active { background: rgba(34,211,238,0.18); box-shadow: inset 0 0 0 2px var(--color-accent); }
+  .style-1 .btn.primary {
+    min-height: 84px; padding: 0 28px; font-size: 18px;
+    background: linear-gradient(180deg, rgba(34,211,238,0.22), rgba(34,211,238,0.08));
+    border: 2px solid var(--color-accent); color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 0 24px rgba(34,211,238,0.25);
+  }
+  .style-1 .btn.danger { border: 1px solid rgba(248,113,113,0.6); background: rgba(127,29,29,0.45); color: #fecaca; }
+  .style-1 .btn.ghost { background: transparent; border: 1px solid rgba(148,163,184,0.3); color: #cbd5e1; }
+
+  /* === STYLE 2: SIGNAL TILE === */
+  .style-2 .btn {
+    position: relative; min-height: 56px; min-width: 56px; padding: 0 16px 0 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: 500 15px/1.1 "Inter", system-ui, sans-serif;
+    color: #f1f5f9; background: rgba(30,41,59,0.5);
+    border: 1px solid rgba(148,163,184,0.18); border-radius: 8px;
+    overflow: hidden; cursor: pointer;
+    transition: background 140ms ease, transform 80ms ease;
+  }
+  .style-2 .btn::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 4px;
+    background: rgba(148,163,184,0.4);
+    transition: width 180ms cubic-bezier(0.2,0.8,0.2,1), background 140ms ease;
+  }
+  .style-2 .btn.active {
+    background: rgba(34,211,238,0.14); color: #ffffff; border-color: rgba(34,211,238,0.45);
+  }
+  .style-2 .btn.active::before {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(34,211,238,0.35), rgba(34,211,238,0.05));
+  }
+  .style-2 .btn:active { transform: scale(0.97); background: rgba(15,23,42,0.7); }
+  .style-2 .icon-btn {
+    width: 48px; height: 48px; display: inline-grid; place-items: center;
+    color: #ffffff; background: transparent; border: none; border-radius: 8px; cursor: pointer;
+    transition: transform 80ms ease, background 140ms ease;
+  }
+  .style-2 .icon-btn:active { transform: scale(0.9); }
+  .style-2 .icon-btn.active { background: rgba(34,211,238,0.18); outline: 1px solid rgba(34,211,238,0.5); }
+  .style-2 .btn.primary {
+    min-height: 88px; padding: 0 32px 0 36px; font-size: 19px; font-weight: 600;
+    background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.4);
+  }
+  .style-2 .btn.primary::before { width: 8px; background: var(--color-accent); }
+  .style-2 .btn.danger { background: rgba(127,29,29,0.4); border-color: rgba(248,113,113,0.45); color: #fecaca; }
+  .style-2 .btn.danger::before { background: #f87171; }
+  .style-2 .btn.ghost { background: transparent; border-color: rgba(148,163,184,0.25); color: #cbd5e1; }
+  .style-2 .btn.ghost::before { background: rgba(148,163,184,0.35); }
+
+  /* === STYLE 3: HAIRLINE SCHEMATIC (RECOMMENDED) === */
+  .style-3 .btn {
+    position: relative; min-height: 56px; min-width: 56px; padding: 0 20px;
+    font: 500 14px/1 "Inter", system-ui, sans-serif;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #cbd5e1; background: rgba(15,23,42,0.35);
+    border: 1px solid rgba(148,163,184,0.22); border-radius: 6px;
+    transition: color 140ms ease, border-color 140ms ease, box-shadow 200ms ease, transform 70ms ease, background 140ms ease;
+    cursor: pointer;
+  }
+  .style-3 .btn::before, .style-3 .btn::after {
+    content: ""; position: absolute; width: 8px; height: 8px;
+    border: 1px solid transparent; transition: border-color 200ms ease, width 200ms ease, height 200ms ease;
+    pointer-events: none;
+  }
+  .style-3 .btn::before { top: -1px; left: -1px; border-top-color: rgba(148,163,184,0.45); border-left-color: rgba(148,163,184,0.45); }
+  .style-3 .btn::after { bottom: -1px; right: -1px; border-bottom-color: rgba(148,163,184,0.45); border-right-color: rgba(148,163,184,0.45); }
+  .style-3 .btn.active {
+    color: #ffffff; border-color: var(--color-accent); background: rgba(34,211,238,0.1);
+    box-shadow: 0 0 0 1px var(--color-accent), 0 0 16px rgba(34,211,238,0.35);
+  }
+  .style-3 .btn.active::before, .style-3 .btn.active::after { border-color: var(--color-accent); width: 12px; height: 12px; }
+  .style-3 .btn:active { transform: scale(0.96); background: rgba(34,211,238,0.2); box-shadow: inset 0 0 0 1px var(--color-accent); }
+  .style-3 .icon-btn {
+    width: 48px; height: 48px; background: transparent; border: none;
+    color: #ffffff; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer;
+    transition: background 140ms ease, transform 70ms ease, box-shadow 200ms ease;
+  }
+  .style-3 .icon-btn:active { transform: scale(0.88); background: rgba(34,211,238,0.18); box-shadow: 0 0 0 1px var(--color-accent); }
+  .style-3 .icon-btn.active { background: rgba(34,211,238,0.14); box-shadow: 0 0 0 1px var(--color-accent), 0 0 12px rgba(34,211,238,0.4); }
+  .style-3 .btn.primary {
+    min-height: 88px; padding: 0 36px; font-size: 17px; font-weight: 600; color: #ffffff;
+    background: rgba(34,211,238,0.08); border: 1px solid var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent), 0 0 16px rgba(34,211,238,0.35);
+  }
+  .style-3 .btn.primary::before, .style-3 .btn.primary::after { border-color: var(--color-accent); width: 14px; height: 14px; }
+  .style-3 .btn.danger { color: #fecaca; border-color: rgba(248,113,113,0.55); background: rgba(127,29,29,0.25); }
+  .style-3 .btn.danger::before, .style-3 .btn.danger::after { border-color: rgba(248,113,113,0.45); }
+  .style-3 .btn.ghost { color: #94a3b8; background: transparent; border-color: rgba(148,163,184,0.22); }
+
+  /* === STYLE 4: BEVELED INDUSTRIAL === */
+  .style-4 .btn {
+    min-height: 56px; min-width: 56px; padding: 14px 22px;
+    border-radius: 6px; border: 2px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06); color: #F5F7FA;
+    font: 600 17px/1.2 "Inter", system-ui, sans-serif; letter-spacing: 0.02em; cursor: pointer;
+    transition: background 80ms ease-out, border-color 80ms ease-out;
+  }
+  .style-4 .btn.active { background: rgba(255,255,255,0.10); border-color: #F5F7FA; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25); }
+  .style-4 .btn:active { background: rgba(0,0,0,0.35); border-width: 3px; border-color: #FFFFFF; box-shadow: inset 0 3px 6px rgba(0,0,0,0.6); }
+  .style-4 .btn.primary { min-height: 72px; min-width: 72px; background: #0A66C2; border-color: #1976D2; color: #FFFFFF; box-shadow: 0 0 0 2px rgba(52,199,89,0.35); }
+  .style-4 .btn.danger { background: #D13438; border-color: #E85E62; color: #FFFFFF; }
+  .style-4 .btn.danger::before { content: "⚠ "; font-weight: 700; }
+  .style-4 .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.30); color: #F5F7FA; }
+  .style-4 .icon-btn { min-width: 48px; min-height: 48px; background: transparent; border: 2px solid transparent; color: #FFFFFF; border-radius: 6px; display: inline-grid; place-items: center; cursor: pointer; }
+  .style-4 .icon-btn.active { border-color: rgba(255,255,255,0.50); background: rgba(255,255,255,0.10); }
+  .style-4 .icon-btn:active { border-color: #FFFFFF; border-width: 3px; background: rgba(0,0,0,0.30); }
+
+  /* === STYLE 5: SOFT SLAB === */
+  .style-5 .btn {
+    min-height: 56px; min-width: 56px; padding: 14px 24px;
+    border: 1px solid rgba(255,255,255,0.22); border-bottom: 3px solid rgba(255,255,255,0.22);
+    border-radius: 10px; background: rgba(255,255,255,0.08); color: #FFFFFF;
+    font: 600 17px/1.2 "Inter", system-ui, sans-serif; cursor: pointer;
+    transition: background 100ms ease, border-bottom-width 60ms ease;
+  }
+  .style-5 .btn.active { background: rgba(255,255,255,0.16); border-bottom-color: #FFFFFF; border-bottom-width: 4px; }
+  .style-5 .btn:active { background: rgba(0,0,0,0.40); border-bottom-width: 1px; padding-top: 16px; padding-bottom: 12px; box-shadow: inset 0 4px 8px rgba(0,0,0,0.55); }
+  .style-5 .btn.primary { min-height: 76px; min-width: 76px; font-size: 19px; border-bottom-width: 5px; border-bottom-color: #34C759; background: rgba(52,199,89,0.18); }
+  .style-5 .btn.danger { background: #E5484D; border-color: #B5363B; border-bottom-color: #B5363B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .style-5 .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.25); border-bottom-color: rgba(255,255,255,0.40); }
+  .style-5 .icon-btn { min-width: 48px; min-height: 48px; background: transparent; border: none; color: #FFFFFF; border-radius: 10px; position: relative; display: inline-grid; place-items: center; cursor: pointer; }
+  .style-5 .icon-btn::after { content: ""; position: absolute; inset: auto 8px 4px 8px; height: 2px; background: transparent; transition: background 100ms ease; }
+  .style-5 .icon-btn.active::after { background: rgba(255,255,255,0.70); }
+  .style-5 .icon-btn:active { background: rgba(0,0,0,0.30); box-shadow: inset 0 3px 6px rgba(0,0,0,0.5); }
+
+  /* === STYLE 6: FLAT STENCIL === */
+  .style-6 .btn {
+    min-height: 56px; min-width: 56px; padding: 14px 22px;
+    background: transparent; border: 2px solid #FFFFFF; border-radius: 4px;
+    color: #FFFFFF; font: 700 16px/1.15 "Inter", system-ui, sans-serif;
+    text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer;
+    transition: background 70ms linear, border-width 70ms linear;
+  }
+  .style-6 .btn.active { background: rgba(255,255,255,0.92); color: #0A0E1A; border-color: #FFFFFF; }
+  .style-6 .btn:active { border-width: 4px; padding: 12px 20px; background: rgba(255,255,255,0.15); box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4); }
+  .style-6 .btn.primary { background: #1F6FEB; border-color: #1F6FEB; color: #FFFFFF; }
+  .style-6 .btn.danger { background: #DA3633; border-color: #DA3633; color: #FFFFFF; }
+  .style-6 .btn.danger::before { content: "✕ "; font-weight: 900; }
+  .style-6 .btn.ghost { background: transparent; border-color: #C9D1D9; color: #C9D1D9; }
+  .style-6 .icon-btn { min-width: 48px; min-height: 48px; background: transparent; border: 2px solid transparent; color: #FFFFFF; border-radius: 4px; display: inline-grid; place-items: center; cursor: pointer; }
+  .style-6 .icon-btn.active { border-color: #FFFFFF; background: rgba(255,255,255,0.08); }
+  .style-6 .icon-btn:active { border-color: #FFFFFF; border-width: 4px; background: rgba(0,0,0,0.30); }
+  .style-6 .btn.power-on { min-height: 80px; min-width: 80px; font-size: 18px; background: transparent; border: 3px solid #34C759; color: #34C759; box-shadow: inset 0 0 0 1px #34C759; }
+  .style-6 .btn.power-on::after { content: " ●"; color: #34C759; }
+
+  /* === STYLE 7: QUAD SLATE === */
+  .style-7 .btn {
+    min-height: 56px; padding: 0 20px; background: #1a2230;
+    border: 1px solid rgba(255,255,255,0.08); border-bottom: 3px solid transparent;
+    border-radius: 4px; color: #e8edf2;
+    font: 500 15px/1 "Inter", system-ui, sans-serif; letter-spacing: 0.02em;
+    transition: background 120ms ease, border-color 120ms ease; cursor: pointer;
+  }
+  .style-7 .btn:active { background: #0f1620; transform: translateY(1px); }
+  .style-7 .btn.active { background: #1f2a3a; border-bottom-color: var(--color-accent); color: #ffffff; }
+  .style-7 .btn.primary { background: #1a3a5c; border-color: #2a527d; min-width: 88px; border-bottom-color: var(--color-accent); }
+  .style-7 .btn.danger { background: #6b1e2e; border-color: #8a2a3d; color: #fce8ec; }
+  .style-7 .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.12); }
+  .style-7 .icon-btn { width: 48px; height: 48px; background: transparent; border: 1px solid transparent; border-radius: 4px; color: #ffffff; display: grid; place-items: center; cursor: pointer; }
+  .style-7 .icon-btn:active { background: rgba(255,255,255,0.06); }
+  .style-7 .icon-btn.active { background: rgba(0, 200, 220, 0.12); border-color: var(--color-accent); }
+
+  /* === STYLE 8: LECTERN BRASS === */
+  .style-8 .btn {
+    min-height: 56px; padding: 0 22px;
+    background: linear-gradient(180deg, #1c2431 0%, #161d28 100%);
+    border: 1px solid rgba(255,255,255,0.10); border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    color: #e8edf2; font: 600 15px/1 "Inter", system-ui, sans-serif;
+    transition: all 100ms ease-out; cursor: pointer;
+  }
+  .style-8 .btn:active { background: #0e141d; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); transform: translateY(1px); }
+  .style-8 .btn.active {
+    background: linear-gradient(180deg, #1f2a3a 0%, #182232 100%);
+    border-left: 4px solid var(--color-accent); padding-left: 18px; color: #ffffff;
+  }
+  .style-8 .btn.primary {
+    background: linear-gradient(180deg, #1f4470 0%, #173356 100%);
+    border-color: #2d5a8a; min-width: 96px; min-height: 64px; font-size: 16px;
+  }
+  .style-8 .btn.danger { background: linear-gradient(180deg, #8a2a3d 0%, #6b1e2e 100%); border-color: #a3344a; color: #ffffff; font-weight: 700; }
+  .style-8 .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.14); box-shadow: none; }
+  .style-8 .icon-btn { width: 48px; height: 48px; background: transparent; border-radius: 6px; color: #ffffff; display: grid; place-items: center; cursor: pointer; }
+  .style-8 .icon-btn:active { background: rgba(255,255,255,0.08); }
+  .style-8 .icon-btn.active { background: rgba(0, 200, 220, 0.14); box-shadow: inset 0 0 0 1px var(--color-accent); }
+  .style-8 .btn.power-on {
+    min-width: 96px; min-height: 64px;
+    background: linear-gradient(180deg, #2f2a22 0%, #241f18 100%);
+    border-left: 4px solid var(--color-accent); font-size: 16px;
+  }
+
+  /* === STYLE 9: ETCHED GLASS === */
+  .style-9 .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-width: 96px; min-height: 56px; padding: 0 20px;
+    font: 600 18px/1 "Inter", system-ui, sans-serif; letter-spacing: 0.02em;
+    color: #E6F4F8; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10); border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.45), 0 1px 0 rgba(0,0,0,0.55);
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, transform 60ms ease;
+  }
+  .style-9 .btn.active {
+    background: rgba(0,200,230,0.18); color: #FFFFFF; border-color: #00C8E6;
+    box-shadow: inset 0 0 0 1px rgba(0,200,230,0.45), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 12px rgba(0,200,230,0.25);
+  }
+  .style-9 .btn:active { transform: translateY(1px); }
+  .style-9 .btn.primary {
+    min-width: 140px; min-height: 84px; padding: 0 28px; font-size: 22px;
+    background: linear-gradient(180deg, rgba(0,200,230,0.22), rgba(0,200,230,0.08));
+    border-color: #00C8E6;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 0 24px rgba(0,200,230,0.35);
+  }
+  .style-9 .btn.danger { border-color: rgba(229,72,77,0.55); color: #FFD7D8; background: rgba(229,72,77,0.10); }
+  .style-9 .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.18); box-shadow: none; }
+  .style-9 .icon-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; padding: 0; background: transparent; border: none; color: #FFFFFF; font-size: 24px; line-height: 1; border-radius: 10px; cursor: pointer; transition: background 120ms ease, transform 60ms ease; }
+  .style-9 .icon-btn:active { transform: scale(0.96); }
+  .style-9 .icon-btn.active { background: transparent; box-shadow: inset 0 0 0 1px rgba(0,200,230,0.55); color: #FFFFFF; }
+
+  /* === STYLE 10: HAIRLINE INDUSTRIAL === */
+  .style-10 .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-width: 96px; min-height: 56px; padding: 0 20px;
+    font: 700 17px/1 "Inter", system-ui, sans-serif; text-transform: uppercase; letter-spacing: 0.06em;
+    color: #DDE9EE; background: transparent;
+    border: 1px solid #2A3A42; border-radius: 6px; cursor: pointer;
+    transition: background 80ms linear, color 80ms linear, border-color 80ms linear;
+  }
+  .style-10 .btn.active { background: #00C8E6; color: #001318; border-color: #00C8E6; }
+  .style-10 .btn:active { background: rgba(0,200,230,0.85); color: #001318; }
+  .style-10 .btn.primary {
+    min-width: 140px; min-height: 84px; padding: 0 28px; font-size: 20px;
+    background: #00C8E6; color: #001318; border-color: #00C8E6;
+  }
+  .style-10 .btn.danger { color: #FFD7D8; border-color: #E5484D; }
+  .style-10 .btn.danger.active, .style-10 .btn.danger:active { background: #E5484D; color: #FFFFFF; border-color: #E5484D; }
+  .style-10 .btn.ghost { border-color: rgba(255,255,255,0.22); color: #DDE9EE; }
+  .style-10 .icon-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; padding: 0; background: transparent; border: none; color: #FFFFFF; font-size: 26px; line-height: 1; border-radius: 6px; cursor: pointer; transition: opacity 80ms linear, transform 60ms ease; }
+  .style-10 .icon-btn:active { transform: scale(0.94); opacity: 0.85; }
+  .style-10 .icon-btn.active { background: transparent; color: #FFFFFF; box-shadow: inset 0 -2px 0 0 #00C8E6; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>AA140 — 10 Unified Button Style Mockups</h1>
+  <p class="sub">
+    Click the buttons in each style to feel the press states. The recommended pick (#3 Hairline Schematic) is already applied to the live panel UI in <code>src/global.css</code>. To switch, copy the CSS from any other style here and replace the <code>/* === Hairline Schematic Buttons === */</code> block.
+  </p>
+  <p class="sub" style="margin-top:8px;">
+    Hard constraints honored across all 10: <strong>no pill shapes</strong> (radius ≤ 16px), icon buttons are transparent with flat-white icons, ≥ 56×56 / 48×48 touch targets, distinct active state, enlarged primary variant for the system-on Power button.
+  </p>
+  <nav class="nav">
+    <a href="#s1">1 · Console Bezel</a>
+    <a href="#s2">2 · Signal Tile</a>
+    <a href="#s3" class="recommended">3 · Hairline Schematic ★</a>
+    <a href="#s4">4 · Beveled Industrial</a>
+    <a href="#s5">5 · Soft Slab</a>
+    <a href="#s6">6 · Flat Stencil</a>
+    <a href="#s7">7 · Quad Slate</a>
+    <a href="#s8">8 · Lectern Brass</a>
+    <a href="#s9">9 · Etched Glass</a>
+    <a href="#s10">10 · Hairline Industrial</a>
+  </nav>
+</div>
+
+<!-- A reusable demo block — same markup for each style. The wrapping `.style-N` class scopes the CSS. -->
+<script>
+function renderDemo() {
+  return `
+    <div class="demo-grid">
+      <div class="demo-cell">
+        <span class="demo-label">Source picker (text buttons)</span>
+        <div class="demo-row">
+          <button class="btn">Room PC</button>
+          <button class="btn active">Ext PC</button>
+          <button class="btn">AirMedia</button>
+          <button class="btn">Laptop</button>
+        </div>
+      </div>
+      <div class="demo-cell">
+        <span class="demo-label">Icon buttons (transparent flat white)</span>
+        <div class="demo-row">
+          <button class="icon-btn" aria-label="Audio">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/><path d="M16 8c1.5 1 2.5 2.5 2.5 4S17.5 15 16 16" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-btn active" aria-label="Audio active">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn" aria-label="Mirror">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M7 17L17 7M17 7H10M17 7V14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-btn" aria-label="PTZ up">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 5l7 8H5z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="demo-cell">
+        <span class="demo-label">Power (default)</span>
+        <div class="demo-row">
+          <button class="btn">⏻ Power</button>
+        </div>
+      </div>
+      <div class="demo-cell">
+        <span class="demo-label">Power-on enlarged (.primary)</span>
+        <div class="demo-row">
+          <button class="btn primary">⏻ System On</button>
+        </div>
+      </div>
+      <div class="demo-cell">
+        <span class="demo-label">Modal — destructive + cancel</span>
+        <div class="demo-row">
+          <button class="btn ghost">No, keep on</button>
+          <button class="btn danger">Yes, shut down</button>
+        </div>
+      </div>
+      <div class="demo-cell">
+        <span class="demo-label">Tracking radio (active = middle)</span>
+        <div class="demo-row">
+          <button class="btn">People</button>
+          <button class="btn active">Group</button>
+          <button class="btn">VX AutoSwitch</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+const styles = [
+  { n: 1, name: "Console Bezel", author: "UI Designer", desc: "Hard-edged 4px-radius rectangles with milled-aluminum bezel feel and a cyan stroke that thickens (1→2px) on activation. Broadcast-console heritage." },
+  { n: 2, name: "Signal Tile", author: "UI Designer", desc: "Flat 8px tiles with a chunky left-edge accent bar that fills horizontally on activation. Borrowed from QSC / Symetrix DSP channel-strip surfaces." },
+  { n: 3, name: "Hairline Schematic", author: "UI Designer", desc: "Near-invisible at rest with corner-tick details that bloom into a cyan-glowing frame on active. Inspired by AutoCAD/Visio AV-rack schematics. Defers to live video. RECOMMENDED + APPLIED.", recommended: true },
+  { n: 4, name: "Beveled Industrial", author: "UX Architect", desc: "Double-border 6px construction with multi-modal pressed feedback (border thickens 2→3px + inset shadow + brighter color). Yellow focus ring at 11.2:1 contrast. Mixed-ability classroom focus." },
+  { n: 5, name: "Soft Slab", author: "UX Architect", desc: "10px radius with a 3px bottom-border accent that thickens (3→4px white) on active and collapses to 1px on press — \"physical compression\" metaphor. Calmer for 90-min lectures." },
+  { n: 6, name: "Flat Stencil", author: "UX Architect", desc: "Stripped-down 4px rectangles with uppercase + tracked typography. Active state inverts (white fill, dark text). Airport-signage legibility at distance." },
+  { n: 7, name: "Quad Slate", author: "Brand Guardian", desc: "Etched 4px tiles with a cyan bottom-border accent. MCCCD navy reserved for primary CTAs, burgundy for danger — institutional palette only at decision points." },
+  { n: 8, name: "Lectern Brass", author: "Brand Guardian", desc: "Beveled 6px with subtle gradients and a left-edge cyan bar on active. Lectern hardware / Ross Carbonite broadcast aesthetic. Warm-tinted power-on as a quiet ceremonial cue." },
+  { n: 9, name: "Etched Glass", author: "Frontend Dev", desc: "10px radius with embossed-glass inner highlight + outer drop shadow, cyan glow halo on active. Premium, content-first. Tokenized via 7 CSS custom properties." },
+  { n: 10, name: "Hairline Industrial", author: "Frontend Dev", desc: "Flat 1px hairline borders that fill solid cyan on active — unmistakable from across a 30-foot conference room. Bold, no-doubt-which-is-selected." }
+];
+
+document.body.insertAdjacentHTML('beforeend', styles.map(s => `
+  <article class="style-card style-${s.n}${s.recommended ? ' recommended' : ''}" id="s${s.n}">
+    <div class="style-card-header">
+      <h2>Style ${s.n}: ${s.name}</h2>
+      <span class="author">by ${s.author}</span>
+      ${s.recommended ? '<span class="badge">★ Recommended &amp; applied</span>' : ''}
+    </div>
+    <p class="description">${s.desc}</p>
+    ${renderDemo()}
+  </article>
+`).join(''));
+</script>
+
+</body>
+</html>

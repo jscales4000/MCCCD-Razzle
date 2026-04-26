@@ -249,19 +249,30 @@ The eight `layouts/*.svelte` files stay in the scaffold as reference but aren't 
 
 ## 11b. Button Styling
 
-Style **#3 Hairline Schematic** (UI Designer's mockup, with `prefers-reduced-motion` clamping merged in from #5):
+Style **#2 Signal Tile** (UI Designer's mockup) — picked over the originally recommended #3 Hairline Schematic because the channel-strip language reads more decisively at a distance and gives radio-group buttons (camera tracking modes, source pickers) an unambiguous "this is selected" gesture.
 
-- Base button: 1px hairline border on faint dark surface. Corner ticks via `::before`/`::after` pseudo-elements.
-- **Active:** cyan border + cyan glow + corner ticks bloom from 8×8 to 12×12.
-- **Pressed:** `scale(0.96)` + inset cyan stroke.
-- **Icon buttons (`.icon-btn`):** transparent background, flat-white icon glyph, circular outline only on press / active. **No colored borders, no fills.**
-- **Primary / power-on (`.btn.primary`):** ~88px tall, cyan border + glow, larger corner ticks (14×14). Used for the Power button when system is ON, and for confirmation-modal primary CTAs.
-- **Danger (`.btn.danger`):** red corner ticks + red border, used for "Yes / Shutdown" in the confirm modal.
-- **Ghost (`.btn.ghost`):** faint border only — used for "No / Cancel" in the modal.
+- **Base button:** 8px-radius rectangle on a 50%-opacity slate surface. A 4px-wide left-edge accent bar (subtle gray at rest) sits inside the button's `overflow: hidden` clip.
+- **Hover:** surface lifts slightly (65% opacity) and the left bar tints cyan.
+- **Active:** the left bar fills horizontally from 4px → 100% with a cyan-fade gradient, button background tints cyan (14% opacity), border lightens to cyan, text goes pure white.
+- **Pressed:** `scale(0.97)` + darker background (`rgba(15,23,42,0.7)`).
+- **Icon buttons (`.icon-btn`):** transparent background, flat-WHITE icon glyph, 8px-radius rectangle (not circular). On active: soft cyan tint background (18% opacity) with a 1px cyan outline. **No colored borders or fills on the icon itself.**
+- **Primary / power-on (`.btn.primary`):** 88px tall, cyan border (40% opacity), 8px-wide cyan left bar (always solid). Used for the Power button when `systemPowerFb` is true, and for confirmation-modal primary CTAs.
+- **Danger (`.btn.danger`):** red left bar + red border + dark-red translucent fill. Used for "Yes / Shutdown" in the confirm modal.
+- **Ghost (`.btn.ghost`):** transparent fill, faint gray left bar — used for "No / Cancel" in the modal.
 - **Reduced-motion:** all button transitions clamp to 0ms when `prefers-reduced-motion: reduce`.
-- **No pills:** every interactive surface uses `border-radius ≤ 6px`. The occupancy indicator and online-status block use the same border-radius (no `9999px` capsules).
+- **No pills:** every interactive surface uses `border-radius ≤ 8px`. The occupancy indicator and online-status block use the same border-radius (no `9999px` capsules).
 
-Full CSS lives in `src/global.css` under the `/* AA140 Hairline Schematic button system */` block. Mockups doc with all 10 considered options at [`docs/Lessons-Learned/Button-Style-Mockups.md`](../../Lessons-Learned/Button-Style-Mockups.md).
+CSS tokens (in `:root`):
+```
+--btn-fg: #f1f5f9
+--btn-surface: rgba(30, 41, 59, 0.5)
+--btn-surface-hi: rgba(51, 65, 85, 0.65)
+--btn-bar-w: 4px
+--btn-accent: var(--color-accent)        /* cyan #38bdf8 */
+--radius-button: 8px
+```
+
+Full CSS lives in `src/global.css` under the `/* === Signal Tile button system (#2) === */` block. Mockups doc with all 10 considered options at [`docs/Lessons-Learned/Button-Style-Mockups.md`](../../Lessons-Learned/Button-Style-Mockups.md). Standalone interactive viewer at the project root: [`button-mockups.html`](../../../../button-mockups.html).
 
 ## 12. Signal Contract Additions
 
