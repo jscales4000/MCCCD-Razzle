@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-export type PageName = 'home' | 'cameras';
+export type PageName = 'home' | 'cameras' | 'settings';
 
 export const currentPage = writable<PageName>('home');
 

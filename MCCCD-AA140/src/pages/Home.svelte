@@ -5,14 +5,17 @@
   import {
     panelOnline,
     display1SourceFb, display2SourceFb, display3SourceFb,
+    display1PowerFb, display2PowerFb, display3PowerFb,
+    systemPowerFb,
     audioOutputSelectFb,
     micLavMuteFb, micHandheldMuteFb,
     occupancyState, shutdownCountdown,
   } from '../lib/stores/signals';
   import { goToPage } from '../lib/stores/page';
   import DisplayTile from '../components/DisplayTile.svelte';
+  import ConfirmShutdownModal from '../components/ConfirmShutdownModal.svelte';
 
-  // Preview dock (browser-dev only) — same pattern as the original scaffold App.svelte
+  // Preview dock (browser-dev only)
   const BASE_WIDTH = 1280;
   const BASE_HEIGHT = 800;
   const DEVICE_PROFILES = {
@@ -28,7 +31,9 @@
   let showPreviewDock = $state(false);
   let applyViewport = () => {};
 
-  // Mirror buttons fire pulse signals; SIMPL# does the actual one-shot copy
+  // Power confirmation modal
+  let showShutdownModal = $state(false);
+
   function mirrorD1ToD3() { pulseDigital(SIGNALS.d1MirrorToD3); }
   function mirrorD2ToD3() { pulseDigital(SIGNALS.d2MirrorToD3); }
 
@@ -41,15 +46,29 @@
   function toggleMaster() { pulseDigital(SIGNALS.muteAll); }
 
   function toggleLavMute() {
-    const next = !$micLavMuteFb;
-    publishDigital(SIGNALS.micLavMute, next);
+    publishDigital(SIGNALS.micLavMute, !$micLavMuteFb);
   }
   function toggleHandheldMute() {
-    const next = !$micHandheldMuteFb;
-    publishDigital(SIGNALS.micHandheldMute, next);
+    publishDigital(SIGNALS.micHandheldMute, !$micHandheldMuteFb);
   }
 
-  function systemPower() { pulseDigital(SIGNALS.displayPower); }
+  function powerButtonTapped() {
+    if ($systemPowerFb) {
+      // System is ON — open confirmation modal (do not pulse yet)
+      showShutdownModal = true;
+    } else {
+      // System is OFF — power up immediately, no confirmation
+      pulseDigital(SIGNALS.displayPower);
+    }
+  }
+
+  function confirmShutdown() {
+    showShutdownModal = false;
+    pulseDigital(SIGNALS.displayPower);
+  }
+  function cancelShutdown() {
+    showShutdownModal = false;
+  }
 
   function occupancyText(): string {
     if ($occupancyState === 1) return 'Occupied';
@@ -57,9 +76,9 @@
     return 'Vacant';
   }
   function occupancyClass(): string {
-    if ($occupancyState === 1) return 'occupancy-pill ok';
-    if ($occupancyState === 2) return 'occupancy-pill warn';
-    return 'occupancy-pill idle';
+    if ($occupancyState === 1) return 'occupancy-block ok';
+    if ($occupancyState === 2) return 'occupancy-block warn';
+    return 'occupancy-block idle';
   }
 
   function setPreviewMode(mode: keyof typeof DEVICE_PROFILES) {
@@ -113,6 +132,7 @@
         label="Display 1"
         sourceSetSignal={SIGNALS.display1Source}
         activeSourceFb={$display1SourceFb}
+        powerOn={$display1PowerFb}
         audioActive={$audioOutputSelectFb === 1}
         onAudioToggle={() => setAudioOutput(1)}
         onMirrorToD3={mirrorD1ToD3}
@@ -121,6 +141,7 @@
         label="Display 2"
         sourceSetSignal={SIGNALS.display2Source}
         activeSourceFb={$display2SourceFb}
+        powerOn={$display2PowerFb}
         audioActive={$audioOutputSelectFb === 2}
         onAudioToggle={() => setAudioOutput(2)}
         onMirrorToD3={mirrorD2ToD3}
@@ -129,11 +150,23 @@
         label="Display 3"
         sourceSetSignal={SIGNALS.display3Source}
         activeSourceFb={$display3SourceFb}
+        powerOn={$display3PowerFb}
       />
     </main>
 
     <footer class="app-footer glass-card">
-      <button class="btn power-btn" onclick={systemPower}>⏻ Power</button>
+      <button
+        class="btn power-btn"
+        class:primary={$systemPowerFb}
+        onclick={powerButtonTapped}
+        aria-label={$systemPowerFb ? 'System on — tap to shut down' : 'System off — tap to power on'}
+      >
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M12 3v9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <path d="M6.5 7.5a8 8 0 1 0 11 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span>{$systemPowerFb ? 'System On' : 'Power'}</span>
+      </button>
 
       <div class="vol-group">
         <span class="footer-label">PROGRAM</span>
@@ -145,14 +178,29 @@
       <div class="mic-group">
         <span class="footer-label">MICS</span>
         <button class="btn footer-btn" class:active={$micLavMuteFb} onclick={toggleLavMute}>
-          {$micLavMuteFb ? '🔇 Lav' : 'Lav'}
+          {$micLavMuteFb ? 'Lav (muted)' : 'Lav'}
         </button>
         <button class="btn footer-btn" class:active={$micHandheldMuteFb} onclick={toggleHandheldMute}>
-          {$micHandheldMuteFb ? '🔇 Handheld' : 'Handheld'}
+          {$micHandheldMuteFb ? 'Handheld (muted)' : 'Handheld'}
         </button>
       </div>
 
-      <button class="btn camera-btn" onclick={() => goToPage('cameras')}>📷 Cameras</button>
+      <div class="nav-group">
+        <button class="btn nav-btn" onclick={() => goToPage('cameras')} aria-label="Open cameras page">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M4 7h4l2-2h4l2 2h4v12H4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+            <circle cx="12" cy="13" r="3.6" stroke="currentColor" stroke-width="1.8" fill="none"/>
+          </svg>
+          <span>Cameras</span>
+        </button>
+        <button class="btn nav-btn" onclick={() => goToPage('settings')} aria-label="Open settings page">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
     </footer>
 
   </div>
@@ -164,13 +212,20 @@
         <span>{viewportLabel} · {scaleLabel}</span>
       </div>
       <div class="preview-actions">
-        <button class="preview-button btn" class:active={previewMode === 'auto'} onclick={() => setPreviewMode('auto')}>Auto</button>
-        <button class="preview-button btn" class:active={previewMode === 'tsw770'} onclick={() => setPreviewMode('tsw770')}>770</button>
-        <button class="preview-button btn" class:active={previewMode === 'tsw1070'} onclick={() => setPreviewMode('tsw1070')}>1070</button>
+        <button class="btn preview-button" class:active={previewMode === 'auto'} onclick={() => setPreviewMode('auto')}>Auto</button>
+        <button class="btn preview-button" class:active={previewMode === 'tsw770'} onclick={() => setPreviewMode('tsw770')}>770</button>
+        <button class="btn preview-button" class:active={previewMode === 'tsw1070'} onclick={() => setPreviewMode('tsw1070')}>1070</button>
       </div>
     </aside>
   {/if}
 </div>
+
+<ConfirmShutdownModal
+  open={showShutdownModal}
+  countdown={30}
+  onConfirm={confirmShutdown}
+  onCancel={cancelShutdown}
+/>
 
 <style>
   .layout-home {
@@ -186,36 +241,40 @@
     align-items: center;
     gap: 12px;
   }
-  .occupancy-pill {
-    padding: 6px 14px;
-    border-radius: 999px;
+
+  /* Occupancy block — explicitly NOT a pill (small radius, rectangular). */
+  .occupancy-block {
+    padding: 10px 14px;
+    border-radius: var(--radius-button);
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     border: 1px solid var(--color-border);
   }
-  .occupancy-pill.ok {
-    background: rgba(34, 197, 94, 0.15);
+  .occupancy-block.ok {
+    background: rgba(34, 197, 94, 0.12);
     border-color: rgba(34, 197, 94, 0.4);
     color: #bbf7d0;
   }
-  .occupancy-pill.warn {
-    background: rgba(239, 68, 68, 0.15);
+  .occupancy-block.warn {
+    background: rgba(239, 68, 68, 0.12);
     border-color: rgba(239, 68, 68, 0.4);
     color: #fecaca;
   }
-  .occupancy-pill.idle {
+  .occupancy-block.idle {
     background: rgba(245, 158, 11, 0.12);
     border-color: rgba(245, 158, 11, 0.3);
     color: #fed7aa;
   }
+
   .display-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     min-height: 0;
   }
+
   .footer-label {
     color: var(--color-copy-muted);
     font-size: 11px;
@@ -224,17 +283,17 @@
     text-transform: uppercase;
     margin-right: 8px;
   }
-  .power-btn { height: 64px; padding: 0 24px; font-size: 18px; font-weight: 700; }
-  .vol-group, .mic-group {
+
+  .power-btn {
+    min-width: 132px;
+  }
+
+  .vol-group, .mic-group, .nav-group {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .footer-btn { height: 56px; padding: 0 16px; font-size: 14px; font-weight: 600; }
-  .footer-btn.active {
-    background: rgba(239, 68, 68, 0.25);
-    border-color: rgba(239, 68, 68, 0.5);
-    color: #fecaca;
-  }
-  .camera-btn { height: 64px; padding: 0 24px; font-size: 18px; font-weight: 700; margin-left: auto; }
+  .footer-btn { min-height: 56px; padding: 0 16px; font-size: 13px; }
+  .nav-btn { min-height: 56px; padding: 0 18px; font-size: 13px; }
+  .nav-group { margin-left: auto; }
 </style>

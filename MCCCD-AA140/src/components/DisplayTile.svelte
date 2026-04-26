@@ -1,11 +1,11 @@
 <script lang="ts">
   import { publishAnalog } from '../lib/CrComLib';
-  import { nvxAutoSwitchSrc } from '../lib/stores/signals';
 
   interface Props {
     label: string;             // "Display 1" | "Display 2" | "Display 3"
     sourceSetSignal: string;   // SIGNALS.display1Source / display2Source / display3Source
-    activeSourceFb: number;    // current source from feedback store (1..5, 0 = none)
+    activeSourceFb: number;    // current source from feedback store (1..4, 0 = none)
+    powerOn?: boolean;         // display power state (NVX D200 sink-connected)
     audioActive?: boolean;     // optional, only D1/D2
     onAudioToggle?: () => void; // optional, only D1/D2
     onMirrorToD3?: () => void;  // optional, only D1/D2
@@ -15,17 +15,17 @@
     label,
     sourceSetSignal,
     activeSourceFb,
+    powerOn = false,
     audioActive = false,
     onAudioToggle,
     onMirrorToD3
   }: Props = $props();
 
   const sources = [
-    { label: 'Room PC', value: 1 },
-    { label: 'Ext PC', value: 2 },
+    { label: 'Room PC',  value: 1 },
+    { label: 'Ext PC',   value: 2 },
     { label: 'AirMedia', value: 3 },
-    { label: 'HDMI', value: 4 },
-    { label: 'USB-C', value: 5 },
+    { label: 'Laptop',   value: 4 }, // NVX-384 auto-switch between HDMI + USB-C
   ];
 
   function selectSource(value: number) {
@@ -36,42 +36,44 @@
     const s = sources.find(s => s.value === activeSourceFb);
     return s ? s.label : '—';
   }
-
-  // Show NVX-384 auto-switch badge when user picked HDMI but USB-C is active (or vice versa)
-  function autoSwitchBadge(): string | null {
-    if (activeSourceFb !== 4 && activeSourceFb !== 5) return null;
-    const actual = $nvxAutoSwitchSrc; // 1=HDMI, 2=USB-C
-    if (activeSourceFb === 4 && actual === 2) return 'USB-C active';
-    if (activeSourceFb === 5 && actual === 1) return 'HDMI active';
-    return null;
-  }
 </script>
 
 <div class="glass-card display-tile" class:audio-active={audioActive}>
   <div class="tile-header">
     <div class="tile-meta">
-      <p class="tile-label">{label}</p>
+      <p class="tile-label">
+        <span class="power-dot" class:on={powerOn} title={powerOn ? 'Display ON' : 'Display OFF'}></span>
+        {label}
+      </p>
       <p class="tile-source">{activeLabel()}</p>
-      {#if autoSwitchBadge()}
-        <span class="autoswitch-badge">↳ {autoSwitchBadge()}</span>
-      {/if}
     </div>
     <div class="tile-actions">
       {#if onAudioToggle}
         <button
-          class="btn icon-btn"
+          class="icon-btn"
           class:active={audioActive}
           onclick={onAudioToggle}
           aria-pressed={audioActive}
+          aria-label="Route room audio to this display"
           title="Route room audio to this display"
-        >🔊</button>
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/>
+            <path d="M16 8c1.5 1 2.5 2.5 2.5 4S17.5 15 16 16" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </button>
       {/if}
       {#if onMirrorToD3}
         <button
-          class="btn icon-btn mirror-btn"
+          class="icon-btn"
           onclick={onMirrorToD3}
+          aria-label="Mirror this display to Display 3"
           title="Mirror this display to Display 3"
-        >↗</button>
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M7 17L17 7M17 7H10M17 7V14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       {/if}
     </div>
   </div>
@@ -89,7 +91,6 @@
 
 <style>
   .display-tile {
-    border-radius: var(--radius-panel);
     padding: 18px;
     display: flex;
     flex-direction: column;
@@ -100,19 +101,36 @@
   .display-tile.audio-active {
     border-color: rgba(34, 197, 94, 0.4);
   }
+
   .tile-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
   }
+  .tile-meta { min-width: 0; }
   .tile-label {
     margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-copy-muted);
+  }
+  .power-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.35);
+    flex-shrink: 0;
+    transition: background 180ms ease, box-shadow 180ms ease;
+  }
+  .power-dot.on {
+    background: var(--color-success);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
   }
   .tile-source {
     margin: 0;
@@ -120,35 +138,12 @@
     font-weight: 700;
     color: var(--color-accent);
   }
-  .autoswitch-badge {
-    display: inline-block;
-    margin-top: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: rgba(56, 189, 248, 0.15);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    color: #bae6fd;
-  }
+
   .tile-actions {
     display: flex;
-    gap: 6px;
+    gap: 4px;
   }
-  .icon-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-    border-radius: 10px;
-  }
-  .icon-btn.active {
-    background: var(--color-accent);
-    color: #0b1220;
-  }
-  .mirror-btn {
-    color: #fbbf24;
-    border-color: rgba(251, 191, 36, 0.3);
-  }
+
   .source-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -159,6 +154,13 @@
   .source-btn {
     font-size: 14px;
     font-weight: 600;
-    min-height: 56px;
+    min-height: 64px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .display-tile,
+    .power-dot {
+      transition: none;
+    }
   }
 </style>

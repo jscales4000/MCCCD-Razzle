@@ -1,10 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { publishAnalog, pulseDigital } from '../lib/CrComLib';
+  import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import { panelOnline, camTrackingModeFb } from '../lib/stores/signals';
   import { goToPage } from '../lib/stores/page';
   import { CAMERAS, rtspMain, type Camera } from '../lib/cameras';
+  import PresetButton from '../components/PresetButton.svelte';
 
   let activeCamera: Camera = $state(CAMERAS[0]);
 
@@ -12,9 +13,9 @@
   let tiltSpeed = $state(50);
 
   const presets = [
-    { idx: 1, name: 'DEFAULT' },
-    { idx: 2, name: 'PRIMARY' },
-    { idx: 3, name: 'SECONDARY' },
+    { idx: 1, name: 'Default' },
+    { idx: 2, name: 'Primary' },
+    { idx: 3, name: 'Secondary' },
   ];
 
   // Preview dock (browser-dev only)
@@ -37,17 +38,32 @@
     publishAnalog(SIGNALS.cameraSelect, cam.selectIndex);
   }
 
-  function ptz(dir: 'up' | 'down' | 'left' | 'right') {
+  // PTZ press-and-hold (rising edge starts movement, falling edge stops)
+  function ptzStart(dir: 'up' | 'down' | 'left' | 'right') {
     const map = {
       up: SIGNALS.ptzUp, down: SIGNALS.ptzDown,
       left: SIGNALS.ptzLeft, right: SIGNALS.ptzRight,
     };
-    pulseDigital(map[dir]);
+    publishDigital(map[dir], true);
+  }
+  function ptzEnd(dir: 'up' | 'down' | 'left' | 'right') {
+    const map = {
+      up: SIGNALS.ptzUp, down: SIGNALS.ptzDown,
+      left: SIGNALS.ptzLeft, right: SIGNALS.ptzRight,
+    };
+    publishDigital(map[dir], false);
+  }
+
+  // Zoom press-and-hold
+  function zoomStart(dir: 'in' | 'out') {
+    publishDigital(dir === 'in' ? SIGNALS.zoomIn : SIGNALS.zoomOut, true);
+  }
+  function zoomEnd(dir: 'in' | 'out') {
+    publishDigital(dir === 'in' ? SIGNALS.zoomIn : SIGNALS.zoomOut, false);
   }
 
   function recallPreset(i: number) { publishAnalog(SIGNALS.shotPresetRecall, i); }
   function savePreset(i: number)   { publishAnalog(SIGNALS.shotPresetSave, i); }
-  function deletePreset(i: number) { publishAnalog(SIGNALS.shotPresetDelete, i); }
 
   function sendToVtc() { pulseDigital(SIGNALS.camSendToVtc); }
 
@@ -131,10 +147,62 @@
             zindex="0"
           ></ch5-video>
           <div class="ptz-overlay">
-            <button class="ptz-btn up"    onclick={() => ptz('up')}    aria-label="Tilt up">▲</button>
-            <button class="ptz-btn left"  onclick={() => ptz('left')}  aria-label="Pan left">◀</button>
-            <button class="ptz-btn right" onclick={() => ptz('right')} aria-label="Pan right">▶</button>
-            <button class="ptz-btn down"  onclick={() => ptz('down')}  aria-label="Tilt down">▼</button>
+            <button
+              class="icon-btn ptz-btn ptz-up"
+              aria-label="Tilt up"
+              onmousedown={() => ptzStart('up')}
+              onmouseup={() => ptzEnd('up')}
+              onmouseleave={() => ptzEnd('up')}
+              ontouchstart={(e) => { e.preventDefault(); ptzStart('up'); }}
+              ontouchend={(e) => { e.preventDefault(); ptzEnd('up'); }}
+              ontouchcancel={() => ptzEnd('up')}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path d="M12 5l7 8H5z" fill="currentColor"/>
+              </svg>
+            </button>
+            <button
+              class="icon-btn ptz-btn ptz-left"
+              aria-label="Pan left"
+              onmousedown={() => ptzStart('left')}
+              onmouseup={() => ptzEnd('left')}
+              onmouseleave={() => ptzEnd('left')}
+              ontouchstart={(e) => { e.preventDefault(); ptzStart('left'); }}
+              ontouchend={(e) => { e.preventDefault(); ptzEnd('left'); }}
+              ontouchcancel={() => ptzEnd('left')}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path d="M5 12l8-7v14z" fill="currentColor"/>
+              </svg>
+            </button>
+            <button
+              class="icon-btn ptz-btn ptz-right"
+              aria-label="Pan right"
+              onmousedown={() => ptzStart('right')}
+              onmouseup={() => ptzEnd('right')}
+              onmouseleave={() => ptzEnd('right')}
+              ontouchstart={(e) => { e.preventDefault(); ptzStart('right'); }}
+              ontouchend={(e) => { e.preventDefault(); ptzEnd('right'); }}
+              ontouchcancel={() => ptzEnd('right')}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path d="M19 12l-8-7v14z" fill="currentColor"/>
+              </svg>
+            </button>
+            <button
+              class="icon-btn ptz-btn ptz-down"
+              aria-label="Tilt down"
+              onmousedown={() => ptzStart('down')}
+              onmouseup={() => ptzEnd('down')}
+              onmouseleave={() => ptzEnd('down')}
+              ontouchstart={(e) => { e.preventDefault(); ptzStart('down'); }}
+              ontouchend={(e) => { e.preventDefault(); ptzEnd('down'); }}
+              ontouchcancel={() => ptzEnd('down')}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path d="M12 19l-7-8h14z" fill="currentColor"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -144,20 +212,54 @@
         <div class="speed-block">
           <label class="speed-label">
             <span>Pan Speed</span>
-            <input type="range" class="speed-slider" min="1" max="100" bind:value={panSpeed} aria-label="Pan speed" />
-            <span class="speed-readout">{panSpeed}</span>
+            <input type="range" class="slider" min="1" max="100" bind:value={panSpeed} aria-label="Pan speed" />
+            <span class="readout">{panSpeed}</span>
           </label>
           <label class="speed-label">
             <span>Tilt Speed</span>
-            <input type="range" class="speed-slider" min="1" max="100" bind:value={tiltSpeed} aria-label="Tilt speed" />
-            <span class="speed-readout">{tiltSpeed}</span>
+            <input type="range" class="slider" min="1" max="100" bind:value={tiltSpeed} aria-label="Tilt speed" />
+            <span class="readout">{tiltSpeed}</span>
           </label>
         </div>
 
-        <button class="btn vtc-btn" onclick={sendToVtc}>▶ Send to VTC</button>
+        <div class="zoom-block">
+          <span class="block-label">Zoom</span>
+          <button
+            class="icon-btn zoom-btn"
+            aria-label="Zoom in"
+            onmousedown={() => zoomStart('in')}
+            onmouseup={() => zoomEnd('in')}
+            onmouseleave={() => zoomEnd('in')}
+            ontouchstart={(e) => { e.preventDefault(); zoomStart('in'); }}
+            ontouchend={(e) => { e.preventDefault(); zoomEnd('in'); }}
+            ontouchcancel={() => zoomEnd('in')}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M11 8v6M8 11h6M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </button>
+          <button
+            class="icon-btn zoom-btn"
+            aria-label="Zoom out"
+            onmousedown={() => zoomStart('out')}
+            onmouseup={() => zoomEnd('out')}
+            onmouseleave={() => zoomEnd('out')}
+            ontouchstart={(e) => { e.preventDefault(); zoomStart('out'); }}
+            ontouchend={(e) => { e.preventDefault(); zoomEnd('out'); }}
+            ontouchcancel={() => zoomEnd('out')}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M8 11h6M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </button>
+        </div>
+
+        <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>
 
         <div class="tracking-block">
-          <p class="panel-label">Tracking Mode</p>
+          <p class="block-label">Tracking Mode</p>
           <button class="btn tracking-btn" class:active={$camTrackingModeFb === 1} onclick={() => setTrackingMode(1)}>People</button>
           <button class="btn tracking-btn" class:active={$camTrackingModeFb === 2} onclick={() => setTrackingMode(2)}>Group</button>
           <button class="btn tracking-btn" class:active={$camTrackingModeFb === 3} onclick={() => setTrackingMode(3)}>VX AutoSwitch</button>
@@ -168,19 +270,17 @@
 
     <!-- Presets row -->
     <div class="presets-row glass-card">
-      <p class="panel-label presets-label">Shot Presets</p>
+      <p class="block-label presets-label">Shot Presets</p>
       <div class="presets-grid">
         {#each presets as p}
-          <div class="preset-slot">
-            <span class="preset-name">{p.name}</span>
-            <div class="preset-actions">
-              <button class="btn preset-btn" onclick={() => savePreset(p.idx)}>Save</button>
-              <button class="btn preset-btn" onclick={() => recallPreset(p.idx)}>Recall</button>
-              <button class="btn preset-btn" onclick={() => deletePreset(p.idx)}>Delete</button>
-            </div>
-          </div>
+          <PresetButton
+            label={p.name}
+            onRecall={() => recallPreset(p.idx)}
+            onSave={() => savePreset(p.idx)}
+          />
         {/each}
       </div>
+      <p class="hint-row">Tap to recall · Hold 3 seconds to save</p>
     </div>
 
   </div>
@@ -192,9 +292,9 @@
         <span>{viewportLabel} · {scaleLabel}</span>
       </div>
       <div class="preview-actions">
-        <button class="preview-button btn" class:active={previewMode === 'auto'} onclick={() => setPreviewMode('auto')}>Auto</button>
-        <button class="preview-button btn" class:active={previewMode === 'tsw770'} onclick={() => setPreviewMode('tsw770')}>770</button>
-        <button class="preview-button btn" class:active={previewMode === 'tsw1070'} onclick={() => setPreviewMode('tsw1070')}>1070</button>
+        <button class="btn preview-button" class:active={previewMode === 'auto'} onclick={() => setPreviewMode('auto')}>Auto</button>
+        <button class="btn preview-button" class:active={previewMode === 'tsw770'} onclick={() => setPreviewMode('tsw770')}>770</button>
+        <button class="btn preview-button" class:active={previewMode === 'tsw1070'} onclick={() => setPreviewMode('tsw1070')}>1070</button>
       </div>
     </aside>
   {/if}
@@ -203,27 +303,29 @@
 <style>
   .layout-cameras {
     display: grid;
-    grid-template-rows: 92px 1fr 140px;
+    grid-template-rows: 92px 1fr 168px;
     gap: 16px;
     width: 100%;
     height: 100%;
     padding: 20px;
   }
-  .back-btn { height: 56px; padding: 0 18px; font-size: 14px; font-weight: 700; margin-right: 16px; }
+  .back-btn { min-height: 56px; padding: 0 18px; font-size: 13px; margin-right: 16px; }
+
   .work-area {
     display: grid;
     grid-template-columns: 180px 1fr 240px;
     gap: 16px;
     min-height: 0;
   }
+
   .camera-sidebar {
-    border-radius: var(--radius-panel);
     padding: 18px;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  .panel-label {
+  .panel-label,
+  .block-label {
     margin: 0 0 4px;
     color: var(--color-copy-muted);
     font-size: 11px;
@@ -231,10 +333,12 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
+
   .camera-select-btn {
     text-align: left;
     padding: 12px 14px;
     height: auto;
+    min-height: 56px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -242,18 +346,19 @@
   }
   .camera-select-btn strong { font-size: 16px; font-weight: 700; }
   .camera-select-btn em { font-style: normal; font-size: 12px; color: var(--color-copy-muted); }
+
   .preview-panel {
-    border-radius: var(--radius-panel);
     padding: 18px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     min-height: 0;
   }
+
   .video-container {
     position: relative;
     flex: 1;
-    border-radius: 12px;
+    border-radius: var(--radius-button);
     overflow: hidden;
     background: #050d1a;
     border: 1px solid var(--color-border);
@@ -264,6 +369,8 @@
     height: 100%;
     display: block;
   }
+
+  /* Transparent PTZ overlay buttons — flat white icons, no colored borders. */
   .ptz-overlay {
     position: absolute;
     inset: 0;
@@ -272,39 +379,106 @@
   .ptz-btn {
     pointer-events: auto;
     position: absolute;
-    width: 64px;
-    height: 64px;
-    font-size: 24px;
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
+    width: 60px;
+    height: 60px;
+    color: #ffffff;
+    background: transparent;
+    border: none;
     border-radius: 50%;
-    backdrop-filter: blur(4px);
   }
-  .ptz-btn.up    { top: 12px; left: 50%; transform: translateX(-50%); }
-  .ptz-btn.down  { bottom: 12px; left: 50%; transform: translateX(-50%); }
-  .ptz-btn.left  { left: 12px; top: 50%; transform: translateY(-50%); }
-  .ptz-btn.right { right: 12px; top: 50%; transform: translateY(-50%); }
+  .ptz-btn:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.92);
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+  }
+  .ptz-up    { top: 12px; left: 50%; transform: translateX(-50%); }
+  .ptz-down  { bottom: 12px; left: 50%; transform: translateX(-50%); }
+  .ptz-up:active    { transform: translateX(-50%) scale(0.92); }
+  .ptz-down:active  { transform: translateX(-50%) scale(0.92); }
+  .ptz-left  { left: 12px; top: 50%; transform: translateY(-50%); }
+  .ptz-right { right: 12px; top: 50%; transform: translateY(-50%); }
+  .ptz-left:active  { transform: translateY(-50%) scale(0.92); }
+  .ptz-right:active { transform: translateY(-50%) scale(0.92); }
+
   .controls-panel {
-    border-radius: var(--radius-panel);
     padding: 18px;
     display: flex;
     flex-direction: column;
     gap: 18px;
   }
   .speed-block { display: flex; flex-direction: column; gap: 12px; }
-  .speed-label { display: grid; grid-template-columns: 1fr 1fr 36px; gap: 8px; align-items: center; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-copy-muted); }
-  .speed-slider { accent-color: var(--color-accent); }
-  .speed-readout { font-variant-numeric: tabular-nums; color: var(--color-copy-soft); }
-  .vtc-btn { height: 60px; font-size: 18px; font-weight: 700; background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.5); color: #bbf7d0; }
+  .speed-label {
+    display: grid;
+    grid-template-columns: 1fr 1fr 36px;
+    gap: 8px;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-copy-muted);
+  }
+  .slider {
+    accent-color: var(--color-accent);
+  }
+  .readout {
+    text-align: right;
+    color: var(--color-copy-soft);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .zoom-block {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .zoom-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .vtc-btn {
+    min-height: 60px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
   .tracking-block { display: flex; flex-direction: column; gap: 8px; }
-  .tracking-btn { height: 48px; text-align: left; padding: 0 14px; font-weight: 600; }
-  .tracking-btn.active { background: var(--color-accent); color: #0b1220; border-color: var(--color-accent); }
-  .presets-row { display: flex; gap: 16px; padding: 16px 22px; }
-  .presets-label { writing-mode: vertical-lr; transform: rotate(180deg); align-self: stretch; flex-shrink: 0; }
-  .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; flex: 1; }
-  .preset-slot { display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; border-radius: 10px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--color-border); }
-  .preset-name { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-copy-soft); }
-  .preset-actions { display: flex; gap: 6px; }
-  .preset-btn { flex: 1; height: 36px; font-size: 12px; font-weight: 600; }
+  .tracking-btn {
+    min-height: 48px;
+    text-align: left;
+    padding: 0 14px;
+    font-weight: 600;
+  }
+
+  .presets-row {
+    display: flex;
+    gap: 16px;
+    padding: 16px 22px;
+    align-items: stretch;
+  }
+  .presets-label {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+  .presets-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    flex: 1;
+  }
+  .hint-row {
+    align-self: center;
+    margin: 0;
+    color: var(--color-copy-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+  }
 </style>

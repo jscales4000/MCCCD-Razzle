@@ -81,6 +81,62 @@ export const SIGNALS = {
   camTrackingMode:    `${ROOM_NAME}.CamTrackingMode`,     // analog set (1/2/3)
   camTrackingModeFb:  `${ROOM_NAME}.CamTrackingModeFb`,
 
-  nvxAutoSwitchSrc:   `${ROOM_NAME}.NvxAutoSwitchSrc`,    // analog feedback (1=HDMI, 2=USB-C)
+  // (NvxAutoSwitchSrc dropped in v1.1 — HDMI/USB-C merged into single Laptop button)
+
+  // Camera zoom (v1.1)
+  zoomIn:             `${ROOM_NAME}.ZoomIn`,              // digital level (press-and-hold)
+  zoomOut:            `${ROOM_NAME}.ZoomOut`,             // digital level
+
+  // System power feedback + per-display power feedback (v1.1)
+  systemPowerFb:      `${ROOM_NAME}.SystemPowerFb`,       // digital fb (drives Power button enlarged variant)
+  display1PowerFb:    `${ROOM_NAME}.Display1PowerFb`,     // digital fb (NVX D200 sink-connected)
+  display2PowerFb:    `${ROOM_NAME}.Display2PowerFb`,
+  display3PowerFb:    `${ROOM_NAME}.Display3PowerFb`,
+
+  // Ceiling mic mutes (settings only; lav/handheld mute already declared above)
+  micCeiling1Mute:    `${ROOM_NAME}.MicCeiling1Mute`,
+  micCeiling1MuteFb:  `${ROOM_NAME}.MicCeiling1MuteFb`,
+  micCeiling2Mute:    `${ROOM_NAME}.MicCeiling2Mute`,
+  micCeiling2MuteFb:  `${ROOM_NAME}.MicCeiling2MuteFb`,
+  micCeiling3Mute:    `${ROOM_NAME}.MicCeiling3Mute`,
+  micCeiling3MuteFb:  `${ROOM_NAME}.MicCeiling3MuteFb`,
+
+  // Mic input gain trims (5 mics, command + feedback each)
+  micLavTrim:         `${ROOM_NAME}.MicLavTrim`,
+  micLavTrimFb:       `${ROOM_NAME}.MicLavTrimFb`,
+  micHandheldTrim:    `${ROOM_NAME}.MicHandheldTrim`,
+  micHandheldTrimFb:  `${ROOM_NAME}.MicHandheldTrimFb`,
+  micCeiling1Trim:    `${ROOM_NAME}.MicCeiling1Trim`,
+  micCeiling1TrimFb:  `${ROOM_NAME}.MicCeiling1TrimFb`,
+  micCeiling2Trim:    `${ROOM_NAME}.MicCeiling2Trim`,
+  micCeiling2TrimFb:  `${ROOM_NAME}.MicCeiling2TrimFb`,
+  micCeiling3Trim:    `${ROOM_NAME}.MicCeiling3Trim`,
+  micCeiling3TrimFb:  `${ROOM_NAME}.MicCeiling3TrimFb`,
+
+  // Mic line-out levels (5 mics, command + feedback each)
+  micLavLineOut:        `${ROOM_NAME}.MicLavLineOut`,
+  micLavLineOutFb:      `${ROOM_NAME}.MicLavLineOutFb`,
+  micHandheldLineOut:   `${ROOM_NAME}.MicHandheldLineOut`,
+  micHandheldLineOutFb: `${ROOM_NAME}.MicHandheldLineOutFb`,
+  micCeiling1LineOut:   `${ROOM_NAME}.MicCeiling1LineOut`,
+  micCeiling1LineOutFb: `${ROOM_NAME}.MicCeiling1LineOutFb`,
+  micCeiling2LineOut:   `${ROOM_NAME}.MicCeiling2LineOut`,
+  micCeiling2LineOutFb: `${ROOM_NAME}.MicCeiling2LineOutFb`,
+  micCeiling3LineOut:   `${ROOM_NAME}.MicCeiling3LineOut`,
+  micCeiling3LineOutFb: `${ROOM_NAME}.MicCeiling3LineOutFb`,
+
+  // Mic real-time level meters (5, feedback only)
+  micLavLevel:        `${ROOM_NAME}.MicLavLevel`,
+  micHandheldLevel:   `${ROOM_NAME}.MicHandheldLevel`,
+  micCeiling1Level:   `${ROOM_NAME}.MicCeiling1Level`,
+  micCeiling2Level:   `${ROOM_NAME}.MicCeiling2Level`,
+  micCeiling3Level:   `${ROOM_NAME}.MicCeiling3Level`,
+
+  // Mic connection / signal-present status (5, feedback only)
+  micLavConnected:        `${ROOM_NAME}.MicLavConnected`,
+  micHandheldConnected:   `${ROOM_NAME}.MicHandheldConnected`,
+  micCeiling1Connected:   `${ROOM_NAME}.MicCeiling1Connected`,
+  micCeiling2Connected:   `${ROOM_NAME}.MicCeiling2Connected`,
+  micCeiling3Connected:   `${ROOM_NAME}.MicCeiling3Connected`,
 } as const;
 
