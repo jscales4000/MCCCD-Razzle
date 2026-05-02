@@ -221,10 +221,10 @@
     font-weight: 700;
   }
 
-  /* DROP-VALID — body.any-armed triggers all tile-slots to show the dashed cyan tint. */
+  /* DROP-VALID — body.any-armed triggers all tile-slots to show the dashed accent tint. */
   :global(body.any-armed) .tile-slot {
     border-color: var(--color-accent-soft);
-    background-color: rgba(56, 189, 248, 0.10);
+    background-color: var(--color-accent-dim);
   }
 
   /* DROP-HOVERING — solid cyan + 1.02 scale; class added imperatively by router.ts. */

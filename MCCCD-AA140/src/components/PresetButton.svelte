@@ -138,7 +138,7 @@
   }
 
   .preset-btn.pressing {
-    background: rgba(56, 189, 248, 0.12);
+    background: var(--color-accent-dim);
     border-color: var(--color-accent);
   }
   .preset-btn.saved {

@@ -14,6 +14,8 @@
   --color-copy-muted: #64748b;
   --color-accent: #38bdf8;
   --color-accent-soft: rgba(56, 189, 248, 0.18);
+  --color-accent-dim: rgba(56, 189, 248, 0.10);
+  --color-accent-glow: rgba(56, 189, 248, 0.25);
   --color-success: #22c55e;
   --color-danger: #ef4444;
   --shadow-panel: 0 18px 48px rgba(2, 6, 23, 0.35);
@@ -48,9 +50,12 @@
 .theme-orange {
   --color-accent: #f5a623;
   --color-accent-soft: rgba(245, 166, 35, 0.18);
+  --color-accent-dim: rgba(245, 166, 35, 0.10);
+  --color-accent-glow: rgba(245, 166, 35, 0.25);
   --color-bg: #0d1b2e;
   --color-panel: rgba(13, 27, 46, 0.92);
   --color-panel-strong: rgba(15, 30, 53, 0.97);
+  --color-panel-soft: rgba(9, 18, 32, 0.90);
   --color-border: rgba(196, 122, 30, 0.28);
   --btn-accent: #f5a623;
 }
@@ -423,7 +428,7 @@ select {
 
 @keyframes chip-arm-pulse {
   0%, 100% { box-shadow: 0 0 0 1.5px var(--color-accent-soft), 0 0 18px var(--color-accent-soft); }
-  50%      { box-shadow: 0 0 0 1.5px var(--color-accent),       0 0 24px rgba(56, 189, 248, 0.35); }
+  50%      { box-shadow: 0 0 0 1.5px var(--color-accent),       0 0 24px var(--color-accent-glow); }
 }
 
 @keyframes thunk {
