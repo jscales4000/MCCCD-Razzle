@@ -58,18 +58,209 @@
   .rail { grid-area: rail; background: var(--panel-soft); border: 0.5px solid var(--border); border-radius: var(--rad); }
   .tiles { grid-area: tiles; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   footer { grid-area: footer; background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad); }
+  .hdr { height: 100%; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+  .hdr-copy .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--copy-muted); margin-bottom: 4px; }
+  .hdr-copy h1 { font-size: 28px; font-weight: 900; letter-spacing: -.02em; }
+  .hdr-right { display: flex; align-items: center; gap: 12px; }
+  .occ-block { padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border: 0.5px solid var(--border); }
+  .occ-block.ok { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.4); color: #bbf7d0; }
+  .status-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .status-pill.online { background: rgba(34,197,94,.1); border: 0.5px solid rgba(34,197,94,.25); color: #86efac; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+  .hdr-btn { background: transparent; border: 0.5px solid var(--border); color: var(--copy-soft); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .hdr-btn:hover { color: var(--copy); border-color: var(--accent-soft); }
+  .ftr { height: 100%; display: flex; align-items: stretch; padding: 12px 18px; gap: 12px; }
+  .ftr-power { display: flex; align-items: center; gap: 8px; padding: 0 18px; background: transparent; border: 0.5px solid var(--border); border-radius: var(--rad-sm); color: var(--copy-soft); cursor: pointer; font-size: 13px; font-weight: 700; }
+  .ftr-divider { width: 1px; background: var(--border); }
+  .ftr-mics, .ftr-vol { display: flex; align-items: center; gap: 8px; }
+  .ftr-label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--copy-muted); margin-right: 4px; }
+  .ftr-btn { padding: 0 16px; min-height: 56px; background: rgba(30,41,59,.5); border: 0.5px solid var(--border); border-radius: var(--rad-sm); color: var(--copy-soft); font-size: 13px; font-weight: 700; cursor: pointer; }
+  .ftr-btn:hover { color: var(--copy); }
+  .ftr-vol { margin-left: auto; }
+  .rail { display: flex; flex-direction: column; align-items: center; padding: 14px 6px 12px; gap: 10px; }
+  .rail-title { font-size: 10px; font-weight: 800; letter-spacing: .22em; color: var(--copy-muted); }
+  .rail-help { font-size: 9px; font-weight: 600; letter-spacing: .04em; color: var(--copy-muted); text-align: center; line-height: 1.3; margin-bottom: 6px; }
+  .chip {
+    width: 80px; min-height: 88px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 6px;
+    background: linear-gradient(180deg, rgba(30,41,59,.7), rgba(30,41,59,.5));
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--copy-soft);
+    cursor: pointer;
+    transition: border-color 160ms, color 160ms, transform 160ms, box-shadow 160ms;
+    touch-action: none;
+  }
+  .chip:hover { color: var(--copy); border-color: var(--accent-soft); }
+  .chip-ico { color: var(--copy-soft); transition: color 160ms; }
+  .chip:hover .chip-ico { color: var(--accent); }
+  .chip-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+  .tile {
+    background: var(--panel);
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 14px;
+    gap: 10px;
+    transition: border-color 200ms, box-shadow 200ms, transform 160ms;
+  }
+  .tile-head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: .18em; color: var(--copy-muted); }
+  .tile-power { width: 8px; height: 8px; border-radius: 50%; background: rgba(100,116,139,.3); }
+  .tile-power.on { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,.6); }
+  .tile-slot {
+    flex: 1;
+    border-radius: var(--rad-sm);
+    border: 1px dashed transparent;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 200px;
+    transition: border-color 200ms, background-color 200ms, transform 200ms;
+  }
+  .slot-empty { font-size: 13px; color: var(--copy-muted); font-style: italic; }
+  .landed-chip {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 18px 22px;
+    background: rgba(30,41,59,.5);
+    border: 0.5px solid var(--border);
+    border-radius: var(--rad-sm);
+    color: var(--copy);
+    transition: transform 200ms;
+  }
+  .landed-chip .chip-ico { color: var(--accent); }
+  .landed-label { font-size: 14px; font-weight: 700; }
+  .tile-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .ib { width: 36px; height: 36px; background: transparent; border: 0.5px solid var(--border); border-radius: 8px; color: var(--copy-soft); cursor: pointer; }
+  .ib:hover { color: var(--copy); }
 </style>
 </head>
 <body>
   <div class="stage">
-    <header></header>
-    <aside class="rail"></aside>
+    <header>
+      <div class="hdr">
+        <div class="hdr-copy">
+          <p class="eyebrow">CH5 Touch Panel</p>
+          <h1>AA140</h1>
+        </div>
+        <div class="hdr-right">
+          <div class="occ-block ok">Occupied</div>
+          <div class="status-pill online">
+            <span class="status-dot"></span>
+            <span>Online</span>
+          </div>
+          <button class="hdr-btn">Cameras</button>
+          <button class="hdr-btn">Settings</button>
+        </div>
+      </div>
+    </header>
+    <aside class="rail">
+      <p class="rail-title">SOURCES</p>
+      <p class="rail-help">long-press or tap to route</p>
+      <button class="chip" data-source="roomPc">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="12" rx="2"/>
+          <path d="M8 20h8M12 16v4"/>
+        </svg>
+        <span class="chip-label">Room PC</span>
+      </button>
+      <button class="chip" data-source="extPc">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="4" width="18" height="12" rx="2"/>
+          <path d="M8 20h8M12 16v4"/>
+          <circle cx="18" cy="9" r="1.4" fill="currentColor"/>
+        </svg>
+        <span class="chip-label">Ext PC</span>
+      </button>
+      <button class="chip" data-source="airMedia">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M5 12a10 10 0 0 1 14 0"/>
+          <path d="M8.5 15.5a5 5 0 0 1 7 0"/>
+          <circle cx="12" cy="19" r="1.3" fill="currentColor"/>
+        </svg>
+        <span class="chip-label">AirMedia</span>
+      </button>
+      <button class="chip" data-source="laptop">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+          <rect x="4" y="5" width="16" height="10" rx="1.5"/>
+          <path d="M2 19h20"/>
+        </svg>
+        <span class="chip-label">Laptop</span>
+      </button>
+    </aside>
     <main class="tiles">
-      <section class="tile" data-display="d1"></section>
-      <section class="tile" data-display="d2"></section>
-      <section class="tile" data-display="d3"></section>
+      <section class="tile" data-display="d1">
+        <div class="tile-head">
+          <span class="tile-power on"></span>
+          <span class="tile-label">DISPLAY 1</span>
+        </div>
+        <div class="tile-slot" data-routed="roomPc">
+          <div class="landed-chip">
+            <svg class="chip-ico" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="4" width="18" height="12" rx="2"/>
+              <path d="M8 20h8M12 16v4"/>
+            </svg>
+            <span class="landed-label">Room PC</span>
+          </div>
+        </div>
+        <div class="tile-actions">
+          <button class="ib" title="Route audio">🔊</button>
+          <button class="ib" title="Mirror to D3">⇗</button>
+        </div>
+      </section>
+      <section class="tile" data-display="d2">
+        <div class="tile-head">
+          <span class="tile-power on"></span>
+          <span class="tile-label">DISPLAY 2</span>
+        </div>
+        <div class="tile-slot" data-routed="airMedia">
+          <div class="landed-chip">
+            <svg class="chip-ico" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M5 12a10 10 0 0 1 14 0"/>
+              <path d="M8.5 15.5a5 5 0 0 1 7 0"/>
+              <circle cx="12" cy="19" r="1.3" fill="currentColor"/>
+            </svg>
+            <span class="landed-label">AirMedia</span>
+          </div>
+        </div>
+        <div class="tile-actions">
+          <button class="ib" title="Route audio">🔊</button>
+          <button class="ib" title="Mirror to D3">⇗</button>
+        </div>
+      </section>
+      <section class="tile" data-display="d3">
+        <div class="tile-head">
+          <span class="tile-power"></span>
+          <span class="tile-label">DISPLAY 3</span>
+        </div>
+        <div class="tile-slot" data-routed="">
+          <span class="slot-empty">— No source —</span>
+        </div>
+        <div class="tile-actions"></div>
+      </section>
     </main>
-    <footer></footer>
+    <footer>
+      <div class="ftr">
+        <button class="ftr-power">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M12 3v9"/>
+            <path d="M6.5 7.5a8 8 0 1 0 11 0"/>
+          </svg>
+          <span>Power</span>
+        </button>
+        <div class="ftr-divider"></div>
+        <div class="ftr-mics">
+          <span class="ftr-label">MICS</span>
+          <button class="ftr-btn">Lav</button>
+          <button class="ftr-btn">Handheld</button>
+        </div>
+        <div class="ftr-divider"></div>
+        <div class="ftr-vol">
+          <button class="ftr-btn">Vol −</button>
+          <button class="ftr-btn">Mute</button>
+          <button class="ftr-btn">Vol +</button>
+        </div>
+      </div>
+    </footer>
   </div>
   <script>
     /* state machine + handlers — added in later tasks */
