@@ -1,0 +1,305 @@
+import { writable, get } from 'svelte/store';
+import { publishAnalog } from '../CrComLib';
+import { SIGNALS } from '../contract';
+import {
+  display1SourceFb,
+  display2SourceFb,
+  display3SourceFb,
+} from './signals';
+
+// ── Types ──────────────────────────────────────────────────────────────
+export type SourceId = 'roomPc' | 'extPc' | 'airMedia' | 'laptop';
+export type DisplayId = 'd1' | 'd2' | 'd3';
+
+export const SOURCES: Record<SourceId, { label: string; value: 1 | 2 | 3 | 4 }> = {
+  roomPc:   { label: 'Room PC',  value: 1 },
+  extPc:    { label: 'Ext PC',   value: 2 },
+  airMedia: { label: 'AirMedia', value: 3 },
+  laptop:   { label: 'Laptop',   value: 4 },
+};
+
+const VALUE_TO_SOURCE: Record<number, SourceId> = {
+  1: 'roomPc',
+  2: 'extPc',
+  3: 'airMedia',
+  4: 'laptop',
+};
+
+// ── Reactive UI state (components subscribe) ───────────────────────────
+export const armedSource = writable<SourceId | null>(null);
+export const draggingSource = writable<SourceId | null>(null);
+export const cloneCoords = writable<{ x: number; y: number }>({ x: 0, y: 0 });
+
+// ── Imperative state (module-private) ──────────────────────────────────
+let suppressNextClick = false;
+let armedTimeoutId: ReturnType<typeof setTimeout> | null = null;
+let pressTimerId: ReturnType<typeof setTimeout> | null = null;
+let pressOriginEl: HTMLElement | null = null;
+let pressOriginX = 0;
+let pressOriginY = 0;
+let lastPointerX = 0;
+let lastPointerY = 0;
+let dragCloneEl: HTMLElement | null = null;
+
+const LONG_PRESS_MS = 250;
+const MOVE_CANCEL_THRESHOLD = 10;
+
+// ── Utility: read current routing of a display from feedback stores ────
+const FB_BY_DISPLAY = {
+  d1: display1SourceFb,
+  d2: display2SourceFb,
+  d3: display3SourceFb,
+} as const;
+
+const SET_SIGNAL_BY_DISPLAY: Record<DisplayId, string> = {
+  d1: SIGNALS.display1Source,
+  d2: SIGNALS.display2Source,
+  d3: SIGNALS.display3Source,
+};
+
+export function currentRouting(displayId: DisplayId): SourceId | null {
+  const v = get(FB_BY_DISPLAY[displayId]);
+  return VALUE_TO_SOURCE[v] ?? null;
+}
+
+// ── Clone DOM registration (called by DragCloneOverlay onMount) ────────
+export function registerCloneEl(el: HTMLElement | null): void {
+  dragCloneEl = el;
+}
+
+// ── Tile under pointer ─────────────────────────────────────────────────
+export function tileUnderPointer(x: number, y: number): HTMLElement | null {
+  const el = document.elementFromPoint(x, y);
+  return (el as HTMLElement | null)?.closest('.tile') as HTMLElement | null;
+}
+
+// ── State transitions ──────────────────────────────────────────────────
+export function armChip(sourceId: SourceId): void {
+  if (get(armedSource) === sourceId) { disarm(); return; }
+  if (get(armedSource)) disarm();
+  armedSource.set(sourceId);
+  document.body.classList.add('any-armed');
+  armedTimeoutId = setTimeout(() => disarm(), 4000);
+}
+
+export function disarm(): void {
+  if (!get(armedSource)) return;
+  armedSource.set(null);
+  if (armedTimeoutId) clearTimeout(armedTimeoutId);
+  armedTimeoutId = null;
+  document.body.classList.remove('any-armed');
+}
+
+export function routeSource(sourceId: SourceId, displayId: DisplayId): void {
+  // No-op if already routed there (read from feedback store)
+  if (currentRouting(displayId) === sourceId) return;
+  publishAnalog(SET_SIGNAL_BY_DISPLAY[displayId], SOURCES[sourceId].value);
+}
+
+export function shouldSuppressClick(): boolean {
+  if (!suppressNextClick) return false;
+  suppressNextClick = false;
+  return true;
+}
+
+// ── Drag flow ──────────────────────────────────────────────────────────
+export function startDrag(sourceId: SourceId, originEl: HTMLElement, x: number, y: number): void {
+  draggingSource.set(sourceId);
+  document.body.classList.add('any-armed');
+  originEl.classList.add('chip-ghost');
+  cloneCoords.set({ x, y });
+  // Annotate every tile-slot with the hover hint
+  const hint = `Drop to route ${SOURCES[sourceId].label}`;
+  document.querySelectorAll('.tile-slot').forEach(slot => {
+    (slot as HTMLElement).dataset.hoverHint = hint;
+  });
+}
+
+function updateHover(x: number, y: number): void {
+  const tile = tileUnderPointer(x, y);
+  document.querySelectorAll('.tile-slot').forEach(s => s.classList.remove('drop-hovering', 'drop-noop'));
+  if (!tile) return;
+  const slot = tile.querySelector('.tile-slot');
+  if (!slot) return;
+  const displayId = tile.dataset.display as DisplayId | undefined;
+  if (!displayId) return;
+  const dragging = get(draggingSource);
+  if (dragging && currentRouting(displayId) === dragging) {
+    slot.classList.add('drop-noop');
+  } else {
+    slot.classList.add('drop-hovering');
+  }
+}
+
+export function endDrag(x: number, y: number): void {
+  const tile = tileUnderPointer(x, y);
+  const sourceId = get(draggingSource);
+  // Find origin chip in the rail by its data-source attribute
+  const originEl = sourceId
+    ? (document.querySelector(`.chip[data-source="${sourceId}"]`) as HTMLElement | null)
+    : null;
+
+  document.querySelectorAll('.tile-slot').forEach(s => s.classList.remove('drop-hovering', 'drop-noop'));
+  document.body.classList.remove('any-armed');
+
+  let dropOnTile: HTMLElement | null = null;
+  if (tile && sourceId) {
+    const displayId = tile.dataset.display as DisplayId | undefined;
+    if (displayId && currentRouting(displayId) !== sourceId) {
+      dropOnTile = tile;
+    }
+  }
+
+  const clone = dragCloneEl;
+
+  if (dropOnTile && sourceId && clone) {
+    // PHASE 1: animate clone to slot center
+    const slot = dropOnTile.querySelector('.tile-slot') as HTMLElement | null;
+    if (slot) {
+      const slotRect = slot.getBoundingClientRect();
+      const targetX = slotRect.left + slotRect.width / 2 - 40;
+      const targetY = slotRect.top + slotRect.height / 2 - 44;
+      clone.classList.add('snapping');
+      clone.style.transform = `translate(${targetX}px, ${targetY}px) scale(1.0) rotate(0deg)`;
+      clone.style.opacity = '0';
+    }
+
+    setTimeout(() => {
+      // PHASE 2: publish signal (feedback re-renders the slot via DisplayTile)
+      const displayId = dropOnTile!.dataset.display as DisplayId;
+      routeSource(sourceId, displayId);
+
+      // PHASE 3: tile border flash (animation will retrigger on the live tile)
+      dropOnTile!.classList.remove('flash');
+      void dropOnTile!.offsetWidth;
+      dropOnTile!.classList.add('flash');
+
+      // The thunk on the newly-landed chip happens after Svelte re-renders the
+      // tile-slot; we can defer adding the .thunk class one more frame so the
+      // .landed-chip exists in the DOM. (Use rAF to wait for next paint.)
+      requestAnimationFrame(() => {
+        const newLanded = dropOnTile!.querySelector('.landed-chip') as HTMLElement | null;
+        if (newLanded) {
+          newLanded.classList.remove('thunk');
+          void newLanded.offsetWidth;
+          newLanded.classList.add('thunk');
+        }
+      });
+
+      cleanupAfterDrag(originEl);
+    }, 180);
+  } else {
+    // SNAP-BACK
+    if (!originEl || !clone) {
+      cleanupAfterDrag(originEl);
+      return;
+    }
+    const originRect = originEl.getBoundingClientRect();
+    clone.classList.add('snapping');
+    clone.style.transform = `translate(${originRect.left}px, ${originRect.top}px) scale(1.0) rotate(0deg)`;
+    clone.style.opacity = '0.3';
+
+    setTimeout(() => {
+      cleanupAfterDrag(originEl);
+    }, 220);
+  }
+
+  suppressNextClick = true;
+}
+
+function cleanupAfterDrag(originEl: HTMLElement | null): void {
+  originEl?.classList.remove('chip-ghost');
+  draggingSource.set(null);
+  // Reset clone DOM inline styles for next drag
+  if (dragCloneEl) {
+    dragCloneEl.classList.remove('snapping');
+    dragCloneEl.style.transform = '';
+    dragCloneEl.style.opacity = '';
+  }
+}
+
+// ── Pointer event handlers (called from SourceRail's chip handlers) ────
+function detachPointerListeners(): void {
+  document.removeEventListener('pointermove', onPointerMove);
+  document.removeEventListener('pointerup', onPointerUp);
+  document.removeEventListener('pointercancel', onPointerCancel);
+}
+
+export function chipPointerDown(e: PointerEvent, chipEl: HTMLElement, sourceId: SourceId): void {
+  if (e.button !== undefined && e.button !== 0) return;
+  // Multi-touch / re-entry guard
+  if (get(draggingSource) || pressTimerId) return;
+  suppressNextClick = false;
+  pressOriginEl = chipEl;
+  pressOriginX = lastPointerX = e.clientX;
+  pressOriginY = lastPointerY = e.clientY;
+
+  pressTimerId = setTimeout(() => {
+    if (get(armedSource)) disarm();
+    startDrag(sourceId, chipEl, lastPointerX, lastPointerY);
+    pressTimerId = null;
+  }, LONG_PRESS_MS);
+
+  document.addEventListener('pointermove', onPointerMove);
+  document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerCancel);
+}
+
+export function onPointerMove(e: PointerEvent): void {
+  lastPointerX = e.clientX;
+  lastPointerY = e.clientY;
+  if (get(draggingSource)) {
+    cloneCoords.set({ x: e.clientX, y: e.clientY });
+    updateHover(e.clientX, e.clientY);
+    return;
+  }
+  if (pressTimerId) {
+    const dx = Math.abs(e.clientX - pressOriginX);
+    const dy = Math.abs(e.clientY - pressOriginY);
+    if (dx > MOVE_CANCEL_THRESHOLD || dy > MOVE_CANCEL_THRESHOLD) {
+      clearTimeout(pressTimerId);
+      pressTimerId = null;
+      document.removeEventListener('pointermove', onPointerMove);
+    }
+  }
+}
+
+export function onPointerUp(e: PointerEvent): void {
+  detachPointerListeners();
+  if (pressTimerId) {
+    clearTimeout(pressTimerId);
+    pressTimerId = null;
+    pressOriginEl = null;
+    return;
+  }
+  if (get(draggingSource)) {
+    endDrag(e.clientX, e.clientY);
+  }
+  pressOriginEl = null;
+}
+
+export function onPointerCancel(_e: PointerEvent): void {
+  detachPointerListeners();
+  if (pressTimerId) {
+    clearTimeout(pressTimerId);
+    pressTimerId = null;
+    pressOriginEl = null;
+    return;
+  }
+  if (get(draggingSource)) {
+    // Force snap-back: pass coords outside any tile
+    endDrag(-1, -1);
+  }
+  pressOriginEl = null;
+}
+
+// ── Click-outside disarm (attached once on module load) ────────────────
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    if (!get(armedSource)) return;
+    const target = e.target as Element | null;
+    const onChip = target?.closest('.chip');
+    const onTile = target?.closest('.tile');
+    if (!onChip && !onTile) disarm();
+  });
+}
