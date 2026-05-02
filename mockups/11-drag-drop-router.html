@@ -379,6 +379,14 @@ body.any-armed .tile-slot {
       routeSource(sourceId, displayId);
     });
   });
+
+  /* Tapping outside the rail and outside any tile disarms. */
+  document.addEventListener('click', e => {
+    if (!appState.armedSource) return;
+    const onChip = e.target.closest('.chip');
+    const onTile = e.target.closest('.tile');
+    if (!onChip && !onTile) disarm();
+  });
   </script>
 </body>
 </html>
