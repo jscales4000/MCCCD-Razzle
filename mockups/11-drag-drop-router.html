@@ -132,6 +132,25 @@
   .tile-actions { display: flex; gap: 6px; justify-content: flex-end; }
   .ib { width: 36px; height: 36px; background: transparent; border: 0.5px solid var(--border); border-radius: 8px; color: var(--copy-soft); cursor: pointer; }
   .ib:hover { color: var(--copy); }
+
+/* ── ARMED state on a chip ──────────────────────────────────────────── */
+.chip-armed {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--accent-soft), 0 0 18px var(--accent-soft);
+  color: var(--copy);
+  animation: chip-arm-pulse 1.5s ease-in-out infinite;
+}
+.chip-armed .chip-ico { color: var(--accent); }
+@keyframes chip-arm-pulse {
+  0%, 100% { box-shadow: 0 0 0 1.5px var(--accent-soft), 0 0 18px var(--accent-soft); }
+  50%      { box-shadow: 0 0 0 1.5px var(--accent),       0 0 24px rgba(56,189,248,.35); }
+}
+
+/* ── DROP-VALID — every tile lights up while a chip is armed ────────── */
+body.any-armed .tile-slot {
+  border-color: var(--accent-soft);
+  background-color: var(--accent-dim);
+}
 </style>
 </head>
 <body>
@@ -263,7 +282,103 @@
     </footer>
   </div>
   <script>
-    /* state machine + handlers — added in later tasks */
+  /* ── Source metadata (id → label + SVG markup) ────────────────────── */
+  const SOURCES = {
+    roomPc:   { label: 'Room PC',  svg: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>' },
+    extPc:    { label: 'Ext PC',   svg: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="18" cy="9" r="1.4" fill="currentColor"/>' },
+    airMedia: { label: 'AirMedia', svg: '<path d="M5 12a10 10 0 0 1 14 0" stroke-linecap="round"/><path d="M8.5 15.5a5 5 0 0 1 7 0" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/>' },
+    laptop:   { label: 'Laptop',   svg: '<rect x="4" y="5" width="16" height="10" rx="1.5" stroke-linejoin="round"/><path d="M2 19h20" stroke-linejoin="round"/>' },
+  };
+
+  /* ── State ────────────────────────────────────────────────────────── */
+  const appState = {
+    armedSource: null,        // 'roomPc' | 'extPc' | 'airMedia' | 'laptop' | null
+    armedSince: 0,            // ms timestamp; used for the 4s arm timeout
+    armedTimeoutId: null,     // setTimeout handle
+    draggingSource: null,     // (used in Task 5)
+    suppressNextClick: false, // set by endDrag (Task 5) so click after drag is ignored
+    routing: { d1: 'roomPc', d2: 'airMedia', d3: null },  // current routing
+  };
+
+  /* ── DOM helpers ──────────────────────────────────────────────────── */
+  function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+  function $(sel, root = document)  { return root.querySelector(sel); }
+
+  /* Render the landed chip (or empty placeholder) inside a tile slot. */
+  function renderSlot(displayId) {
+    const slot = $(`.tile[data-display="${displayId}"] .tile-slot`);
+    const sourceId = appState.routing[displayId];
+    slot.dataset.routed = sourceId || '';
+    if (!sourceId) {
+      slot.innerHTML = '<span class="slot-empty">— No source —</span>';
+      return;
+    }
+    const meta = SOURCES[sourceId];
+    slot.innerHTML = `
+      <div class="landed-chip">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8">${meta.svg}</svg>
+        <span class="landed-label">${meta.label}</span>
+      </div>
+    `;
+  }
+
+  /* ── State transitions ────────────────────────────────────────────── */
+  function armChip(sourceId) {
+    if (appState.armedSource === sourceId) { disarm(); return; }
+    if (appState.armedSource) disarm();
+    appState.armedSource = sourceId;
+    appState.armedSince = Date.now();
+    document.body.classList.add('any-armed');
+    $(`.chip[data-source="${sourceId}"]`).classList.add('chip-armed');
+    appState.armedTimeoutId = setTimeout(() => disarm(), 4000);
+  }
+
+  function disarm() {
+    if (!appState.armedSource) return;
+    $(`.chip[data-source="${appState.armedSource}"]`)?.classList.remove('chip-armed');
+    appState.armedSource = null;
+    appState.armedSince = 0;
+    if (appState.armedTimeoutId) clearTimeout(appState.armedTimeoutId);
+    appState.armedTimeoutId = null;
+    document.body.classList.remove('any-armed');
+  }
+
+  function routeSource(sourceId, displayId) {
+    if (appState.routing[displayId] === sourceId) return; // no-op
+    appState.routing[displayId] = sourceId;
+    renderSlot(displayId);
+  }
+
+  /* If a click is the synthetic event the browser fires after a pointerup
+     at the end of a drag, swallow it so we don't accidentally re-arm or
+     re-route. Task 5's endDrag sets this flag; Task 3 always reads it. */
+  function shouldSuppressClick() {
+    if (!appState.suppressNextClick) return false;
+    appState.suppressNextClick = false;
+    return true;
+  }
+
+  /* ── Wire chip taps ───────────────────────────────────────────────── */
+  $$('.chip').forEach(chip => {
+    chip.addEventListener('click', e => {
+      if (shouldSuppressClick()) return;
+      const sourceId = chip.dataset.source;
+      if (appState.armedSource === sourceId) { disarm(); return; }
+      armChip(sourceId);
+    });
+  });
+
+  /* ── Wire tile taps (route when armed) ────────────────────────────── */
+  $$('.tile').forEach(tile => {
+    tile.addEventListener('click', e => {
+      if (shouldSuppressClick()) return;
+      if (!appState.armedSource) return;
+      const sourceId = appState.armedSource;
+      const displayId = tile.dataset.display;
+      disarm();
+      routeSource(sourceId, displayId);
+    });
+  });
   </script>
 </body>
 </html>
