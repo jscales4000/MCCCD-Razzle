@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MCCCD AA140 — UI Mockup Gallery</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--copy:#e2e8f0;--muted:#64748b;--soft:#94a3b8;
+    --border:rgba(148,163,184,.15);--panel:rgba(12,20,36,.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{min-height:100vh;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;padding:40px;}
+  body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:900px;height:500px;background:radial-gradient(ellipse,rgba(245,166,35,.06),transparent 70%);pointer-events:none;}
+
+  .page-header{max-width:1100px;margin:0 auto 36px;text-align:center;}
+  .ph-eye{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .ph-title{font-size:32px;font-weight:900;letter-spacing:-.02em;margin-bottom:8px;}
+  .ph-title span{color:var(--accent);}
+  .ph-sub{font-size:14px;color:var(--soft);max-width:600px;margin:0 auto;}
+
+  .grid{
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;
+  }
+
+  .card{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:14px;
+    overflow:hidden;text-decoration:none;color:inherit;
+    transition:border-color 200ms,box-shadow 200ms,transform 200ms;
+    display:flex;flex-direction:column;
+  }
+  .card:hover{
+    border-color:rgba(245,166,35,.4);
+    box-shadow:0 0 0 1px rgba(245,166,35,.1),0 12px 40px rgba(0,0,0,.4);
+    transform:translateY(-2px);
+  }
+
+  .card-preview{
+    height:160px;
+    overflow:hidden;position:relative;
+    background:#050d1a;
+  }
+  .card-preview iframe{
+    width:1280px;height:800px;
+    border:none;transform-origin:top left;
+    transform:scale(0.25);
+    pointer-events:none;
+  }
+  .card-preview-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(12,20,36,.9));}
+
+  .card-body{padding:16px 18px;flex:1;display:flex;flex-direction:column;gap:6px;}
+  .card-num{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);}
+  .card-name{font-size:16px;font-weight:800;}
+  .card-desc{font-size:12px;color:var(--soft);line-height:1.55;flex:1;}
+  .card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+  .tag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:5px;background:rgba(245,166,35,.08);border:0.5px solid rgba(245,166,35,.2);color:var(--accent);}
+  .tag-green{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:#86efac;}
+  .tag-star{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fcd34d;}
+
+  .open-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 14px;border-radius:8px;background:var(--adim);border:0.5px solid rgba(245,166,35,.28);color:var(--accent);font-size:12px;font-weight:700;text-decoration:none;transition:background 140ms;}
+  .open-btn:hover{background:rgba(245,166,35,.22);}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <p class="ph-eye">MCCCD AA140 Touchpanel · BMAD Session</p>
+  <h1 class="ph-title">UI Upgrade <span>Mockup Gallery</span></h1>
+  <p class="ph-sub">17 distinct concepts at 1280×800 — layouts, pages &amp; states from splash to mixer to routing. Click any card to open full-size.</p>
+</div>
+
+<div class="grid">
+
+  <a class="card" href="01-edge-rail.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="01-edge-rail.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 01</p>
+      <p class="card-name">Edge Rail</p>
+      <p class="card-desc">Replaces horizontal header nav with a 72px vertical left rail. Frees vertical space for larger display tiles. Status bar compresses to a single thin info strip.</p>
+      <div class="card-tags"><span class="tag">Layout</span><span class="tag">Navigation</span></div>
+      <a class="open-btn" href="01-edge-rail.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="02-full-bleed-tiles.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="02-full-bleed-tiles.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 02</p>
+      <p class="card-name">Full-Bleed Tiles</p>
+      <p class="card-desc">Source buttons become full-bleed flush cells filling the tile — no wasted padding. Source name hero at top in 24px bold. Active state: top-edge sweep bar.</p>
+      <div class="card-tags"><span class="tag">Tiles</span><span class="tag">Sources</span></div>
+      <a class="open-btn" href="02-full-bleed-tiles.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="03-source-card-grid.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="03-source-card-grid.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 03</p>
+      <p class="card-name">Source Card Grid</p>
+      <p class="card-desc">Each source button gets a unique device icon (monitor, wifi, laptop). Icon + label kills ambiguity for non-technical users. Active card gets top glow bar + cyan tint.</p>
+      <div class="card-tags"><span class="tag">Sources</span><span class="tag">Icons</span><span class="tag-green tag">Accessibility</span></div>
+      <a class="open-btn" href="03-source-card-grid.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="04-dark-mode-commander.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="04-dark-mode-commander.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 04</p>
+      <p class="card-name">Dark Commander</p>
+      <p class="card-desc">Deeper blacks (#06090f), 1px solid borders, check badge inside active cell. Ultra-compact command-bar header. Pro broadcast / flight-deck aesthetic — high contrast for bright rooms.</p>
+      <div class="card-tags"><span class="tag">Dark</span><span class="tag">High Contrast</span></div>
+      <a class="open-btn" href="04-dark-mode-commander.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="05-ambient-glow.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="05-ambient-glow.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 05</p>
+      <p class="card-name">Ambient Glow</p>
+      <p class="card-desc">Active source gets a radial inner-glow + bottom-edge glow bar. Audio-active tile gets green border ring. Pulsing online dot. Subtle radial ambient behind the panel.</p>
+      <div class="card-tags"><span class="tag">Animation</span><span class="tag">State Feedback</span></div>
+      <a class="open-btn" href="05-ambient-glow.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="06-quick-tap-footer.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="06-quick-tap-footer.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 06</p>
+      <p class="card-name">Quick-Tap Footer</p>
+      <p class="card-desc">Footer expanded to 116px with 3 explicit zones: Power | Mics | Volume. Mic buttons grow to 88px tall for thumb use. Vol gets chunky tap targets. Power zone has tinted background.</p>
+      <div class="card-tags"><span class="tag">Footer</span><span class="tag">Touch Targets</span><span class="tag-green tag">Ergonomics</span></div>
+      <a class="open-btn" href="06-quick-tap-footer.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="07-camera-page-upgrade.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="07-camera-page-upgrade.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 07</p>
+      <p class="card-name">Camera Page Upgrade</p>
+      <p class="card-desc">PTZ becomes a glass-morphic diamond ring on the video. Camera sidebar shows LIVE dot. Tracking uses segmented pill. Zoom gets large L/R split button. Presets add hold-hint.</p>
+      <div class="card-tags"><span class="tag">Cameras</span><span class="tag">PTZ</span><span class="tag">Full Page</span></div>
+      <a class="open-btn" href="07-camera-page-upgrade.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="08-component-upgrades.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="08-component-upgrades.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 08</p>
+      <p class="card-name">Component Upgrades</p>
+      <p class="card-desc">Side-by-side Before→After for 6 components: status pills, power button, mic button, occupancy indicator, VU meter, and source select button. Pick and mix into any design.</p>
+      <div class="card-tags"><span class="tag">Components</span><span class="tag">Before/After</span><span class="tag-green tag">Reference</span></div>
+      <a class="open-btn" href="08-component-upgrades.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="09-settings-upgrade.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="09-settings-upgrade.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 09</p>
+      <p class="card-name">Settings Page Upgrade</p>
+      <p class="card-desc">Left sidebar nav for future settings sections. Each MicChannel becomes a full-width horizontal strip with VU bars, 2 sliders, mute — all in one scannable row. No per-channel scrolling.</p>
+      <div class="card-tags"><span class="tag">Settings</span><span class="tag">Microphones</span></div>
+      <a class="open-btn" href="09-settings-upgrade.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="10-full-synthesis.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="10-full-synthesis.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 10</p>
+      <p class="card-name">Full Synthesis ★</p>
+      <p class="card-desc">Best ideas combined: edge rail + icon source cards + ambient tile glow + audio border ring + 3-zone footer with state tags + session timer in status bar. Power lives on the rail.</p>
+      <div class="card-tags"><span class="tag-star tag">Recommended</span><span class="tag">All Concepts</span></div>
+      <a class="open-btn" href="10-full-synthesis.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+
+  <a class="card" href="11-orange-theme.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="11-orange-theme.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 11</p>
+      <p class="card-name">MCCCD Orange Theme ★</p>
+      <p class="card-desc">Full Synthesis layout in the amber #f5a623 campus color scheme sourced from the existing MCCCD panel. Includes a palette swatch comparison strip at the bottom showing amber vs. cyan side by side.</p>
+      <div class="card-tags"><span class="tag-star tag">Campus Standard</span><span class="tag">Orange Theme</span><span class="tag">Color Reference</span></div>
+      <a class="open-btn" href="11-orange-theme.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="12-splash-system-off.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="12-splash-system-off.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 12</p>
+      <p class="card-name">Splash / System Off</p>
+      <p class="card-desc">CH5 boot/idle state. Massive room name hero with pulsing power-on CTA, layered radial ambient glow, subtle grid texture, live clock, and a bottom system status strip showing network, display, audio and occupancy state.</p>
+      <div class="card-tags"><span class="tag">New Page</span><span class="tag">Idle State</span><span class="tag-green tag">First Impression</span></div>
+      <a class="open-btn" href="12-splash-system-off.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="13-audio-mixer.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="13-audio-mixer.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 13</p>
+      <p class="card-name">Audio Mixer</p>
+      <p class="card-desc">Full 5-channel broadcast-style mixer page: Lav, Handheld, Ceiling 1–3 (TCCM). Each strip has stereo VU bars, vertical fader, trim slider, dB readout, and per-channel mute. Master fader + output select on the right. Scene presets in footer.</p>
+      <div class="card-tags"><span class="tag">New Page</span><span class="tag">Audio</span><span class="tag">5 Channels</span></div>
+      <a class="open-btn" href="13-audio-mixer.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="14-display-routing.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="14-display-routing.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 14</p>
+      <p class="card-name">Display Matrix Routing</p>
+      <p class="card-desc">CHV-style source → display routing UI. Left panel lists 6 input sources with active route badges. Right matrix shows all 3 displays as screen-mockup cells with drag-to-route, power/audio/mirror action buttons, and mode selector (Manual / Mirror All / Extend).</p>
+      <div class="card-tags"><span class="tag">New Page</span><span class="tag">Routing</span><span class="tag">Matrix</span></div>
+      <a class="open-btn" href="14-display-routing.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="15-shutdown-modal.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="15-shutdown-modal.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 15</p>
+      <p class="card-name">Shutdown Countdown Modal</p>
+      <p class="card-desc">Full-bleed backdrop blur + animated danger-stripe modal. Animated SVG countdown ring (30s), vacancy-triggered context text, shutdown checklist of what will power off, Cancel / Shut Down Now actions. Matches ConfirmShutdownModal.svelte intent.</p>
+      <div class="card-tags"><span class="tag">Modal</span><span class="tag">Occupancy</span><span class="tag-star tag">Safety UX</span></div>
+      <a class="open-btn" href="15-shutdown-modal.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="16-room-schedule.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="16-room-schedule.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 16</p>
+      <p class="card-name">Room Booking / Schedule</p>
+      <p class="card-desc">Left panel shows active session with live progress bar, extend/end actions, attendee avatars, and room specs. Right panel is a pixel-accurate hour-axis timeline for the full day with free/booked event blocks and a live "now" indicator line.</p>
+      <div class="card-tags"><span class="tag">New Page</span><span class="tag">Calendar</span><span class="tag">Occupancy</span></div>
+      <a class="open-btn" href="16-room-schedule.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="17-tech-support.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="17-tech-support.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 17</p>
+      <p class="card-name">Tech Support / Help</p>
+      <p class="card-desc">3-column diagnostic dashboard: live device status list (network, 3 displays, 2 cameras, 5 mics, panel, MPC), issue-guided quick-fix buttons, and a QR code + contact panel with emergency call button. Active D3 error surfaced with restart shortcuts in footer.</p>
+      <div class="card-tags"><span class="tag">New Page</span><span class="tag">Diagnostics</span><span class="tag-green tag">IT Support</span></div>
+      <a class="open-btn" href="17-tech-support.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+  <a class="card" href="11-drag-drop-router.html" target="_blank">
+    <div class="card-preview">
+      <iframe src="11-drag-drop-router.html" scrolling="no" loading="lazy"></iframe>
+      <div class="card-preview-overlay"></div>
+    </div>
+    <div class="card-body">
+      <p class="card-num">Mockup 11</p>
+      <p class="card-name">Drag &amp; Drop Router</p>
+      <p class="card-desc">Left-rail source palette (4 chips). Drag onto a display tile to route, or tap-to-arm and tap a tile. Landed chips show what's playing where. Long-press 250ms to start a drag; released outside snaps back.</p>
+      <div class="card-tags"><span class="tag">Routing</span><span class="tag">Drag &amp; Drop</span><span class="tag-green tag">Experimental</span></div>
+      <a class="open-btn" href="11-drag-drop-router.html" target="_blank">Open Full Size →</a>
+    </div>
+  </a>
+
+</div>
+
+</body>
+</html>
