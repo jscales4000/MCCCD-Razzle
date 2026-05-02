@@ -549,16 +549,26 @@ body.any-armed .tile-slot {
         appState.draggingSource = null;
       }, 180);
     } else {
-      // SNAP-BACK: animate clone back to origin chip's rail position
-      const originRect = originChip.getBoundingClientRect();
-      dragClone.classList.add('snapping');
-      dragClone.style.transform = `translate(${originRect.left}px, ${originRect.top}px) scale(1.0) rotate(0deg)`;
-
-      setTimeout(() => {
+      // SNAP-BACK: animate clone back to origin chip's rail position.
+      // If originChip is missing (defensive — shouldn't happen but cheap insurance),
+      // clean up immediately without animating to avoid a stuck clone.
+      if (!originChip) {
         if (dragClone) { dragClone.remove(); dragClone = null; }
-        originChip?.classList.remove('chip-ghost');
         appState.draggingSource = null;
-      }, 220);
+      } else {
+        const originRect = originChip.getBoundingClientRect();
+        dragClone.classList.add('snapping');
+        dragClone.style.transform = `translate(${originRect.left}px, ${originRect.top}px) scale(1.0) rotate(0deg)`;
+        // Fade the clone to match the rail chip's 30% ghost opacity, eliminating
+        // the visual pop at t=220ms when the clone is removed.
+        dragClone.style.opacity = '0.3';
+
+        setTimeout(() => {
+          if (dragClone) { dragClone.remove(); dragClone = null; }
+          originChip?.classList.remove('chip-ghost');
+          appState.draggingSource = null;
+        }, 220);
+      }
     }
 
     // Suppress the synthetic click that the browser fires after pointerup,
