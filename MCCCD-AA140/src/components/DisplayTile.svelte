@@ -57,6 +57,15 @@
     disarm();
     routeSource(sourceId, displayId);
   }
+
+  function onTileKeyDown(e: KeyboardEvent) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (!$armedSource) return;
+    e.preventDefault();
+    const sourceId = $armedSource;
+    disarm();
+    routeSource(sourceId, displayId);
+  }
 </script>
 
 <div
@@ -64,6 +73,7 @@
   class:audio-active={audioActive}
   data-display={displayId}
   onclick={onTileClick}
+  onkeydown={onTileKeyDown}
   role="button"
   tabindex="0"
 >
