@@ -1,6 +1,36 @@
-# FRED Sync Queue — Drag-and-Drop Source Routing Lessons
+# FRED Sync Queue — Drag-and-Drop Source Routing Lessons (APPLIED)
 
 **Date queued:** 2026-05-02
+**Date applied:** 2026-05-02 (same day, after FRED reconnected at http://100.67.23.64:8051/mcp)
+**Status:** ✅ Applied. Kept in repo as a record of what got pushed.
+
+## What was pushed
+
+**Documents (6 total):**
+
+In MCCCD-AA140 project (`c1937681-e57d-4354-aa58-a5b0f6e9ca23`):
+- Lessons Learned: `3e710793-f815-4296-9dfc-73f4e0d050d6`
+- Retrospective Writeup: `7c1c1b57-54a1-4166-bfd3-1f136346cef0`
+- Session Handoff: `f3740f6b-3b2d-49ea-b68c-ca885a00b9e7`
+
+In FRED Server project (`cef01706-4b13-4588-8d8d-281e1412510a`) for future agent training:
+- Lessons Learned: `da2e2cad-d7df-4ca4-b342-96a9ac299fa8`
+- Retrospective Writeup: `c9f86377-5d22-4d35-9fb4-cfa0cb65f818`
+- Session Handoff: `926a5068-aaef-4456-9496-9687b933d639`
+
+**Tasks (4 ops):**
+
+- Updated `318aec66-c590-4d48-8f3e-6d3404e028d6` (Build Stage 1 drag-and-drop source router mockup) → `done`
+- Created `ebf66396-cca9-41c8-a2f2-015c417c61ad` (Drag-drop polish: long-press reliability, hit zones, animation feel)
+- Created `e517ff7c-c6bc-4a5e-a75e-dda3a2e3b2ba` (Drag-drop redesign: align to Mockup 10 chrome)
+- Created `e9a686f0-a5c6-49ea-bf23-1200799d3da9` (Realign panel chrome to Mockup 10 / Full Synthesis layout)
+
+**Activity log:** `fb18c173-5e3b-4b3c-9488-bb4f6bf74a63`
+
+---
+
+## Original queue (preserved below for reference)
+
 **Reason for queueing:** FRED MCP server was offline at the time these artifacts were produced (`mcp__fred__health_check` returned "MCP server fred is not connected"). Once FRED reconnects, push this queue to the FRED knowledge base in one batch.
 
 ---
