@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 11 — Drag &amp; Drop Source Router</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: rgba(15, 23, 42, 0.96);
+    --panel-soft: rgba(15, 23, 42, 0.82);
+    --border: rgba(148, 163, 184, 0.22);
+    --copy: #e2e8f0;
+    --copy-soft: #94a3b8;
+    --copy-muted: #64748b;
+    --accent: #38bdf8;
+    --accent-soft: rgba(56, 189, 248, 0.18);
+    --accent-dim: rgba(56, 189, 248, 0.10);
+    --success: #22c55e;
+    --rad: 14px;
+    --rad-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1280px;
+    height: 800px;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--copy);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(56,189,248,.06), transparent 70%);
+    pointer-events: none;
+  }
+  .stage {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 92px 1fr 104px;
+    grid-template-columns: 96px 1fr;
+    grid-template-areas:
+      "header header"
+      "rail   tiles"
+      "footer footer";
+    gap: 12px;
+    padding: 12px;
+  }
+  header { grid-area: header; background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad); }
+  .rail { grid-area: rail; background: var(--panel-soft); border: 0.5px solid var(--border); border-radius: var(--rad); }
+  .tiles { grid-area: tiles; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  footer { grid-area: footer; background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad); }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <header></header>
+    <aside class="rail"></aside>
+    <main class="tiles">
+      <section class="tile" data-display="d1"></section>
+      <section class="tile" data-display="d2"></section>
+      <section class="tile" data-display="d3"></section>
+    </main>
+    <footer></footer>
+  </div>
+  <script>
+    /* state machine + handlers — added in later tasks */
+  </script>
+</body>
+</html>
