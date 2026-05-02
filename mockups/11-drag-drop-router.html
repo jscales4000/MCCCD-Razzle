@@ -514,6 +514,8 @@ body.any-armed .tile-slot {
   $$('.chip').forEach(chip => {
     chip.addEventListener('pointerdown', e => {
       if (e.button !== undefined && e.button !== 0) return; // primary only
+      // Ignore additional pointers while a drag or pending press is already in flight.
+      if (appState.draggingSource || pressTimerId) return;
       // Clear any stale suppression flag left over from a drag that ended in empty space.
       appState.suppressNextClick = false;
       pressOriginChip = chip;
@@ -531,8 +533,8 @@ body.any-armed .tile-slot {
 
       // Listen on document so the drag continues even if the pointer leaves the chip.
       document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp, { once: true });
-      document.addEventListener('pointercancel', onPointerUp, { once: true });
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerCancel);
     });
   });
 
@@ -557,8 +559,14 @@ body.any-armed .tile-slot {
     }
   }
 
-  function onPointerUp(e) {
+  function detachPointerListeners() {
     document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerCancel);
+  }
+
+  function onPointerUp(e) {
+    detachPointerListeners();
     if (pressTimerId) {
       clearTimeout(pressTimerId);
       pressTimerId = null;
@@ -568,6 +576,22 @@ body.any-armed .tile-slot {
     }
     if (appState.draggingSource) {
       endDrag(e.clientX, e.clientY);
+    }
+    pressOriginChip = null;
+  }
+
+  function onPointerCancel(e) {
+    detachPointerListeners();
+    if (pressTimerId) {
+      clearTimeout(pressTimerId);
+      pressTimerId = null;
+      pressOriginChip = null;
+      return;
+    }
+    if (appState.draggingSource) {
+      // Cancel: abort the drag without committing a route. Pass coordinates that
+      // are guaranteed to be outside any tile so endDrag's tileUnderPointer returns null.
+      endDrag(-1, -1);
     }
     pressOriginChip = null;
   }
