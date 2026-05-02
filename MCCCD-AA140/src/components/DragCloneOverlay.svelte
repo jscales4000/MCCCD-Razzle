@@ -17,9 +17,22 @@
     return () => registerCloneEl(null);
   });
 
-  // Compute the inline transform from cloneCoords. Centers the 80x88 clone on the pointer.
+  // Read the panel's render scale so the clone visually matches the rail chips.
+  // The clone is rendered OUTSIDE .panel-stage so it doesn't inherit the scale
+  // automatically — we apply it through the transform's scale factor.
+  function panelScale(): number {
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-scale'));
+    return isFinite(v) && v > 0 ? v : 1;
+  }
+
+  // Compute the inline transform from cloneCoords. The translate offsets stay
+  // (40, 44) — the un-scaled element-local center — because transform-origin is
+  // 50% 50% so the visual center lands on the pointer regardless of scale.
+  // Multiplying scale by panel-scale makes the clone visually match the rail
+  // chips on a non-1.0× panel (e.g. 1.5× on TS-1070).
   function transformFor(coords: { x: number; y: number }): string {
-    return `translate(${coords.x - 40}px, ${coords.y - 44}px) scale(1.08) rotate(2deg)`;
+    const ps = panelScale();
+    return `translate(${coords.x - 40}px, ${coords.y - 44}px) scale(${1.08 * ps}) rotate(2deg)`;
   }
 </script>
 

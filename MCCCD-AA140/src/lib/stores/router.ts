@@ -40,9 +40,19 @@ let pressOriginY = 0;
 let lastPointerX = 0;
 let lastPointerY = 0;
 let dragCloneEl: HTMLElement | null = null;
+let activePointerId: number | null = null;
+let pressCapturedEl: HTMLElement | null = null;
 
 const LONG_PRESS_MS = 250;
-const MOVE_CANCEL_THRESHOLD = 10;
+// Capacitive touch jitter on the TS-1070 easily exceeds 10px even with a
+// stationary finger. 30px tolerates wobble while still rejecting deliberate
+// scroll-style drags before the long-press fires.
+const MOVE_CANCEL_THRESHOLD = 30;
+
+function panelScale(): number {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-scale'));
+  return isFinite(v) && v > 0 ? v : 1;
+}
 
 // ── Utility: read current routing of a display from feedback stores ────
 const FB_BY_DISPLAY = {
@@ -189,14 +199,23 @@ export function endDrag(x: number, y: number): void {
       cleanupAfterDrag(originEl);
     }, 180);
   } else {
-    // SNAP-BACK
+    // SNAP-BACK — animate the clone back to overlap the rail chip's actual
+    // on-screen size. The clone is rendered outside .panel-stage so it doesn't
+    // inherit the panel's scale; we apply scale(panelScale) here so the clone
+    // visually matches the rail chip during the snap, instead of shrinking
+    // below it.
     if (!originEl || !clone) {
       cleanupAfterDrag(originEl);
       return;
     }
     const originRect = originEl.getBoundingClientRect();
+    const ps = panelScale();
+    // transform-origin defaults to 50% 50% of the un-scaled box (40, 44).
+    // Offset the translate so visual top-left lands on originRect.left/top.
+    const offsetX = 40 * (ps - 1);
+    const offsetY = 44 * (ps - 1);
     clone.classList.add('snapping');
-    clone.style.transform = `translate(${originRect.left}px, ${originRect.top}px) scale(1.0) rotate(0deg)`;
+    clone.style.transform = `translate(${originRect.left + offsetX}px, ${originRect.top + offsetY}px) scale(${ps}) rotate(0deg)`;
     clone.style.opacity = '0.3';
 
     setTimeout(() => {
@@ -208,6 +227,7 @@ export function endDrag(x: number, y: number): void {
 }
 
 function cleanupAfterDrag(originEl: HTMLElement | null): void {
+  releasePointerCaptureSafely();
   originEl?.classList.remove('chip-ghost');
   draggingSource.set(null);
   // Reset clone DOM inline styles for next drag
@@ -234,6 +254,17 @@ export function chipPointerDown(e: PointerEvent, chipEl: HTMLElement, sourceId: 
   pressOriginX = lastPointerX = e.clientX;
   pressOriginY = lastPointerY = e.clientY;
 
+  // Pin all subsequent events for this pointer to the chip — without this the
+  // Crestron touch driver can re-target events to other elements mid-gesture
+  // and the drag "resets" before the user releases.
+  try {
+    chipEl.setPointerCapture(e.pointerId);
+    activePointerId = e.pointerId;
+    pressCapturedEl = chipEl;
+  } catch {
+    // setPointerCapture can throw if the element is detached; safe to ignore.
+  }
+
   pressTimerId = setTimeout(() => {
     if (get(armedSource)) disarm();
     startDrag(sourceId, chipEl, lastPointerX, lastPointerY);
@@ -243,6 +274,14 @@ export function chipPointerDown(e: PointerEvent, chipEl: HTMLElement, sourceId: 
   document.addEventListener('pointermove', onPointerMove);
   document.addEventListener('pointerup', onPointerUp);
   document.addEventListener('pointercancel', onPointerCancel);
+}
+
+function releasePointerCaptureSafely(): void {
+  if (pressCapturedEl && activePointerId !== null) {
+    try { pressCapturedEl.releasePointerCapture(activePointerId); } catch { /* already released */ }
+  }
+  pressCapturedEl = null;
+  activePointerId = null;
 }
 
 export function onPointerMove(e: PointerEvent): void {
@@ -260,6 +299,7 @@ export function onPointerMove(e: PointerEvent): void {
       clearTimeout(pressTimerId);
       pressTimerId = null;
       document.removeEventListener('pointermove', onPointerMove);
+      releasePointerCaptureSafely();
     }
   }
 }
@@ -270,10 +310,13 @@ export function onPointerUp(e: PointerEvent): void {
     clearTimeout(pressTimerId);
     pressTimerId = null;
     pressOriginEl = null;
+    releasePointerCaptureSafely();
     return;
   }
   if (get(draggingSource)) {
     endDrag(e.clientX, e.clientY);
+  } else {
+    releasePointerCaptureSafely();
   }
   pressOriginEl = null;
 }
@@ -284,11 +327,14 @@ export function onPointerCancel(_e: PointerEvent): void {
     clearTimeout(pressTimerId);
     pressTimerId = null;
     pressOriginEl = null;
+    releasePointerCaptureSafely();
     return;
   }
   if (get(draggingSource)) {
     // Force snap-back: pass coords outside any tile
     endDrag(-1, -1);
+  } else {
+    releasePointerCaptureSafely();
   }
   pressOriginEl = null;
 }
