@@ -201,6 +201,26 @@ body.any-armed .tile-slot {
   background-color: rgba(148, 163, 184, 0.04);
   border-style: dashed;
 }
+
+/* ── Drop animation (phase 2: thunk on the landed chip) ─────────────── */
+@keyframes thunk {
+  0%   { transform: scale(1.0); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1.0); }
+}
+.landed-chip.thunk { animation: thunk 100ms ease-out; }
+
+/* ── Drop animation (phase 3: tile cyan border flash) ───────────────── */
+@keyframes tile-flash {
+  0%   { box-shadow: 0 0 0 0px var(--accent-soft); border-color: var(--accent); }
+  100% { box-shadow: 0 0 0 6px transparent;        border-color: var(--border); }
+}
+.tile.flash { animation: tile-flash 150ms ease-out; }
+
+/* ── Snap-back (clone curves back to its rail slot) ────────────────── */
+.chip-clone.snapping {
+  transition: transform 220ms cubic-bezier(0.4, 0.0, 0.2, 1), opacity 220ms;
+}
 </style>
 </head>
 <body>
@@ -489,22 +509,57 @@ body.any-armed .tile-slot {
     const sourceId = appState.draggingSource;
     const originChip = $(`.chip[data-source="${sourceId}"]`);
 
-    let dropped = false;
-    if (tile) {
-      const displayId = tile.dataset.display;
-      if (appState.routing[displayId] !== sourceId) {
-        routeSource(sourceId, displayId);
-        dropped = true;
-      }
+    // Clear hover hints regardless of outcome
+    $$('.tile-slot').forEach(s => s.classList.remove('drop-hovering', 'drop-noop'));
+    document.body.classList.remove('any-armed');
+
+    let dropOnTile = null;
+    if (tile && appState.routing[tile.dataset.display] !== sourceId) {
+      dropOnTile = tile;
     }
 
-    // Snap back the clone if not dropped — for now, just remove it.
-    // (Polish in Task 6 — actual snap-back animation.)
-    if (dragClone) { dragClone.remove(); dragClone = null; }
-    originChip?.classList.remove('chip-ghost');
-    appState.draggingSource = null;
-    document.body.classList.remove('any-armed');
-    $$('.tile-slot').forEach(s => s.classList.remove('drop-hovering', 'drop-noop'));
+    if (dropOnTile) {
+      // PHASE 1: animate clone to slot center
+      const slot = $('.tile-slot', dropOnTile);
+      const slotRect = slot.getBoundingClientRect();
+      const targetX = slotRect.left + slotRect.width / 2 - 40;
+      const targetY = slotRect.top + slotRect.height / 2 - 44;
+      dragClone.classList.add('snapping');
+      dragClone.style.transform = `translate(${targetX}px, ${targetY}px) scale(1.0) rotate(0deg)`;
+      dragClone.style.opacity = '0';
+
+      setTimeout(() => {
+        // PHASE 2: swap slot content and thunk
+        const displayId = dropOnTile.dataset.display;
+        routeSource(sourceId, displayId);
+        const newLanded = $('.landed-chip', slot);
+        if (newLanded) {
+          // restart animation reliably
+          newLanded.classList.remove('thunk');
+          void newLanded.offsetWidth;
+          newLanded.classList.add('thunk');
+        }
+        // PHASE 3: tile border flash
+        dropOnTile.classList.remove('flash');
+        void dropOnTile.offsetWidth;
+        dropOnTile.classList.add('flash');
+
+        if (dragClone) { dragClone.remove(); dragClone = null; }
+        originChip?.classList.remove('chip-ghost');
+        appState.draggingSource = null;
+      }, 180);
+    } else {
+      // SNAP-BACK: animate clone back to origin chip's rail position
+      const originRect = originChip.getBoundingClientRect();
+      dragClone.classList.add('snapping');
+      dragClone.style.transform = `translate(${originRect.left}px, ${originRect.top}px) scale(1.0) rotate(0deg)`;
+
+      setTimeout(() => {
+        if (dragClone) { dragClone.remove(); dragClone = null; }
+        originChip?.classList.remove('chip-ghost');
+        appState.draggingSource = null;
+      }, 220);
+    }
 
     // Suppress the synthetic click that the browser fires after pointerup,
     // so a drag-and-release-on-the-original-chip doesn't accidentally re-arm.
