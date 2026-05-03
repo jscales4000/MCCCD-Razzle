@@ -100,13 +100,13 @@
         </div>
 
         <div class="modal-actions">
-          <button class="btn-cancel" onclick={handleCancel}>
+          <button type="button" class="btn-cancel" onclick={handleCancel}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
             Cancel
           </button>
-          <button class="btn-confirm" onclick={handleConfirm}>
+          <button type="button" class="btn-confirm" onclick={handleConfirm}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
               <path d="M12 3v9"/>
               <path d="M6.5 7.5a8 8 0 1 0 11 0"/>
@@ -150,8 +150,11 @@
 <style>
   .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background: rgba(4, 8, 18, 0.72);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(2, 6, 23, 0.92);
     backdrop-filter: blur(8px);
     display: grid;
     place-items: center;

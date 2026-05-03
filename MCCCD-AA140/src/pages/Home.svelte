@@ -12,6 +12,7 @@
     occupancyState, shutdownCountdown,
   } from '../lib/stores/signals';
   import { goToPage } from '../lib/stores/page';
+  import { userPoweredOn } from '../lib/stores/session';
   import DisplayTile from '../components/DisplayTile.svelte';
   import ConfirmShutdownModal from '../components/ConfirmShutdownModal.svelte';
   import HomeSplash from '../components/HomeSplash.svelte';
@@ -35,15 +36,11 @@
   // Power confirmation modal
   let showShutdownModal = $state(false);
 
-  // Optimistic power-on flag for offline / standalone mode.
-  // When SIMPL is connected, $systemPowerFb is the source of truth; this flag
-  // never blocks the on-state UI because the {#if} also accepts userPoweredOn.
-  // When SIMPL is offline (panel can't get systemPowerFb=true from the
-  // processor), this flag still lets the user dismiss the splash by tapping
-  // Start, otherwise the panel is stuck on the splash forever.
-  // Reset on shutdown-confirm so the splash returns when the user shuts down.
-  let userPoweredOn = $state(false);
-  let systemOn = $derived($systemPowerFb || userPoweredOn);
+  // userPoweredOn is a session-scoped store (lib/stores/session.ts) so its
+  // value survives goToPage() round-trips through Cameras / AudioMixer /
+  // DisplayRouting. Local component state would reset on each remount and
+  // bounce the user back to the splash after every nav.
+  let systemOn = $derived($systemPowerFb || $userPoweredOn);
 
   function mirrorD1ToD3() { pulseDigital(SIGNALS.d1MirrorToD3); }
   function mirrorD2ToD3() { pulseDigital(SIGNALS.d2MirrorToD3); }
@@ -69,19 +66,19 @@
       showShutdownModal = true;
     } else {
       // System is OFF — power up immediately, no confirmation
-      userPoweredOn = true;
+      userPoweredOn.set(true);
       pulseDigital(SIGNALS.displayPower);
     }
   }
 
   function powerOnFromSplash() {
-    userPoweredOn = true;
+    userPoweredOn.set(true);
     pulseDigital(SIGNALS.displayPower);
   }
 
   function confirmShutdown() {
     showShutdownModal = false;
-    userPoweredOn = false;
+    userPoweredOn.set(false);
     pulseDigital(SIGNALS.displayPower);
   }
   function cancelShutdown() {
