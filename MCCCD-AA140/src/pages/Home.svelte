@@ -35,6 +35,16 @@
   // Power confirmation modal
   let showShutdownModal = $state(false);
 
+  // Optimistic power-on flag for offline / standalone mode.
+  // When SIMPL is connected, $systemPowerFb is the source of truth; this flag
+  // never blocks the on-state UI because the {#if} also accepts userPoweredOn.
+  // When SIMPL is offline (panel can't get systemPowerFb=true from the
+  // processor), this flag still lets the user dismiss the splash by tapping
+  // Start, otherwise the panel is stuck on the splash forever.
+  // Reset on shutdown-confirm so the splash returns when the user shuts down.
+  let userPoweredOn = $state(false);
+  let systemOn = $derived($systemPowerFb || userPoweredOn);
+
   function mirrorD1ToD3() { pulseDigital(SIGNALS.d1MirrorToD3); }
   function mirrorD2ToD3() { pulseDigital(SIGNALS.d2MirrorToD3); }
 
@@ -54,17 +64,24 @@
   }
 
   function powerButtonTapped() {
-    if ($systemPowerFb) {
+    if (systemOn) {
       // System is ON — open confirmation modal (do not pulse yet)
       showShutdownModal = true;
     } else {
       // System is OFF — power up immediately, no confirmation
+      userPoweredOn = true;
       pulseDigital(SIGNALS.displayPower);
     }
   }
 
+  function powerOnFromSplash() {
+    userPoweredOn = true;
+    pulseDigital(SIGNALS.displayPower);
+  }
+
   function confirmShutdown() {
     showShutdownModal = false;
+    userPoweredOn = false;
     pulseDigital(SIGNALS.displayPower);
   }
   function cancelShutdown() {
@@ -112,9 +129,9 @@
 </svelte:head>
 
 <div class="panel-stage">
-  <div class="app-shell layout-home" class:splash-mode={!$systemPowerFb}>
+  <div class="app-shell layout-home" class:splash-mode={!systemOn}>
 
-    {#if $systemPowerFb}
+    {#if systemOn}
     <header class="app-header glass-card">
       <div class="header-copy">
         <p class="eyebrow">CH5 Touch Panel</p>
@@ -159,15 +176,15 @@
     <footer class="app-footer glass-card">
       <button
         class="btn power-btn"
-        class:primary={$systemPowerFb}
+        class:primary={systemOn}
         onclick={powerButtonTapped}
-        aria-label={$systemPowerFb ? 'System on — tap to shut down' : 'System off — tap to power on'}
+        aria-label={systemOn ? 'System on — tap to shut down' : 'System off — tap to power on'}
       >
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M12 3v9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
           <path d="M6.5 7.5a8 8 0 1 0 11 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
         </svg>
-        <span>{$systemPowerFb ? 'System On' : 'Power'}</span>
+        <span>{systemOn ? 'System On' : 'Power'}</span>
       </button>
 
       <div class="vol-group">
@@ -210,7 +227,7 @@
       panelOnline={$panelOnline}
       occupancyState={$occupancyState}
       shutdownCountdown={$shutdownCountdown}
-      onPowerOn={() => pulseDigital(SIGNALS.displayPower)}
+      onPowerOn={powerOnFromSplash}
     />
     {/if}
 
