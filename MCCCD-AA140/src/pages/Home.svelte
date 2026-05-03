@@ -4,18 +4,34 @@
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import {
     panelOnline,
-    display1SourceFb, display2SourceFb, display3SourceFb,
-    display1PowerFb, display2PowerFb, display3PowerFb,
+    display1SourceFb,
     systemPowerFb,
-    audioOutputSelectFb,
+    progAudioLevelFb,
     micLavMuteFb, micHandheldMuteFb,
     occupancyState, shutdownCountdown,
   } from '../lib/stores/signals';
   import { goToPage } from '../lib/stores/page';
   import { userPoweredOn } from '../lib/stores/session';
-  import DisplayTile from '../components/DisplayTile.svelte';
   import ConfirmShutdownModal from '../components/ConfirmShutdownModal.svelte';
   import HomeSplash from '../components/HomeSplash.svelte';
+  import VolumePopup from '../components/VolumePopup.svelte';
+
+  // ── Source buttons (Mockup 22 — Centered Hero) ──
+  // Tapping a source publishes its value to ALL THREE displays at once.
+  // Default-meeting assumption: one source mirrored across D1/D2/D3.
+  // Advanced (per-display) routing reachable via the Advanced Routing chip.
+  const SOURCES = [
+    { value: 1, name: 'Room PC',  sub: 'HDMI 1' },
+    { value: 2, name: 'Ext PC',   sub: 'HDMI 2' },
+    { value: 3, name: 'AirMedia', sub: 'Wireless' },
+    { value: 4, name: 'Laptop',   sub: 'HDMI 3' },
+  ] as const;
+
+  function selectSourceForAll(value: number) {
+    publishAnalog(SIGNALS.display1Source, value);
+    publishAnalog(SIGNALS.display2Source, value);
+    publishAnalog(SIGNALS.display3Source, value);
+  }
 
   // Preview dock (browser-dev only)
   const BASE_WIDTH = 1280;
@@ -42,16 +58,22 @@
   // bounce the user back to the splash after every nav.
   let systemOn = $derived($systemPowerFb || $userPoweredOn);
 
-  function mirrorD1ToD3() { pulseDigital(SIGNALS.d1MirrorToD3); }
-  function mirrorD2ToD3() { pulseDigital(SIGNALS.d2MirrorToD3); }
+  // VolumePopup ref — call .show() on Vol+/Vol- to flash the level for 5s.
+  // Mute does NOT trigger the popup (per spec).
+  let volumePopup: { show: () => void } | undefined = $state(undefined);
 
-  function setAudioOutput(v: 1 | 2) {
-    publishAnalog(SIGNALS.audioOutputSelect, v);
+  function volDown() {
+    pulseDigital(SIGNALS.volumeDown);
+    volumePopup?.show();
   }
-
-  function volDown()      { pulseDigital(SIGNALS.volumeDown); }
-  function volUp()        { pulseDigital(SIGNALS.volumeUp); }
-  function toggleMaster() { pulseDigital(SIGNALS.muteAll); }
+  function volUp() {
+    pulseDigital(SIGNALS.volumeUp);
+    volumePopup?.show();
+  }
+  function toggleMaster() {
+    pulseDigital(SIGNALS.muteAll);
+    // No popup for mute, per spec.
+  }
 
   function toggleLavMute() {
     publishDigital(SIGNALS.micLavMute, !$micLavMuteFb);
@@ -87,13 +109,13 @@
 
   function occupancyText(): string {
     if ($occupancyState === 1) return 'Occupied';
-    if ($occupancyState === 2) return `Vacant — shutdown in ${$shutdownCountdown} min`;
+    if ($occupancyState === 2) return `Vacant · ${$shutdownCountdown} min`;
     return 'Vacant';
   }
   function occupancyClass(): string {
-    if ($occupancyState === 1) return 'occupancy-block ok';
-    if ($occupancyState === 2) return 'occupancy-block warn';
-    return 'occupancy-block idle';
+    if ($occupancyState === 1) return 'occ-occ';
+    if ($occupancyState === 2) return 'occ-warn';
+    return 'occ-idle';
   }
 
   function setPreviewMode(mode: keyof typeof DEVICE_PROFILES) {
@@ -129,92 +151,123 @@
   <div class="app-shell layout-home" class:splash-mode={!systemOn}>
 
     {#if systemOn}
-    <header class="app-header glass-card">
-      <div class="header-copy">
-        <p class="eyebrow">CH5 Touch Panel</p>
-        <h1>{ROOM_NAME}</h1>
-      </div>
-      <div class="header-right">
-        <div class={occupancyClass()} aria-live="polite">{occupancyText()}</div>
-        <div class="status-pill" class:online={$panelOnline} aria-live="polite">
-          <span class="status-dot"></span>
-          <span>{$panelOnline ? 'Online' : 'Offline'}</span>
-        </div>
-      </div>
+    <header class="app-header">
+      <span class="room-name">{ROOM_NAME}</span>
+
+      <span class="small-pill" class:ok={$panelOnline} class:off={!$panelOnline}>
+        <span class="pdot"></span>{$panelOnline ? 'Online' : 'Offline'}
+      </span>
+
+      <span class="small-pill {occupancyClass()}">
+        <span class="pdot"></span>{occupancyText()}
+      </span>
+
+      <div class="hsp"></div>
+
+      <button class="header-nav" onclick={() => goToPage('cameras')} aria-label="Open cameras page">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M4 7h4l2-2h4l2 2h4v12H4z"/>
+          <circle cx="12" cy="13" r="3.6"/>
+        </svg>
+        Cameras
+      </button>
+      <button class="header-nav" onclick={() => goToPage('audio')} aria-label="Open audio mixer page">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        Audio
+      </button>
     </header>
 
-    <main class="display-row">
-      <DisplayTile
-        label="Display 1"
-        sourceSetSignal={SIGNALS.display1Source}
-        activeSourceFb={$display1SourceFb}
-        powerOn={$display1PowerFb}
-        audioActive={$audioOutputSelectFb === 1}
-        onAudioToggle={() => setAudioOutput(1)}
-        onMirrorToD3={mirrorD1ToD3}
-      />
-      <DisplayTile
-        label="Display 2"
-        sourceSetSignal={SIGNALS.display2Source}
-        activeSourceFb={$display2SourceFb}
-        powerOn={$display2PowerFb}
-        audioActive={$audioOutputSelectFb === 2}
-        onAudioToggle={() => setAudioOutput(2)}
-        onMirrorToD3={mirrorD2ToD3}
-      />
-      <DisplayTile
-        label="Display 3"
-        sourceSetSignal={SIGNALS.display3Source}
-        activeSourceFb={$display3SourceFb}
-        powerOn={$display3PowerFb}
-      />
+    <main class="body-wrap">
+      <button class="adv-float" onclick={() => goToPage('routing')} aria-label="Open advanced display routing">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+        </svg>
+        Advanced Routing →
+      </button>
+      <div class="eyebrow">— Choose your source —</div>
+      <div class="src-row">
+        {#each SOURCES as src}
+          <button
+            class="hero-card"
+            class:active={$display1SourceFb === src.value}
+            onclick={() => selectSourceForAll(src.value)}
+            aria-pressed={$display1SourceFb === src.value}
+            aria-label={`Send ${src.name} to all displays`}
+          >
+            {#if src.value === 1}
+              <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            {:else if src.value === 2}
+              <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 10h18M8 20h8M12 16v4"/></svg>
+            {:else if src.value === 3}
+              <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+            {:else}
+              <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M2 20h20"/></svg>
+            {/if}
+            <span class="hc-name">{src.name}</span>
+            <span class="hc-sub">{src.sub}</span>
+          </button>
+        {/each}
+      </div>
     </main>
 
-    <footer class="app-footer glass-card">
+    <footer class="app-footer">
       <button
-        class="btn power-btn"
+        class="pwr-btn"
         class:primary={systemOn}
         onclick={powerButtonTapped}
         aria-label={systemOn ? 'System on — tap to shut down' : 'System off — tap to power on'}
       >
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M12 3v9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-          <path d="M6.5 7.5a8 8 0 1 0 11 0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+          <path d="M12 3v9"/>
+          <path d="M6.5 7.5a8 8 0 1 0 11 0"/>
         </svg>
-        <span>{systemOn ? 'System On' : 'Power'}</span>
+        Power
       </button>
 
-      <div class="vol-group">
-        <span class="footer-label">PROGRAM</span>
-        <button class="btn footer-btn" onclick={volDown}>Vol −</button>
-        <button class="btn footer-btn" onclick={toggleMaster}>Mute</button>
-        <button class="btn footer-btn" onclick={volUp}>Vol +</button>
-      </div>
-
-      <div class="mic-group">
-        <span class="footer-label">MICS</span>
-        <button class="btn footer-btn" class:active={$micLavMuteFb} onclick={toggleLavMute}>
+      <div class="mics">
+        <span class="footer-label">Mics</span>
+        <button class="mbtn" class:live={!$micLavMuteFb} class:muted={$micLavMuteFb} onclick={toggleLavMute}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
+          </svg>
           {$micLavMuteFb ? 'Lav (muted)' : 'Lav'}
         </button>
-        <button class="btn footer-btn" class:active={$micHandheldMuteFb} onclick={toggleHandheldMute}>
+        <button class="mbtn" class:live={!$micHandheldMuteFb} class:muted={$micHandheldMuteFb} onclick={toggleHandheldMute}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
+          </svg>
           {$micHandheldMuteFb ? 'Handheld (muted)' : 'Handheld'}
         </button>
       </div>
 
-      <div class="nav-group">
-        <button class="btn nav-btn" onclick={() => goToPage('cameras')} aria-label="Open cameras page">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path d="M4 7h4l2-2h4l2 2h4v12H4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
-            <circle cx="12" cy="13" r="3.6" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <div class="vol-grp">
+        <span class="footer-label">Vol</span>
+        <button class="vbtn" onclick={volDown} aria-label="Volume down">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
+            <path d="M16 12h6"/>
           </svg>
-          <span>Cameras</span>
+          −
         </button>
-        <button class="btn nav-btn" onclick={() => goToPage('audio')} aria-label="Open audio mixer page">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path d="M11 5L6 9H2v6h4l5 4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="1.8" fill="none"/>
+        <button class="vbtn" onclick={toggleMaster} aria-label="Mute toggle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
+            <path d="M16 9l6 6M22 9l-6 6"/>
           </svg>
-          <span>Audio</span>
+          Mute
+        </button>
+        <button class="vbtn" onclick={volUp} aria-label="Volume up">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
+            <path d="M16 12h6M19 9v6"/>
+          </svg>
+          +
         </button>
       </div>
     </footer>
@@ -258,77 +311,316 @@
   onCancel={cancelShutdown}
 />
 
+<VolumePopup bind:this={volumePopup} level={$progAudioLevelFb} />
+
 <style>
+  /* ── Mockup 22 — Centered Hero ── */
   .layout-home {
     display: grid;
-    grid-template-rows: 92px 1fr 104px;
-    gap: 20px;
+    grid-template-rows: 70px 1fr 80px;
+    gap: 14px;
     width: 100%;
     height: 100%;
-    padding: 20px;
+    padding: 14px;
+    position: relative;
   }
   .layout-home.splash-mode {
     display: block;
     padding: 0;
   }
-  .header-right {
+  .layout-home::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1300px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(245, 166, 35, 0.07), transparent 65%);
+    pointer-events: none;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-  }
-
-  /* Occupancy block — explicitly NOT a pill (small radius, rectangular). */
-  .occupancy-block {
-    padding: 10px 14px;
-    border-radius: var(--radius-button);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    border: 1px solid var(--color-border);
-  }
-  .occupancy-block.ok {
-    background: rgba(34, 197, 94, 0.12);
-    border-color: rgba(34, 197, 94, 0.4);
-    color: #bbf7d0;
-  }
-  .occupancy-block.warn {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.4);
-    color: #fecaca;
-  }
-  .occupancy-block.idle {
-    background: rgba(245, 158, 11, 0.12);
-    border-color: rgba(245, 158, 11, 0.3);
-    color: #fed7aa;
-  }
-
-  .display-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    padding: 0 18px;
     gap: 16px;
-    min-height: 0;
+  }
+  .room-name {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    color: var(--color-copy, #e2e8f0);
+  }
+  .small-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .small-pill.ok {
+    background: rgba(34, 197, 94, 0.08);
+    border: 0.5px solid rgba(34, 197, 94, 0.25);
+    color: #86efac;
+  }
+  .small-pill.off {
+    background: rgba(100, 116, 139, 0.08);
+    border: 0.5px solid rgba(100, 116, 139, 0.25);
+    color: #94a3b8;
+  }
+  .small-pill.occ-occ {
+    background: rgba(34, 197, 94, 0.08);
+    border: 0.5px solid rgba(34, 197, 94, 0.25);
+    color: #86efac;
+  }
+  .small-pill.occ-warn {
+    background: rgba(239, 68, 68, 0.1);
+    border: 0.5px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+  .small-pill.occ-idle {
+    background: rgba(245, 158, 11, 0.1);
+    border: 0.5px solid rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+  }
+  .pdot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 5px currentColor;
+    animation: pdot-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pdot-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+  .hsp { flex: 1; }
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--color-copy-soft, #94a3b8);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 110ms ease, background 110ms ease;
+  }
+  .header-nav:hover {
+    color: var(--color-copy, #e2e8f0);
+    background: rgba(255, 255, 255, 0.04);
   }
 
-  .footer-label {
-    color: var(--color-copy-muted);
+  /* ── BODY — centered hero ── */
+  .body-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 0;
+    gap: 24px;
+  }
+  .eyebrow {
     font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--color-copy-soft, #94a3b8);
+    background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.4), transparent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-align: center;
+  }
+  .src-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    width: 80%;
+    max-height: 440px;
+  }
+  .hero-card {
+    background: rgba(12, 20, 36, 0.97);
+    border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 36px 18px;
+    cursor: pointer;
+    transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+    position: relative;
+    color: inherit;
+  }
+  .hero-card:hover {
+    border-color: rgba(245, 166, 35, 0.3);
+    transform: translateY(-2px);
+  }
+  .hc-ico {
+    color: var(--color-copy-soft, #94a3b8);
+    transition: color 220ms ease;
+  }
+  .hc-name {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--color-copy, #e2e8f0);
+  }
+  .hc-sub {
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    margin-right: 8px;
+    color: var(--color-copy-muted, #64748b);
+  }
+  .hero-card.active {
+    border: 1px solid #f5a623;
+    box-shadow:
+      0 0 32px rgba(245, 166, 35, 0.28),
+      0 0 0 1px rgba(245, 166, 35, 0.2),
+      0 14px 40px rgba(245, 166, 35, 0.18);
+  }
+  .hero-card.active .hc-ico,
+  .hero-card.active .hc-name { color: #f5a623; }
+
+  /* Advanced Routing chip — top-right of body area */
+  .adv-float {
+    position: absolute;
+    top: -2px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 7px;
+    background: rgba(30, 41, 59, 0.55);
+    border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
+    color: var(--color-copy-soft, #94a3b8);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 110ms ease, color 110ms ease, border-color 110ms ease;
+  }
+  .adv-float:hover {
+    background: rgba(245, 166, 35, 0.08);
+    color: #f5a623;
+    border-color: rgba(245, 166, 35, 0.25);
   }
 
-  .power-btn {
-    min-width: 132px;
+  /* ── FOOTER ── */
+  .app-footer {
+    background: rgba(12, 20, 36, 0.97);
+    border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
+    border-radius: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 22px;
+    gap: 18px;
+  }
+  .pwr-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    background: rgba(245, 166, 35, 0.08);
+    border: 0.5px solid rgba(245, 166, 35, 0.32);
+    color: #f5a623;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 110ms ease;
+  }
+  .pwr-btn:hover { background: rgba(245, 166, 35, 0.16); }
+  .pwr-btn.primary {
+    background: rgba(245, 166, 35, 0.18);
+    box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.25);
   }
 
-  .vol-group, .mic-group, .nav-group {
+  .mics {
     display: flex;
     align-items: center;
     gap: 8px;
+    justify-content: center;
   }
-  .footer-btn { min-height: 56px; padding: 0 16px; font-size: 13px; }
-  .nav-btn { min-height: 56px; padding: 0 18px; font-size: 13px; }
-  .nav-group { margin-left: auto; }
+  .footer-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-copy-muted, #64748b);
+  }
+  .mbtn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
+    background: transparent;
+    color: var(--color-copy-soft, #94a3b8);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 110ms ease, color 110ms ease, border-color 110ms ease;
+  }
+  .mbtn.live {
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.07);
+  }
+  .mbtn.muted {
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.07);
+  }
+
+  /* Volume — right aligned, transparent buttons (icons + text only) */
+  .vol-grp {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: end;
+  }
+  .vbtn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    color: var(--color-copy-soft, #94a3b8);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 110ms ease;
+  }
+  .vbtn:hover { color: #f5a623; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pdot { animation: none; }
+    .hero-card { transition: none; }
+  }
 </style>
