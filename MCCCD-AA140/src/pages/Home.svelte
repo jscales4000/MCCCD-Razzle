@@ -223,6 +223,12 @@
 <ConfirmShutdownModal
   open={showShutdownModal}
   countdown={30}
+  vacancyMinutes={$occupancyState === 2 ? $shutdownCountdown : undefined}
+  shutdownItems={[
+    { icon: 'display', label: '3 Displays (D1 Front Left, D2 Front Right, D3 Rear)' },
+    { icon: 'audio',   label: 'Audio system + all 5 microphone channels' },
+    { icon: 'camera',  label: 'Camera system (2 PTZ cameras)' },
+  ]}
   onConfirm={confirmShutdown}
   onCancel={cancelShutdown}
 />
