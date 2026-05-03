@@ -14,6 +14,7 @@
   import { goToPage } from '../lib/stores/page';
   import DisplayTile from '../components/DisplayTile.svelte';
   import ConfirmShutdownModal from '../components/ConfirmShutdownModal.svelte';
+  import HomeSplash from '../components/HomeSplash.svelte';
 
   // Preview dock (browser-dev only)
   const BASE_WIDTH = 1280;
@@ -111,8 +112,9 @@
 </svelte:head>
 
 <div class="panel-stage">
-  <div class="app-shell layout-home">
+  <div class="app-shell layout-home" class:splash-mode={!$systemPowerFb}>
 
+    {#if $systemPowerFb}
     <header class="app-header glass-card">
       <div class="header-copy">
         <p class="eyebrow">CH5 Touch Panel</p>
@@ -202,6 +204,15 @@
         </button>
       </div>
     </footer>
+    {:else}
+    <HomeSplash
+      roomName={ROOM_NAME}
+      panelOnline={$panelOnline}
+      occupancyState={$occupancyState}
+      shutdownCountdown={$shutdownCountdown}
+      onPowerOn={() => pulseDigital(SIGNALS.displayPower)}
+    />
+    {/if}
 
   </div>
 
@@ -241,6 +252,10 @@
     width: 100%;
     height: 100%;
     padding: 20px;
+  }
+  .layout-home.splash-mode {
+    display: block;
+    padding: 0;
   }
   .header-right {
     display: flex;
