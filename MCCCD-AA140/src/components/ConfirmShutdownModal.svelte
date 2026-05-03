@@ -154,8 +154,10 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: rgba(2, 6, 23, 0.92);
-    backdrop-filter: blur(8px);
+    width: 100vw;
+    height: 100vh;
+    background-color: #04080f;       /* solid — no transparency relies on bg below */
+    background-image: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.06), transparent 65%);
     display: grid;
     place-items: center;
     z-index: 1000;
