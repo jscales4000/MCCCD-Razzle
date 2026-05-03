@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
-
   type ShutdownItem = {
     icon: 'display' | 'audio' | 'camera';
     label: string;
@@ -29,7 +27,6 @@
   }: Props = $props();
 
   let remaining = $state(countdown);
-  let timer: ReturnType<typeof setInterval> | undefined;
 
   // SVG ring math: circumference of r=52 ≈ 326.
   // dashoffset = circumference × (1 − remaining/countdown).
@@ -46,40 +43,26 @@
         : 'Are you sure you want to shut down?')
   );
 
+  // $effect runs whenever `open` flips. When the effect re-runs (or the
+  // component unmounts), the returned cleanup function fires automatically,
+  // clearing any in-flight interval. This consolidates teardown in one place.
   $effect(() => {
-    if (open) {
-      remaining = countdown;
-      timer = setInterval(() => {
-        remaining -= 1;
-        if (remaining <= 0) {
-          if (timer !== undefined) clearInterval(timer);
-          timer = undefined;
-          onConfirm();
-        }
-      }, 1000);
-    } else if (timer !== undefined) {
-      clearInterval(timer);
-      timer = undefined;
-    }
-  });
-
-  onDestroy(() => {
-    if (timer !== undefined) clearInterval(timer);
+    if (!open) return;
+    remaining = countdown;
+    const id = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        onConfirm();
+      }
+    }, 1000);
+    return () => clearInterval(id);
   });
 
   function handleConfirm() {
-    if (timer !== undefined) {
-      clearInterval(timer);
-      timer = undefined;
-    }
     onConfirm();
   }
 
   function handleCancel() {
-    if (timer !== undefined) {
-      clearInterval(timer);
-      timer = undefined;
-    }
     onCancel();
   }
 </script>
