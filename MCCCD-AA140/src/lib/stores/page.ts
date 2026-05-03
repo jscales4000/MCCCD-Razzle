@@ -1,10 +1,9 @@
 import { writable } from 'svelte/store';
 
-// 'dragdrop' is an un-linked experimental page — preserved from the Stage 2
-// drag-and-drop source routing build. Not reachable via main nav; reach by
-// calling goToPage('dragdrop') from a dev console or a future settings toggle.
-// See MCCCD-AA140/docs/Lessons-Learned/Drag-Drop-Source-Routing-Writeup.md.
-export type PageName = 'home' | 'cameras' | 'settings' | 'dragdrop';
+// Active page route. 'routing' is the Display Routing matrix page (Mockup #14)
+// — reached via tile-tap on Home. 'settings' is on death row pending Plan 4
+// (Audio Mixer rewrite); kept while the legacy Settings page is still wired.
+export type PageName = 'home' | 'cameras' | 'settings' | 'routing';
 
 export const currentPage = writable<PageName>('home');
 

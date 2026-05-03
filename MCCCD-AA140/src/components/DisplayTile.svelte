@@ -1,5 +1,6 @@
 <script lang="ts">
   import { publishAnalog } from '../lib/CrComLib';
+  import { goToPage } from '../lib/stores/page';
 
   interface Props {
     label: string;             // "Display 1" | "Display 2" | "Display 3"
@@ -36,60 +37,106 @@
     const s = sources.find(s => s.value === activeSourceFb);
     return s ? s.label : '—';
   }
+
+  // Tile-chrome tap navigates to the Display Routing matrix page.
+  // Inner buttons stop propagation so they keep their direct-route /
+  // audio-toggle / mirror behaviors without triggering navigation.
+  function navigateToRouting() {
+    goToPage('routing');
+  }
+
+  function onChromeKeyDown(e: KeyboardEvent) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    navigateToRouting();
+  }
 </script>
 
-<div class="glass-card display-tile" class:audio-active={audioActive}>
-  <div class="tile-header">
-    <div class="tile-meta">
-      <p class="tile-label">
-        <span class="power-dot" class:on={powerOn} title={powerOn ? 'Display ON' : 'Display OFF'}></span>
-        {label}
-      </p>
-      <p class="tile-source">{activeLabel()}</p>
+<!--
+  Outer wrapper is a transparent click target around the tile chrome.
+  Inner buttons (source-select, audio toggle, mirror) call
+  event.stopPropagation() so a button tap doesn't bubble into navigation.
+-->
+<div
+  class="tile-chrome"
+  onclick={navigateToRouting}
+  onkeydown={onChromeKeyDown}
+  role="button"
+  tabindex="0"
+  aria-label="{label} — open routing"
+>
+  <div class="glass-card display-tile" class:audio-active={audioActive}>
+    <div class="tile-header">
+      <div class="tile-meta">
+        <p class="tile-label">
+          <span class="power-dot" class:on={powerOn} title={powerOn ? 'Display ON' : 'Display OFF'}></span>
+          {label}
+        </p>
+        <p class="tile-source">{activeLabel()}</p>
+      </div>
+      <div class="tile-actions">
+        {#if onAudioToggle}
+          <button
+            class="icon-btn"
+            class:active={audioActive}
+            onclick={(e) => { e.stopPropagation(); onAudioToggle?.(); }}
+            aria-pressed={audioActive}
+            aria-label="Route room audio to this display"
+            title="Route room audio to this display"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/>
+              <path d="M16 8c1.5 1 2.5 2.5 2.5 4S17.5 15 16 16" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            </svg>
+          </button>
+        {/if}
+        {#if onMirrorToD3}
+          <button
+            class="icon-btn"
+            onclick={(e) => { e.stopPropagation(); onMirrorToD3?.(); }}
+            aria-label="Mirror this display to Display 3"
+            title="Mirror this display to Display 3"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path d="M7 17L17 7M17 7H10M17 7V14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        {/if}
+      </div>
     </div>
-    <div class="tile-actions">
-      {#if onAudioToggle}
+    <div class="source-grid">
+      {#each sources as src}
         <button
-          class="icon-btn"
-          class:active={audioActive}
-          onclick={onAudioToggle}
-          aria-pressed={audioActive}
-          aria-label="Route room audio to this display"
-          title="Route room audio to this display"
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path d="M3 10v4h4l5 4V6L7 10H3z" fill="currentColor"/>
-            <path d="M16 8c1.5 1 2.5 2.5 2.5 4S17.5 15 16 16" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-          </svg>
-        </button>
-      {/if}
-      {#if onMirrorToD3}
-        <button
-          class="icon-btn"
-          onclick={onMirrorToD3}
-          aria-label="Mirror this display to Display 3"
-          title="Mirror this display to Display 3"
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <path d="M7 17L17 7M17 7H10M17 7V14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      {/if}
+          class="btn source-btn"
+          class:active={activeSourceFb === src.value}
+          onclick={(e) => { e.stopPropagation(); selectSource(src.value); }}
+          aria-pressed={activeSourceFb === src.value}
+        >{src.label}</button>
+      {/each}
     </div>
-  </div>
-  <div class="source-grid">
-    {#each sources as src}
-      <button
-        class="btn source-btn"
-        class:active={activeSourceFb === src.value}
-        onclick={() => selectSource(src.value)}
-        aria-pressed={activeSourceFb === src.value}
-      >{src.label}</button>
-    {/each}
   </div>
 </div>
 
 <style>
+  .tile-chrome {
+    cursor: pointer;
+    display: flex;
+    min-height: 0;
+    /* Transparent target — does not alter the inner card's appearance. */
+    background: transparent;
+    border: 0;
+    padding: 0;
+    border-radius: var(--radius-panel, 14px);
+    outline: none;
+  }
+  .tile-chrome:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
+  }
+  .tile-chrome > .display-tile {
+    flex: 1;
+    /* Don't override the card's own cursor when hovered over inner buttons. */
+  }
+
   .display-tile {
     padding: 18px;
     display: flex;
@@ -142,6 +189,11 @@
   .tile-actions {
     display: flex;
     gap: 4px;
+  }
+  /* Inner buttons keep their default button cursor. */
+  .icon-btn,
+  .source-btn {
+    cursor: pointer;
   }
 
   .source-grid {

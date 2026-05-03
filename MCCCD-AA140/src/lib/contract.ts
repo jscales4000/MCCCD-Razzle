@@ -138,5 +138,12 @@ export const SIGNALS = {
   micCeiling1Connected:   `${ROOM_NAME}.MicCeiling1Connected`,
   micCeiling2Connected:   `${ROOM_NAME}.MicCeiling2Connected`,
   micCeiling3Connected:   `${ROOM_NAME}.MicCeiling3Connected`,
+
+  // Plan 3 — Display Routing (Mockup #14)
+  routingMode:           `${ROOM_NAME}.RoutingMode`,         // analog set (1=Manual, 2=Mirror, 3=Extend)
+  routingModeFb:         `${ROOM_NAME}.RoutingModeFb`,       // analog feedback
+  autoRouteEnable:       `${ROOM_NAME}.AutoRouteEnable`,     // digital toggle
+  autoRouteEnableFb:     `${ROOM_NAME}.AutoRouteEnableFb`,   // digital feedback
+  mirrorAllSame:         `${ROOM_NAME}.MirrorAllSame`,       // digital pulse
 } as const;
 

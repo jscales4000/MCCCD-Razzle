@@ -64,6 +64,10 @@ export const shutdownCountdown = writable<number>(0);
 // Camera tracking mode (Front/Back-L/Back-R selection is local UI state, not stored here)
 export const camTrackingModeFb = writable<1 | 2 | 3>(3); // default VX AutoSwitch
 
+// Display routing mode + auto-route (Plan 3 — Mockup #14)
+export const routingModeFb = writable<number>(0);            // 0=unset, 1=Manual, 2=Mirror, 3=Extend
+export const autoRouteEnableFb = writable<boolean>(false);
+
 // Wire feedback subscriptions on app startup. Called from src/main.ts after
 // CrComLib is detected.
 export function initSignals(): void {
@@ -113,4 +117,7 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.shutdownCountdown,   (v) => shutdownCountdown.set(v));
 
   subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
+
+  subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
+  subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
 }

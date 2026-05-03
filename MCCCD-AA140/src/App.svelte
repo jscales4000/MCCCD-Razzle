@@ -3,7 +3,7 @@
   import Home from './pages/Home.svelte';
   import Cameras from './pages/Cameras.svelte';
   import Settings from './pages/Settings.svelte';
-  import DragDropRouter from './pages/DragDropRouter.svelte';
+  import DisplayRouting from './pages/DisplayRouting.svelte';
   import DragCloneOverlay from './components/DragCloneOverlay.svelte';
 </script>
 
@@ -21,18 +21,15 @@
   <Cameras />
 {:else if $currentPage === 'settings'}
   <Settings />
-{:else if $currentPage === 'dragdrop'}
-  <!-- Experimental sub-page; not reachable from main nav. Reach via
-       goToPage('dragdrop') from a dev console or future settings toggle.
-       Kept until the chrome realignment to Mockup 10 is in place. -->
-  <DragDropRouter />
+{:else if $currentPage === 'routing'}
+  <!-- Display Routing matrix page (Mockup #14). Reached via tile-tap on Home. -->
+  <DisplayRouting />
 {/if}
 
 <!--
   DragCloneOverlay lives at the App root, OUTSIDE the .panel-stage transform,
   so the dragging chip uses raw viewport coordinates without double-scaling.
   Renders nothing unless a drag is in flight. Always mounted because the
-  DragDropRouter sub-page relies on its presence; harmless when no drag
-  is active and not on the dragdrop page.
+  routing page relies on its presence; harmless when no drag is active.
 -->
 <DragCloneOverlay />
