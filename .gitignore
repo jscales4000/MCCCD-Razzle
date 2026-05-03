@@ -14,3 +14,6 @@ MCCCD-AA140-SIMPL/**/obj/
 MCCCD-AA140-SIMPL/**/.vs/
 MCCCD-AA140-SIMPL/**/*.user
 MCCCD-AA140-SIMPL/**/*.suo
+
+# Git worktrees (isolated implementation workspaces)
+.worktrees/
