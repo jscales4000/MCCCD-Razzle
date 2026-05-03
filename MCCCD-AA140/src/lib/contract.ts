@@ -145,5 +145,11 @@ export const SIGNALS = {
   autoRouteEnable:       `${ROOM_NAME}.AutoRouteEnable`,     // digital toggle
   autoRouteEnableFb:     `${ROOM_NAME}.AutoRouteEnableFb`,   // digital feedback
   mirrorAllSame:         `${ROOM_NAME}.MirrorAllSame`,       // digital pulse
+
+  // Plan 4 — Audio Mixer (Mockup #13)
+  progAudioLevelFb:      `${ROOM_NAME}.ProgAudioLevelFb`,    // analog fb (master fader read-back)
+  sceneRecallFb:         `${ROOM_NAME}.SceneRecallFb`,       // analog fb (1-4 active preset)
+  audioLinkCeilings12:   `${ROOM_NAME}.AudioLinkCeilings12`, // digital toggle
+  audioLinkCeilings12Fb: `${ROOM_NAME}.AudioLinkCeilings12Fb`,
 } as const;
 

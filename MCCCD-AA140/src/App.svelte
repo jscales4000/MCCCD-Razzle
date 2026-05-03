@@ -2,7 +2,7 @@
   import { currentPage } from './lib/stores/page';
   import Home from './pages/Home.svelte';
   import Cameras from './pages/Cameras.svelte';
-  import Settings from './pages/Settings.svelte';
+  import AudioMixer from './pages/AudioMixer.svelte';
   import DisplayRouting from './pages/DisplayRouting.svelte';
   import DragCloneOverlay from './components/DragCloneOverlay.svelte';
 </script>
@@ -19,8 +19,9 @@
   <Home />
 {:else if $currentPage === 'cameras'}
   <Cameras />
-{:else if $currentPage === 'settings'}
-  <Settings />
+{:else if $currentPage === 'audio'}
+  <!-- Audio Mixer page (Mockup #13). Reached via the Audio button on Home's footer. -->
+  <AudioMixer />
 {:else if $currentPage === 'routing'}
   <!-- Display Routing matrix page (Mockup #14). Reached via tile-tap on Home. -->
   <DisplayRouting />

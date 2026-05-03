@@ -195,12 +195,12 @@
           </svg>
           <span>Cameras</span>
         </button>
-        <button class="btn nav-btn" onclick={() => goToPage('settings')} aria-label="Open settings page">
+        <button class="btn nav-btn" onclick={() => goToPage('audio')} aria-label="Open audio mixer page">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-            <circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
-            <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <path d="M11 5L6 9H2v6h4l5 4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="1.8" fill="none"/>
           </svg>
-          <span>Settings</span>
+          <span>Audio</span>
         </button>
       </div>
     </footer>

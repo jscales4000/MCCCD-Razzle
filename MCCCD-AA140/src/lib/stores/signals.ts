@@ -68,6 +68,11 @@ export const camTrackingModeFb = writable<1 | 2 | 3>(3); // default VX AutoSwitc
 export const routingModeFb = writable<number>(0);            // 0=unset, 1=Manual, 2=Mirror, 3=Extend
 export const autoRouteEnableFb = writable<boolean>(false);
 
+// Audio mixer (Plan 4 — Mockup #13)
+export const progAudioLevelFb = writable<number>(50);        // master fader fb (0-100)
+export const sceneRecallFb = writable<number>(0);            // 0=none, 1-4=active preset
+export const audioLinkCeilings12Fb = writable<boolean>(false);
+
 // Wire feedback subscriptions on app startup. Called from src/main.ts after
 // CrComLib is detected.
 export function initSignals(): void {
@@ -120,4 +125,8 @@ export function initSignals(): void {
 
   subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
   subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
+
+  subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
+  subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
+  subscribeDigital(SIGNALS.audioLinkCeilings12Fb,(v) => audioLinkCeilings12Fb.set(v));
 }
