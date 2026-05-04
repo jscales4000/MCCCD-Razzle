@@ -30,7 +30,7 @@
 
 ## HIGH priority
 
-- [ ] **H1. Bump Vite build target from `es2015` → `es2020`** — *files: `vite.config.ts`* — *risk: low* — *expected: ~6–10 KB JS off `index-*.js` (helpers for `??`, `?.`, async, classes, spread)*
+- [x] **H1. Bump Vite build target from `es2015` → `es2020`** — *files: `vite.config.ts`* — *risk: low* — *expected: ~6–10 KB JS off `index-*.js`* — **DONE iter-2** — *actual: -2,487 B (113,229 → 110,742) ≈ -2.2%; below upper estimate because most app code already used post-ES2015 syntax that down-leveled minimally*
   > The TS-1070 ships a modern Chromium and `cr-com-lib.js` already uses ES2018+ syntax (verified in `dist/cr-com-lib.js`), so the polyfill floor is already at least ES2018. Set `build.target: 'es2020'` (or `'chrome91'` to be conservative — TS-1070 firmware ships a Chromium 91-class engine per Crestron docs). Keep an eye on Svelte 5 runes output — esbuild down-leveling for runes-mode generates `Object.defineProperty` polyfills under es2015 that vanish at es2020. Run `npm run build`, `ls -la dist/assets/`, eyeball the JS size delta. No code changes needed elsewhere. If the panel runtime fails to boot post-change, drop back to `chrome87` and try again.
 
 - [ ] **H2. Remove unused `glass-card` `backdrop-filter: blur(16px)` from `global.css`** — *files: `src/global.css`* — *risk: low* — *expected: ~1–2 fps recovered on Cameras + preview-dock paints; eliminates a known panel hot-spot per project history*
@@ -122,4 +122,5 @@ The loop **must halt** when any of the following holds:
 
 | Date | Item | Commit | Result |
 |---|---|---|---|
-| (loop appends here) | | | |
+| 2026-05-03 | iter-1 audit (this doc) | f65079f | 22 actionable + 5 deferred items |
+| 2026-05-03 | H1 es2020 target | pending iter-2 | JS -2,487 B (-2.2%) |

@@ -34,6 +34,11 @@ export default defineConfig({
   base: './',
   build: {
     outDir: 'dist',
-    target: 'es2015'
+    // TS-1070 ships a Chromium 91-class engine and cr-com-lib.js itself uses
+    // ES2018+ syntax, so the polyfill floor is already past ES2015. Bumping
+    // the Vite target to ES2020 drops legacy helpers for nullish-coalescing,
+    // optional-chaining, async/await, classes, and spread that the runtime
+    // doesn't need. Audit item H1.
+    target: 'es2020'
   }
 });
