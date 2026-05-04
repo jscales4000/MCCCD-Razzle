@@ -165,14 +165,14 @@
       <div class="hsp"></div>
 
       <button class="header-nav" onclick={() => goToPage('cameras')} aria-label="Open cameras page">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path d="M4 7h4l2-2h4l2 2h4v12H4z"/>
           <circle cx="12" cy="13" r="3.6"/>
         </svg>
         Cameras
       </button>
       <button class="header-nav" onclick={() => goToPage('audio')} aria-label="Open audio mixer page">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
         </svg>
@@ -182,7 +182,7 @@
 
     <main class="body-wrap">
       <button class="adv-float" onclick={() => goToPage('routing')} aria-label="Open advanced display routing">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
           <rect x="3" y="3" width="7" height="7"/>
           <rect x="14" y="3" width="7" height="7"/>
           <rect x="3" y="14" width="7" height="7"/>
@@ -233,37 +233,43 @@
       <div class="mics">
         <span class="footer-label">Mics</span>
         <button class="mbtn" class:live={!$micLavMuteFb} class:muted={$micLavMuteFb} onclick={toggleLavMute}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
           </svg>
-          {$micLavMuteFb ? 'Lav (muted)' : 'Lav'}
+          <span class="mbtn-text">
+            <span class="mbtn-name">Lav</span>
+            <span class="mbtn-status">{$micLavMuteFb ? 'Muted' : 'Live'}</span>
+          </span>
         </button>
         <button class="mbtn" class:live={!$micHandheldMuteFb} class:muted={$micHandheldMuteFb} onclick={toggleHandheldMute}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
           </svg>
-          {$micHandheldMuteFb ? 'Handheld (muted)' : 'Handheld'}
+          <span class="mbtn-text">
+            <span class="mbtn-name">Handheld</span>
+            <span class="mbtn-status">{$micHandheldMuteFb ? 'Muted' : 'Live'}</span>
+          </span>
         </button>
       </div>
 
       <div class="vol-grp">
         <span class="footer-label">Vol</span>
         <button class="vbtn" onclick={volDown} aria-label="Volume down">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
             <path d="M16 12h6"/>
           </svg>
           −
         </button>
         <button class="vbtn" onclick={toggleMaster} aria-label="Mute toggle">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
             <path d="M16 9l6 6M22 9l-6 6"/>
           </svg>
           Mute
         </button>
         <button class="vbtn" onclick={volUp} aria-label="Volume up">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
             <path d="M16 12h6M19 9v6"/>
           </svg>
@@ -314,10 +320,10 @@
 <VolumePopup bind:this={volumePopup} level={$progAudioLevelFb} />
 
 <style>
-  /* ── Mockup 22 — Centered Hero ── */
+  /* ── Mockup 22 — Centered Hero (with #24 Layered-Depth + #25 Medium/Large/Prominent sizing) ── */
   .layout-home {
     display: grid;
-    grid-template-rows: 70px 1fr 80px;
+    grid-template-rows: 80px 1fr 96px;
     gap: 14px;
     width: 100%;
     height: 100%;
@@ -402,27 +408,32 @@
     50%      { opacity: 0.4; }
   }
   .hsp { flex: 1; }
+  /* Header nav — Medium (Mockup #25) — 40px tall, comfortable touch */
   .header-nav {
     appearance: none;
     -webkit-appearance: none;
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    background-color: transparent;
-    border: none;
+    gap: 9px;
+    min-height: 40px;
+    min-width: 120px;
+    padding: 0 18px;
+    border-radius: 9px;
+    background-color: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
     color: var(--color-copy-soft, #94a3b8);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: color 110ms ease, background-color 110ms ease;
+    transition: color 110ms ease, background-color 110ms ease, border-color 110ms ease;
+    font-family: inherit;
   }
   .header-nav:hover {
     color: var(--color-copy, #e2e8f0);
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: rgba(51, 65, 85, 0.7);
+    border-color: rgba(148, 163, 184, 0.3);
   }
 
   /* ── BODY — centered hero ── */
@@ -454,12 +465,13 @@
     width: 80%;
     max-height: 440px;
   }
+  /* Source button — Layered Depth (Mockup #24 variant 3) */
   .hero-card {
     appearance: none;
     -webkit-appearance: none;
-    background-color: #0c1424;
-    background-image: linear-gradient(180deg, rgba(20, 30, 50, 0.6), rgba(8, 14, 26, 0.6));
-    border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
+    background-color: #08101e;
+    background-image: linear-gradient(180deg, #14213a, #08101e);
+    border: 0.5px solid rgba(148, 163, 184, 0.2);
     border-radius: 18px;
     display: flex;
     flex-direction: column;
@@ -468,8 +480,9 @@
     gap: 18px;
     padding: 36px 18px;
     cursor: pointer;
-    transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+    transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
     position: relative;
+    overflow: hidden;
     color: inherit;
     font: inherit;
   }
@@ -494,44 +507,63 @@
     text-transform: uppercase;
     color: var(--color-copy-muted, #64748b);
   }
+  /* Active state: 3px orange stripe across the top edge + faint card glow */
   .hero-card.active {
-    border: 1px solid #f5a623;
+    border-color: rgba(245, 166, 35, 0.35);
     box-shadow:
-      0 0 32px rgba(245, 166, 35, 0.28),
-      0 0 0 1px rgba(245, 166, 35, 0.2),
-      0 14px 40px rgba(245, 166, 35, 0.18);
+      0 0 24px rgba(245, 166, 35, 0.18),
+      0 14px 40px rgba(245, 166, 35, 0.1);
+  }
+  .hero-card.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #f5a623 18%, #f5a623 82%, transparent);
+    pointer-events: none;
   }
   .hero-card.active .hc-ico,
   .hero-card.active .hc-name { color: #f5a623; }
 
   /* Advanced Routing chip — top-right of body area */
+  /* Advanced Routing — Prominent (Mockup #25) — orange-on-navy, 52px tall */
   .adv-float {
     appearance: none;
     -webkit-appearance: none;
     position: absolute;
-    top: -2px;
-    right: 0;
+    top: 4px;
+    right: 8px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border-radius: 7px;
-    background-color: rgba(30, 41, 59, 0.85);
-    border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
-    color: var(--color-copy-soft, #94a3b8);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    gap: 9px;
+    min-height: 52px;
+    padding: 0 22px;
+    border-radius: 11px;
+    background-color: #f5a623;
+    background-image: linear-gradient(180deg, #f9b94a, #ec9415);
+    border: 1px solid rgba(245, 166, 35, 0.6);
+    color: #1a1208;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: background-color 110ms ease, color 110ms ease, border-color 110ms ease;
+    transition: filter 110ms ease, transform 110ms ease, box-shadow 110ms ease;
+    box-shadow:
+      0 6px 18px rgba(245, 166, 35, 0.32),
+      0 0 0 1px rgba(245, 166, 35, 0.1);
     font-family: inherit;
   }
   .adv-float:hover {
-    background-color: rgba(245, 166, 35, 0.12);
-    color: #f5a623;
-    border-color: rgba(245, 166, 35, 0.25);
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+    box-shadow:
+      0 10px 24px rgba(245, 166, 35, 0.4),
+      0 0 0 1px rgba(245, 166, 35, 0.15);
   }
+  .adv-float:active { transform: translateY(0); }
 
   /* ── FOOTER ── */
   .app-footer {
@@ -549,13 +581,14 @@
     -webkit-appearance: none;
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 10px 18px;
-    border-radius: 9px;
+    gap: 11px;
+    min-height: 52px;
+    padding: 0 22px;
+    border-radius: 10px;
     background-color: rgba(245, 166, 35, 0.12);
     border: 0.5px solid rgba(245, 166, 35, 0.32);
     color: #f5a623;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -582,22 +615,43 @@
     text-transform: uppercase;
     color: var(--color-copy-muted, #64748b);
   }
+  /* Mic toggles — Large (Mockup #25) — 56px tall, dual-row name + status */
   .mbtn {
     appearance: none;
     -webkit-appearance: none;
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 8px 13px;
-    border-radius: 8px;
+    gap: 11px;
+    min-height: 56px;
+    min-width: 120px;
+    padding: 0 18px;
+    border-radius: 10px;
     border: 0.5px solid var(--color-border, rgba(148, 163, 184, 0.15));
     background-color: rgba(15, 23, 42, 0.6);
     color: var(--color-copy-soft, #94a3b8);
-    font-size: 11px;
-    font-weight: 700;
     cursor: pointer;
     transition: background-color 110ms ease, color 110ms ease, border-color 110ms ease;
     font-family: inherit;
+    text-align: left;
+  }
+  .mbtn-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    line-height: 1.1;
+  }
+  .mbtn-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .mbtn-status {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.85;
   }
   .mbtn.live {
     color: #86efac;
@@ -617,17 +671,20 @@
     gap: 10px;
     justify-self: end;
   }
+  /* Volume buttons — Medium (Mockup #25) — 44px tall, transparent (icon + text only) */
   .vbtn {
     appearance: none;
     -webkit-appearance: none;
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 8px 12px;
+    gap: 9px;
+    min-height: 44px;
+    min-width: 80px;
+    padding: 0 14px;
     background-color: transparent;
     border: none;
     color: var(--color-copy-soft, #94a3b8);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -636,6 +693,7 @@
     font-family: inherit;
   }
   .vbtn:hover { color: #f5a623; }
+  .vbtn:active { transform: scale(0.97); }
 
   @media (prefers-reduced-motion: reduce) {
     .pdot { animation: none; }
