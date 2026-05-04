@@ -1,10 +1,12 @@
 <script lang="ts">
   import { currentPage } from './lib/stores/page';
   import Home from './pages/Home.svelte';
-  import Cameras from './pages/Cameras.svelte';
-  import AudioMixer from './pages/AudioMixer.svelte';
-  import DisplayRouting from './pages/DisplayRouting.svelte';
   import DragCloneOverlay from './components/DragCloneOverlay.svelte';
+
+  // Home + DragCloneOverlay load synchronously (always-needed first paint).
+  // Cameras / AudioMixer / DisplayRouting are dynamic-imported so their JS
+  // and CSS land in separate Vite chunks, only fetched when the user
+  // navigates to that page. Per-audit H3 — biggest single first-paint win.
 </script>
 
 <!--
@@ -18,13 +20,22 @@
 {#if $currentPage === 'home'}
   <Home />
 {:else if $currentPage === 'cameras'}
-  <Cameras />
+  {#await import('./pages/Cameras.svelte') then mod}
+    {@const Cameras = mod.default}
+    <Cameras />
+  {/await}
 {:else if $currentPage === 'audio'}
   <!-- Audio Mixer page (Mockup #13). Reached via the Audio button on Home's footer. -->
-  <AudioMixer />
+  {#await import('./pages/AudioMixer.svelte') then mod}
+    {@const AudioMixer = mod.default}
+    <AudioMixer />
+  {/await}
 {:else if $currentPage === 'routing'}
   <!-- Display Routing matrix page (Mockup #14). Reached via tile-tap on Home. -->
-  <DisplayRouting />
+  {#await import('./pages/DisplayRouting.svelte') then mod}
+    {@const DisplayRouting = mod.default}
+    <DisplayRouting />
+  {/await}
 {/if}
 
 <!--
