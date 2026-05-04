@@ -126,22 +126,28 @@
   }
 
   onMount(() => {
-    showPreviewDock = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
-    applyViewport = () => {
-      const profile = DEVICE_PROFILES[previewMode];
-      const w = profile?.width ?? window.innerWidth;
-      const h = profile?.height ?? window.innerHeight;
-      const scale = Math.min(w / BASE_WIDTH, h / BASE_HEIGHT);
-      document.documentElement.style.setProperty('--panel-scale', scale.toString());
-      document.documentElement.style.setProperty('--viewport-width', `${w}px`);
-      document.documentElement.style.setProperty('--viewport-height', `${h}px`);
-      viewportLabel = `${w}x${h}`;
-      scaleLabel = `${scale.toFixed(2)}x`;
-      profileLabel = profile?.label ?? 'Auto';
-    };
-    applyViewport();
-    window.addEventListener('resize', applyViewport);
-    return () => window.removeEventListener('resize', applyViewport);
+    // Preview Dock is dev-only — never runs on the panel itself. Wrapping
+    // in import.meta.env.DEV lets Vite tree-shake the entire branch
+    // (including the resize listener and applyViewport closure) out of
+    // production builds. Per audit H6.
+    if (import.meta.env.DEV) {
+      showPreviewDock = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+      applyViewport = () => {
+        const profile = DEVICE_PROFILES[previewMode];
+        const w = profile?.width ?? window.innerWidth;
+        const h = profile?.height ?? window.innerHeight;
+        const scale = Math.min(w / BASE_WIDTH, h / BASE_HEIGHT);
+        document.documentElement.style.setProperty('--panel-scale', scale.toString());
+        document.documentElement.style.setProperty('--viewport-width', `${w}px`);
+        document.documentElement.style.setProperty('--viewport-height', `${h}px`);
+        viewportLabel = `${w}x${h}`;
+        scaleLabel = `${scale.toFixed(2)}x`;
+        profileLabel = profile?.label ?? 'Auto';
+      };
+      applyViewport();
+      window.addEventListener('resize', applyViewport);
+      return () => window.removeEventListener('resize', applyViewport);
+    }
   });
 </script>
 
@@ -293,7 +299,7 @@
 
   </div>
 
-  {#if showPreviewDock}
+  {#if import.meta.env.DEV && showPreviewDock}
     <aside class="preview-dock glass-card" aria-label="Local resolution preview controls">
       <div class="preview-copy">
         <strong>{profileLabel}</strong>
