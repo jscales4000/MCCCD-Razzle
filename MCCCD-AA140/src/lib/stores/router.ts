@@ -340,6 +340,11 @@ export function onPointerCancel(_e: PointerEvent): void {
 }
 
 // ── Click-outside disarm (attached once on module load) ────────────────
+// passive: true is a hint to the touch-event scheduler that this listener
+// will not preventDefault. The handler doesn't, so opting in lets the
+// driver dispatch the click without the synchronous-block fallback path.
+// Per audit M7. CH5 panels don't scroll so the runtime impact is minor,
+// but it's free hygiene.
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (e) => {
     if (!get(armedSource)) return;
@@ -347,5 +352,5 @@ if (typeof document !== 'undefined') {
     const onChip = target?.closest('.chip');
     const onTile = target?.closest('.tile');
     if (!onChip && !onTile) disarm();
-  });
+  }, { passive: true });
 }
