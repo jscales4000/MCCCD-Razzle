@@ -15,6 +15,8 @@
   import ConfirmShutdownModal from '../components/ConfirmShutdownModal.svelte';
   import HomeSplash from '../components/HomeSplash.svelte';
   import VolumePopup from '../components/VolumePopup.svelte';
+  import MicIcon from '../lib/ui/MicIcon.svelte';
+  import VolIcon from '../lib/ui/VolIcon.svelte';
 
   // ── Source buttons (Mockup 22 — Centered Hero) ──
   // Tapping a source publishes its value to ALL THREE displays at once.
@@ -172,10 +174,7 @@
         Cameras
       </button>
       <button class="header-nav" onclick={() => goToPage('audio')} aria-label="Open audio mixer page">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-        </svg>
+        <VolIcon variant="audio" size={18} strokeWidth={1.8} />
         Audio
       </button>
     </header>
@@ -234,9 +233,7 @@
         <span class="footer-label">Mics</span>
         <button class="mbtn" class:live={!$micLavMuteFb} class:muted={$micLavMuteFb} onclick={toggleLavMute}>
           <span class="mbtn-icon" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
-            </svg>
+            <MicIcon size={26} />
             {#if !$micLavMuteFb}
               <span class="mbtn-eq">
                 <span></span><span></span><span></span><span></span>
@@ -252,9 +249,7 @@
         </button>
         <button class="mbtn" class:live={!$micHandheldMuteFb} class:muted={$micHandheldMuteFb} onclick={toggleHandheldMute}>
           <span class="mbtn-icon" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
-            </svg>
+            <MicIcon size={26} />
             {#if !$micHandheldMuteFb}
               <span class="mbtn-eq">
                 <span></span><span></span><span></span><span></span>
@@ -273,24 +268,15 @@
       <div class="vol-grp">
         <span class="footer-label">Vol</span>
         <button class="vbtn" onclick={volDown} aria-label="Volume down">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
-            <path d="M16 12h6"/>
-          </svg>
+          <VolIcon variant="down" size={28} />
           −
         </button>
         <button class="vbtn" onclick={toggleMaster} aria-label="Mute toggle">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
-            <path d="M16 9l6 6M22 9l-6 6"/>
-          </svg>
+          <VolIcon variant="mute" size={28} />
           Mute
         </button>
         <button class="vbtn" onclick={volUp} aria-label="Volume up">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/>
-            <path d="M16 12h6M19 9v6"/>
-          </svg>
+          <VolIcon variant="up" size={28} />
           +
         </button>
       </div>
@@ -677,7 +663,7 @@
     height: 36px;
     flex-shrink: 0;
   }
-  .mbtn-icon > svg {
+  .mbtn-icon :global(svg) {
     transition: opacity 200ms ease;
   }
 
@@ -765,7 +751,7 @@
       0 8px 22px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(252, 165, 165, 0.16);
   }
-  .mbtn.muted .mbtn-icon > svg {
+  .mbtn.muted .mbtn-icon :global(svg) {
     opacity: 0.6;
   }
   /* Slash through the icon when muted */
