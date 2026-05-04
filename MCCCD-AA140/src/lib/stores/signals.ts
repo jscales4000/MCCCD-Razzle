@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { SIGNALS } from '../contract';
-import { subscribeAnalog, subscribeDigital } from '../CrComLib';
+import { subscribeAnalog, subscribeDigital, unsubscribeAnalog } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor. Components publish commands via the typed CrComLib helpers
@@ -106,11 +106,9 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.micCeiling2LineOutFb,   (v) => micCeiling2LineOutFb.set(v));
   subscribeAnalog(SIGNALS.micCeiling3LineOutFb,   (v) => micCeiling3LineOutFb.set(v));
 
-  subscribeAnalog(SIGNALS.micLavLevel,         (v) => micLavLevel.set(v));
-  subscribeAnalog(SIGNALS.micHandheldLevel,    (v) => micHandheldLevel.set(v));
-  subscribeAnalog(SIGNALS.micCeiling1Level,    (v) => micCeiling1Level.set(v));
-  subscribeAnalog(SIGNALS.micCeiling2Level,    (v) => micCeiling2Level.set(v));
-  subscribeAnalog(SIGNALS.micCeiling3Level,    (v) => micCeiling3Level.set(v));
+  // Mic real-time levels are subscribed lazily — see initMicLevelSubscriptions()
+  // below. They fire 10-30 Hz from Q-SYS and are only consumed by AudioMixer's
+  // VuMeter, so we gate them per-page to avoid a callback storm at idle.
 
   subscribeDigital(SIGNALS.micLavConnected,        (v) => micLavConnected.set(v));
   subscribeDigital(SIGNALS.micHandheldConnected,   (v) => micHandheldConnected.set(v));
@@ -129,4 +127,37 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
   subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
   subscribeDigital(SIGNALS.audioLinkCeilings12Fb,(v) => audioLinkCeilings12Fb.set(v));
+}
+
+// ── Per-page lazy subscriptions ──────────────────────────────────────
+// Audit H4 (scoped): the 5 mic-level analog signals fire 10-30 Hz EACH
+// from the DSP, so leaving them subscribed at app boot means a constant
+// ~50-150 callback/sec storm even when nothing renders the data. Gate
+// them so they're only live while AudioMixer is mounted.
+
+let micLevelSubscriptionIds: string[] = [];
+
+export function initMicLevelSubscriptions(): void {
+  if (micLevelSubscriptionIds.length > 0) return; // idempotent
+  micLevelSubscriptionIds = [
+    subscribeAnalog(SIGNALS.micLavLevel,      (v) => micLavLevel.set(v)),
+    subscribeAnalog(SIGNALS.micHandheldLevel, (v) => micHandheldLevel.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling1Level, (v) => micCeiling1Level.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling2Level, (v) => micCeiling2Level.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling3Level, (v) => micCeiling3Level.set(v)),
+  ];
+}
+
+export function teardownMicLevelSubscriptions(): void {
+  for (const id of micLevelSubscriptionIds) {
+    if (id) unsubscribeAnalog(id);
+  }
+  micLevelSubscriptionIds = [];
+  // Reset the stored values so a stale meter level doesn't linger if the user
+  // re-enters AudioMixer before SIMPL pushes the next update.
+  micLavLevel.set(0);
+  micHandheldLevel.set(0);
+  micCeiling1Level.set(0);
+  micCeiling2Level.set(0);
+  micCeiling3Level.set(0);
 }

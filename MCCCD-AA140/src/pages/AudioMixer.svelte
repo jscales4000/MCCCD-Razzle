@@ -6,6 +6,7 @@
   toggle. Reached via the "Audio" button in Home's footer.
 -->
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -25,9 +26,15 @@
     micCeiling1LineOutFb, micCeiling2LineOutFb, micCeiling3LineOutFb,
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb, micCeiling3MuteFb,
+    initMicLevelSubscriptions, teardownMicLevelSubscriptions,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
+
+  // Mic level meters (10-30 Hz from Q-SYS) are subscribed lazily so they
+  // don't fire a callback storm when this page isn't mounted. Per-audit H4.
+  onMount(initMicLevelSubscriptions);
+  onDestroy(teardownMicLevelSubscriptions);
 
   // ── Header actions ─────────────────────────────────────────────────
   function volDown() { pulseDigital(SIGNALS.volumeDown); }
