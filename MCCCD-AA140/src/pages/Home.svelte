@@ -234,7 +234,7 @@
         <span class="footer-label">Mics</span>
         <button class="mbtn" class:live={!$micLavMuteFb} class:muted={$micLavMuteFb} onclick={toggleLavMute}>
           <span class="mbtn-icon" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
             </svg>
             {#if !$micLavMuteFb}
@@ -252,7 +252,7 @@
         </button>
         <button class="mbtn" class:live={!$micHandheldMuteFb} class:muted={$micHandheldMuteFb} onclick={toggleHandheldMute}>
           <span class="mbtn-icon" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/>
             </svg>
             {#if !$micHandheldMuteFb}
@@ -642,22 +642,26 @@
     text-transform: uppercase;
     color: var(--color-copy-muted, #64748b);
   }
-  /* Mic toggles — Live, animated, dual-row name + status with pulsing dot */
+  /* Mic toggles — Larger, borderless, layered gradient + glow */
   .mbtn {
     appearance: none;
     -webkit-appearance: none;
     display: flex;
     align-items: center;
-    gap: 14px;
-    min-height: 76px;
-    min-width: 150px;
-    padding: 0 20px;
-    border-radius: 12px;
-    border: 1px solid var(--color-border, rgba(148, 163, 184, 0.15));
-    background-color: rgba(15, 23, 42, 0.6);
+    gap: 16px;
+    min-height: 96px;
+    min-width: 180px;
+    padding: 0 24px;
+    border-radius: 14px;
+    border: none;
+    background-color: rgba(15, 23, 42, 0.7);
+    background-image: linear-gradient(180deg, rgba(30, 41, 59, 0.55), rgba(8, 14, 26, 0.55));
     color: var(--color-copy-soft, #94a3b8);
     cursor: pointer;
-    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 110ms ease;
+    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 110ms ease;
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(148, 163, 184, 0.06);
     font-family: inherit;
     text-align: left;
     position: relative;
@@ -669,8 +673,8 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
   }
   .mbtn-icon > svg {
@@ -713,23 +717,23 @@
     line-height: 1.1;
   }
   .mbtn-name {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 800;
     letter-spacing: -0.01em;
   }
   .mbtn-status {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 10px;
+    gap: 7px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     opacity: 0.95;
   }
   .mbtn-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: currentColor;
     box-shadow: 0 0 6px currentColor;
@@ -737,12 +741,12 @@
 
   .mbtn.live {
     color: #4ade80;
-    border-color: rgba(34, 197, 94, 0.45);
-    background-color: rgba(34, 197, 94, 0.14);
-    background-image: linear-gradient(180deg, rgba(34, 197, 94, 0.18), rgba(34, 197, 94, 0.06));
+    background-color: rgba(34, 197, 94, 0.16);
+    background-image: linear-gradient(180deg, rgba(34, 197, 94, 0.22), rgba(34, 197, 94, 0.06));
     box-shadow:
-      0 0 18px rgba(34, 197, 94, 0.16),
-      inset 0 1px 0 rgba(74, 222, 128, 0.18);
+      0 0 24px rgba(34, 197, 94, 0.22),
+      0 8px 22px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(74, 222, 128, 0.22);
   }
   .mbtn.live .mbtn-dot {
     animation: live-pulse 1.4s ease-in-out infinite;
@@ -754,9 +758,12 @@
 
   .mbtn.muted {
     color: #fca5a5;
-    border-color: rgba(239, 68, 68, 0.4);
     background-color: rgba(239, 68, 68, 0.14);
-    background-image: linear-gradient(180deg, rgba(239, 68, 68, 0.16), rgba(239, 68, 68, 0.06));
+    background-image: linear-gradient(180deg, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.06));
+    box-shadow:
+      0 0 18px rgba(239, 68, 68, 0.14),
+      0 8px 22px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(252, 165, 165, 0.16);
   }
   .mbtn.muted .mbtn-icon > svg {
     opacity: 0.6;
