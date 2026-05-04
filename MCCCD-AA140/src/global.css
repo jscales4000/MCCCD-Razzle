@@ -125,7 +125,11 @@ button {
   border: 0.5px solid var(--color-border);
   border-radius: var(--radius-panel);
   box-shadow: var(--shadow-panel);
-  backdrop-filter: blur(16px);
+  /* backdrop-filter intentionally removed (audit H2) — TS-1070 webview
+     paint cost on `blur(16px)` is significant and the gradient + border
+     above already give the desired contrast against the navy bg. The
+     ConfirmShutdownModal already dropped backdrop-filter for the same
+     reason. */
 }
 
 /* === Signal Tile button system (#2) ===
