@@ -91,6 +91,19 @@ select {
   font: inherit;
 }
 
+/* Strip the Chromium user-agent <button> styling globally so nothing
+   inherits the light-mode default grey/white. Every custom button class
+   in the project supplies its own background-color; this keeps the UA
+   styles from leaking through 0.x-alpha rgba backgrounds. */
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+}
+
 #app {
   width: 100vw;
   height: 100vh;
