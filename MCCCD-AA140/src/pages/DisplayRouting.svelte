@@ -7,6 +7,7 @@
 -->
 
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -29,7 +30,13 @@
     display2SourceFb,
     display3SourceFb,
     routingModeFb,
+    initRoutingSubscriptions,
+    teardownRoutingSubscriptions,
   } from '../lib/stores/signals';
+
+  // routingModeFb + autoRouteEnableFb subscribed lazily. Per-audit H4-followup.
+  onMount(initRoutingSubscriptions);
+  onDestroy(teardownRoutingSubscriptions);
   import SourceListItem from '../components/routing/SourceListItem.svelte';
   import DisplayCell from '../components/routing/DisplayCell.svelte';
 
