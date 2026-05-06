@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 21 — Home: Magazine Block</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;
+    --copy:#e2e8f0;--soft:#94a3b8;--muted:#64748b;
+    --border:rgba(148,163,184,.15);--rad:0;
+    --panel:rgba(12,20,36,.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    width:1280px;height:800px;overflow:hidden;
+    background:var(--bg);color:var(--copy);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    display:grid;grid-template-rows:64px 1fr 92px;
+  }
+  body::before{content:'';position:fixed;top:-80px;left:50%;transform:translateX(-50%);width:900px;height:420px;background:radial-gradient(ellipse,rgba(245,166,35,.04),transparent 70%);pointer-events:none;}
+
+  /* HEADER — clean horizontal w/ separators */
+  header{
+    background:var(--panel);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;padding:0 24px;gap:18px;
+  }
+  .room{font-size:30px;font-weight:900;letter-spacing:-.02em;}
+  .hsep{width:1px;height:28px;background:var(--border);}
+  .stat{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);}
+  .stat.ok{color:#86efac;}
+  .stat.occ{color:var(--accent);}
+  .pdot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;animation:pulse 2.2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  .hsp{flex:1;}
+  .adv-mini{
+    display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:6px;
+    background:rgba(245,166,35,.08);border:0.5px solid rgba(245,166,35,.3);color:var(--accent);
+    font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  }
+  .nav-btn{
+    display:flex;align-items:center;gap:8px;padding:9px 16px;
+    background:transparent;border:none;color:var(--soft);
+    font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  }
+  .nav-btn:hover{color:var(--copy);}
+
+  /* BODY — full bleed, no gaps */
+  .src-strip{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    height:100%;
+  }
+  .mag-cell{
+    border-right:1px solid var(--border);
+    padding:36px 28px;cursor:pointer;
+    display:flex;flex-direction:column;justify-content:space-between;
+    position:relative;background:transparent;border-top:none;border-bottom:none;
+    transition:background 200ms;
+  }
+  .mag-cell:last-child{border-right:none;}
+  .mag-cell::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:transparent;transition:all 200ms;
+  }
+  .mag-cell:hover{background:rgba(245,166,35,.04);}
+  .mag-cell .mc-ico{color:var(--soft);transition:color 200ms;}
+  .mc-name{font-size:28px;font-weight:900;letter-spacing:-.02em;color:var(--copy);}
+  .mc-sub{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+  .mc-tap{font-size:10px;font-weight:600;color:var(--muted);margin-top:14px;letter-spacing:.06em;}
+  .mag-cell.active{
+    background:linear-gradient(180deg,rgba(245,166,35,.10),rgba(245,166,35,.02) 60%);
+  }
+  .mag-cell.active::before{background:var(--accent);box-shadow:0 0 14px rgba(245,166,35,.7);}
+  .mag-cell.active .mc-ico,.mag-cell.active .mc-name{color:var(--accent);}
+
+  /* FOOTER — bold typography */
+  footer{
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:0 24px;gap:24px;
+  }
+  .pwr-btn{
+    display:flex;align-items:center;gap:12px;padding:12px 22px;border-radius:8px;
+    background:rgba(245,166,35,.08);border:0.5px solid rgba(245,166,35,.35);color:var(--accent);
+    font-size:13px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+  }
+  .mics{display:flex;align-items:center;gap:14px;justify-content:center;}
+  .mic-lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);}
+  .mbtn{
+    display:flex;align-items:center;gap:9px;padding:11px 18px;border-radius:8px;
+    border:0.5px solid var(--border);background:transparent;color:var(--soft);
+    font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;
+  }
+  .mbtn.live{color:#86efac;border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);}
+  .vol-grp{display:flex;align-items:center;gap:18px;justify-self:end;}
+  .vol-lbl{font-size:10px;font-weight:900;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);}
+  .vbtn{
+    display:flex;align-items:center;gap:8px;padding:10px 12px;
+    background:transparent;border:none;color:var(--soft);
+    font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;
+  }
+  .vbtn:hover{color:var(--accent);}
+
+  .badge{position:fixed;top:14px;right:14px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="room">AA140</span>
+  <div class="hsep"></div>
+  <span class="stat ok"><span class="pdot"></span>Online</span>
+  <div class="hsep"></div>
+  <span class="stat occ"><span class="pdot"></span>Occupied</span>
+  <div class="hsp"></div>
+  <button class="adv-mini">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    Advanced
+  </button>
+  <div class="hsep"></div>
+  <button class="nav-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+    Cameras
+  </button>
+  <button class="nav-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+    Settings
+  </button>
+</header>
+
+<div class="src-strip">
+  <button class="mag-cell">
+    <svg class="mc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    <div>
+      <div class="mc-name">Room PC</div>
+      <div class="mc-sub">HDMI 1 · Built-In</div>
+      <div class="mc-tap">Tap to send to all displays</div>
+    </div>
+  </button>
+  <button class="mag-cell">
+    <svg class="mc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 10h18M8 20h8M12 16v4"/></svg>
+    <div>
+      <div class="mc-name">Ext PC</div>
+      <div class="mc-sub">HDMI 2 · Wallplate</div>
+      <div class="mc-tap">Tap to send to all displays</div>
+    </div>
+  </button>
+  <button class="mag-cell active">
+    <svg class="mc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+    <div>
+      <div class="mc-name">AirMedia</div>
+      <div class="mc-sub">Wireless BYOD</div>
+      <div class="mc-tap" style="color:var(--accent);font-weight:800">Active · routed to all displays</div>
+    </div>
+  </button>
+  <button class="mag-cell">
+    <svg class="mc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M2 20h20"/></svg>
+    <div>
+      <div class="mc-name">Laptop</div>
+      <div class="mc-sub">HDMI 3 · Podium</div>
+      <div class="mc-tap">Tap to send to all displays</div>
+    </div>
+  </button>
+</div>
+
+<footer>
+  <button class="pwr-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+    Power
+  </button>
+  <div class="mics">
+    <span class="mic-lbl">Mics</span>
+    <button class="mbtn live">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+      Lav
+    </button>
+    <button class="mbtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+      Handheld
+    </button>
+  </div>
+  <div class="vol-grp">
+    <span class="vol-lbl">Volume</span>
+    <button class="vbtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6"/></svg>
+      Vol−
+    </button>
+    <button class="vbtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg>
+      Mute
+    </button>
+    <button class="vbtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6M19 9v6"/></svg>
+      Vol+
+    </button>
+  </div>
+</footer>
+
+<div class="badge">Mockup 21 — Magazine Block</div>
+</body>
+</html>

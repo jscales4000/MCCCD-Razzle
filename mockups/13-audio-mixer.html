@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 13 — Audio Mixer</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;--warn:#f59e0b;
+    --copy:#e2e8f0;--muted:#4d6070;--soft:#7c93a8;
+    --border:rgba(148,163,184,.14);--rad:14px;
+    --panel:rgba(12,20,36,.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    width:1280px;height:800px;overflow:hidden;
+    background:var(--bg);color:var(--copy);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    display:grid;grid-template-rows:60px 1fr 88px;gap:10px;padding:10px;
+  }
+  body::before{content:'';position:fixed;top:-100px;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(245,166,35,.04),transparent 70%);pointer-events:none;}
+
+  /* ── HEADER ── */
+  header{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 20px;gap:14px;
+  }
+  .back{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all 110ms;}
+  .back:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .room{font-size:18px;font-weight:900;letter-spacing:-.01em;}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .htag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .hsp{flex:1;}
+  .master-vol{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 16px;border-radius:10px;
+    background:rgba(245,166,35,.08);border:0.5px solid rgba(245,166,35,.25);
+    color:var(--copy);
+  }
+  .master-vol-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .master-vol-val{font-size:20px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums;}
+  .mvbtn{width:36px;height:36px;border-radius:7px;background:transparent;border:0.5px solid var(--border);color:var(--soft);display:grid;place-items:center;cursor:pointer;font-size:16px;font-weight:700;transition:all 100ms;}
+  .mvbtn:hover{background:rgba(255,255,255,.06);color:var(--copy);}
+  .mute-all{
+    display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;
+    background:rgba(239,68,68,.1);border:0.5px solid rgba(239,68,68,.3);
+    color:#fca5a5;font-size:12px;font-weight:700;cursor:pointer;transition:all 120ms;
+  }
+  .mute-all:hover{background:rgba(239,68,68,.2);}
+
+  /* ── MIXER AREA ── */
+  .mixer{
+    display:grid;
+    grid-template-columns:repeat(5,1fr) 2px 140px;
+    gap:0;
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    overflow:hidden;
+  }
+  .mix-divider{background:var(--border);}
+
+  /* ── CHANNEL STRIP ── */
+  .channel{
+    display:flex;flex-direction:column;
+    border-right:0.5px solid var(--border);
+    overflow:hidden;
+  }
+  .channel:last-of-type{border-right:none;}
+
+  /* Channel header */
+  .ch-head{
+    padding:14px 12px 10px;
+    border-bottom:0.5px solid var(--border);
+    display:flex;flex-direction:column;gap:6px;
+    background:rgba(8,14,26,.4);
+  }
+  .ch-type{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .ch-name{font-size:14px;font-weight:800;letter-spacing:-.01em;}
+  .ch-status{
+    display:flex;align-items:center;gap:5px;
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  }
+  .ch-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .connected{color:var(--success);}
+  .disconnected{color:rgba(100,116,139,.4);}
+  .ch-model{font-size:10px;color:var(--muted);}
+
+  /* VU meter column */
+  .ch-body{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    padding:14px 12px;gap:12px;
+    position:relative;
+  }
+
+  /* Vertical fader track */
+  .fader-wrap{
+    flex:1;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+
+  /* VU bar */
+  .vu-col{
+    display:flex;flex-direction:column-reverse;
+    gap:2px;height:100%;
+    width:16px;flex-shrink:0;
+  }
+  .vu-seg{
+    flex:1;border-radius:2px;
+    background:rgba(148,163,184,.1);
+    transition:background 60ms;
+  }
+  .vu-seg.lit-green{background:#22c55e;box-shadow:0 0 4px rgba(34,197,94,.6);}
+  .vu-seg.lit-yellow{background:#facc15;box-shadow:0 0 4px rgba(250,204,21,.5);}
+  .vu-seg.lit-red{background:#ef4444;box-shadow:0 0 4px rgba(239,68,68,.6);}
+
+  /* Vertical slider (fader) */
+  .fader-track{
+    position:relative;height:100%;width:28px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .fader-rail{
+    width:4px;height:100%;border-radius:2px;
+    background:rgba(148,163,184,.12);
+    position:relative;
+  }
+  .fader-fill{
+    position:absolute;bottom:0;left:0;right:0;
+    border-radius:2px;background:var(--accent);
+    transition:height 200ms ease;
+  }
+  .fader-thumb{
+    position:absolute;left:50%;transform:translateX(-50%);
+    width:22px;height:8px;border-radius:4px;
+    background:var(--copy);border:2px solid var(--accent);
+    box-shadow:0 2px 8px rgba(0,0,0,.4);
+    cursor:grab;
+  }
+
+  /* Trim row */
+  .trim-row{
+    display:flex;align-items:center;gap:6px;
+    width:100%;
+  }
+  .trim-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .trim-val{font-size:12px;font-weight:700;color:var(--copy);font-variant-numeric:tabular-nums;min-width:32px;text-align:right;}
+  input[type=range]{
+    flex:1;height:4px;-webkit-appearance:none;appearance:none;
+    border-radius:2px;background:rgba(148,163,184,.15);outline:none;
+    accent-color:var(--accent);
+  }
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:grab;border:2px solid var(--copy);}
+
+  /* Channel footer — mute + level readout */
+  .ch-foot{
+    padding:10px 12px;border-top:0.5px solid var(--border);
+    display:flex;flex-direction:column;gap:8px;
+    background:rgba(8,14,26,.3);
+  }
+  .mute-btn{
+    width:100%;padding:10px 0;border-radius:8px;
+    border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    cursor:pointer;transition:all 110ms;
+  }
+  .mute-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .mute-btn.muted{background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+  .level-readout{
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .level-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+  .level-db{font-size:14px;font-weight:800;color:var(--copy);font-variant-numeric:tabular-nums;}
+  .level-db.clipping{color:var(--danger);}
+
+  /* ── MASTER / OUTPUT PANEL ── */
+  .master{
+    display:flex;flex-direction:column;
+    padding:14px 12px;gap:10px;
+  }
+  .master-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .master-fader{
+    flex:1;display:flex;align-items:center;justify-content:center;
+  }
+  .master-fader-rail{
+    width:6px;height:100%;border-radius:3px;
+    background:rgba(148,163,184,.12);
+    position:relative;
+  }
+  .master-fader-fill{
+    position:absolute;bottom:0;left:0;right:0;height:72%;
+    border-radius:3px;
+    background:linear-gradient(180deg,var(--accent) 0%,rgba(245,166,35,.4) 100%);
+  }
+  .master-thumb{
+    position:absolute;bottom:72%;left:50%;transform:translate(-50%,50%);
+    width:30px;height:10px;border-radius:5px;
+    background:var(--copy);border:2px solid var(--accent);
+    box-shadow:0 2px 10px rgba(0,0,0,.5);
+    cursor:grab;
+  }
+  .master-db{font-size:22px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums;text-align:center;}
+  .output-sel{
+    display:grid;grid-template-rows:1fr 1fr;gap:6px;
+  }
+  .out-btn{
+    padding:8px 6px;border-radius:8px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:11px;font-weight:700;letter-spacing:.04em;
+    cursor:pointer;transition:all 110ms;text-align:center;
+  }
+  .out-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .out-btn.active{background:rgba(245,166,35,.12);color:var(--accent);border-color:rgba(245,166,35,.35);}
+
+  /* ── FOOTER ── */
+  footer{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 20px;gap:16px;
+  }
+  .f-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .preset-row{display:flex;gap:8px;}
+  .preset{
+    padding:9px 16px;border-radius:8px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:12px;font-weight:700;cursor:pointer;transition:all 110ms;
+  }
+  .preset:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .preset.active{background:rgba(245,166,35,.1);color:var(--accent);border-color:rgba(245,166,35,.3);}
+  .fsp{flex:1;}
+  .link-chip{
+    display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;
+    background:rgba(245,166,35,.08);border:0.5px solid rgba(245,166,35,.22);
+    color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all 120ms;
+  }
+  .link-chip:hover{background:rgba(245,166,35,.16);}
+
+  .badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+  .desc{position:fixed;bottom:100px;left:12px;right:12px;background:rgba(2,6,23,.9);border:0.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--soft);line-height:1.5;}
+  .desc strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <button class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Home
+  </button>
+  <div class="sep"></div>
+  <span class="room">AA140</span>
+  <div class="sep"></div>
+  <span class="htag">Audio Mixer</span>
+  <div class="hsp"></div>
+  <div class="master-vol">
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span class="master-vol-label">Master</span>
+      <span class="master-vol-val">−6 dB</span>
+    </div>
+    <button class="mvbtn">−</button>
+    <button class="mvbtn">+</button>
+  </div>
+  <button class="mute-all">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg>
+    Mute All
+  </button>
+</header>
+
+<!-- MIXER -->
+<div class="mixer">
+
+  <!-- CH 1: Lavalier -->
+  <div class="channel">
+    <div class="ch-head">
+      <span class="ch-type">Wireless · Ch 1</span>
+      <span class="ch-name">Lavalier</span>
+      <div class="ch-status connected"><span class="ch-dot"></span>Connected</div>
+      <span class="ch-model">CCS-UWB Beltpack</span>
+    </div>
+    <div class="ch-body">
+      <div class="fader-wrap">
+        <!-- VU left -->
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-yellow"></div><div class="vu-seg lit-yellow"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+        <!-- Fader -->
+        <div class="fader-track">
+          <div class="fader-rail">
+            <div class="fader-fill" style="height:68%"></div>
+            <div class="fader-thumb" style="bottom:68%;transform:translate(-50%,50%);"></div>
+          </div>
+        </div>
+        <!-- VU right -->
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-yellow"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+      </div>
+      <div class="trim-row">
+        <span class="trim-label">Trim</span>
+        <input type="range" min="-20" max="20" value="0">
+        <span class="trim-val">0 dB</span>
+      </div>
+    </div>
+    <div class="ch-foot">
+      <button class="mute-btn">LIVE</button>
+      <div class="level-readout">
+        <span class="level-label">Peak</span>
+        <span class="level-db">−9</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH 2: Handheld -->
+  <div class="channel">
+    <div class="ch-head">
+      <span class="ch-type">Wireless · Ch 2</span>
+      <span class="ch-name">Handheld</span>
+      <div class="ch-status connected"><span class="ch-dot"></span>Connected</div>
+      <span class="ch-model">CCS-UWB Handheld</span>
+    </div>
+    <div class="ch-body">
+      <div class="fader-wrap">
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+        <div class="fader-track">
+          <div class="fader-rail">
+            <div class="fader-fill" style="height:55%"></div>
+            <div class="fader-thumb" style="bottom:55%;transform:translate(-50%,50%);"></div>
+          </div>
+        </div>
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+      </div>
+      <div class="trim-row">
+        <span class="trim-label">Trim</span>
+        <input type="range" min="-20" max="20" value="-3">
+        <span class="trim-val">−3 dB</span>
+      </div>
+    </div>
+    <div class="ch-foot">
+      <button class="mute-btn muted">MUTED</button>
+      <div class="level-readout">
+        <span class="level-label">Peak</span>
+        <span class="level-db" style="color:var(--muted)">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH 3: Ceiling 1 -->
+  <div class="channel">
+    <div class="ch-head">
+      <span class="ch-type">Ceiling · Ch 3</span>
+      <span class="ch-name">Ceiling 1</span>
+      <div class="ch-status connected"><span class="ch-dot"></span>Connected</div>
+      <span class="ch-model">TCCM · Zone A</span>
+    </div>
+    <div class="ch-body">
+      <div class="fader-wrap">
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-yellow"></div><div class="vu-seg lit-yellow"></div>
+          <div class="vu-seg lit-yellow"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+        <div class="fader-track">
+          <div class="fader-rail">
+            <div class="fader-fill" style="height:75%"></div>
+            <div class="fader-thumb" style="bottom:75%;transform:translate(-50%,50%);"></div>
+          </div>
+        </div>
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-yellow"></div><div class="vu-seg lit-yellow"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+      </div>
+      <div class="trim-row">
+        <span class="trim-label">Trim</span>
+        <input type="range" min="-20" max="20" value="3">
+        <span class="trim-val">+3 dB</span>
+      </div>
+    </div>
+    <div class="ch-foot">
+      <button class="mute-btn">LIVE</button>
+      <div class="level-readout">
+        <span class="level-label">Peak</span>
+        <span class="level-db">−4</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH 4: Ceiling 2 -->
+  <div class="channel">
+    <div class="ch-head">
+      <span class="ch-type">Ceiling · Ch 4</span>
+      <span class="ch-name">Ceiling 2</span>
+      <div class="ch-status connected"><span class="ch-dot"></span>Connected</div>
+      <span class="ch-model">TCCM · Zone B</span>
+    </div>
+    <div class="ch-body">
+      <div class="fader-wrap">
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg lit-green"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+        <div class="fader-track">
+          <div class="fader-rail">
+            <div class="fader-fill" style="height:60%"></div>
+            <div class="fader-thumb" style="bottom:60%;transform:translate(-50%,50%);"></div>
+          </div>
+        </div>
+        <div class="vu-col">
+          <div class="vu-seg lit-green"></div><div class="vu-seg lit-green"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+      </div>
+      <div class="trim-row">
+        <span class="trim-label">Trim</span>
+        <input type="range" min="-20" max="20" value="0">
+        <span class="trim-val">0 dB</span>
+      </div>
+    </div>
+    <div class="ch-foot">
+      <button class="mute-btn">LIVE</button>
+      <div class="level-readout">
+        <span class="level-label">Peak</span>
+        <span class="level-db">−14</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CH 5: Ceiling 3 -->
+  <div class="channel">
+    <div class="ch-head">
+      <span class="ch-type">Ceiling · Ch 5</span>
+      <span class="ch-name">Ceiling 3</span>
+      <div class="ch-status disconnected"><span class="ch-dot"></span>No Device</div>
+      <span class="ch-model">TCCM · Zone C</span>
+    </div>
+    <div class="ch-body">
+      <div class="fader-wrap" style="opacity:.35">
+        <div class="vu-col">
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+        <div class="fader-track">
+          <div class="fader-rail">
+            <div class="fader-fill" style="height:50%"></div>
+            <div class="fader-thumb" style="bottom:50%;transform:translate(-50%,50%);"></div>
+          </div>
+        </div>
+        <div class="vu-col">
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div><div class="vu-seg"></div>
+          <div class="vu-seg"></div><div class="vu-seg"></div>
+        </div>
+      </div>
+      <div class="trim-row" style="opacity:.35">
+        <span class="trim-label">Trim</span>
+        <input type="range" min="-20" max="20" value="0" disabled>
+        <span class="trim-val">0 dB</span>
+      </div>
+    </div>
+    <div class="ch-foot">
+      <button class="mute-btn" style="opacity:.35;cursor:not-allowed">OFFLINE</button>
+      <div class="level-readout">
+        <span class="level-label">Peak</span>
+        <span class="level-db" style="color:var(--muted)">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mix-divider"></div>
+
+  <!-- MASTER -->
+  <div class="master">
+    <span class="master-label">Output</span>
+    <div class="master-fader">
+      <div class="master-fader-rail" style="height:100%">
+        <div class="master-fader-fill"></div>
+        <div class="master-thumb"></div>
+      </div>
+    </div>
+    <span class="master-db">−6</span>
+    <div class="output-sel">
+      <button class="out-btn active">D1</button>
+      <button class="out-btn">D2</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="f-label">Presets</span>
+  <div class="preset-row">
+    <button class="preset active">Lecture</button>
+    <button class="preset">Presentation</button>
+    <button class="preset">Hybrid</button>
+    <button class="preset">Recording</button>
+  </div>
+  <div class="fsp"></div>
+  <button class="link-chip">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    Link Ceilings 1+2
+  </button>
+</footer>
+
+<div class="badge">Mockup 13</div>
+</body>
+</html>

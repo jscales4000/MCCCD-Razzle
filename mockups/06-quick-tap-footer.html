@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 06 — Quick-Tap Footer</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;--warn:#f59e0b;
+    --copy:#e2e8f0;--muted:#64748b;--soft:#94a3b8;
+    --border:rgba(148,163,184,.18);--rad:14px;
+    --panel:rgba(15,23,42,.95);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;display:grid;grid-template-rows:60px 1fr 116px;gap:10px;padding:10px;}
+
+  header{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;align-items:center;padding:0 22px;gap:14px;}
+  .room{font-size:21px;font-weight:800;}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .sub{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .sp{flex:1;}
+  .chip{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+  .c-ok{background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.25);color:#86efac;}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
+  .nb{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;background:transparent;border:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 110ms;}
+  .nb:hover{background:rgba(255,255,255,.05);color:var(--copy);}
+
+  .main{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .tile{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;flex-direction:column;overflow:hidden;transition:border-color 200ms;}
+  .tile.aud{border-color:rgba(34,197,94,.38);}
+  .th{padding:14px 16px 10px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+  .tl-lbl{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+  .pdot{width:7px;height:7px;border-radius:50%;}
+  .pdot.on{background:var(--success);box-shadow:0 0 7px rgba(34,197,94,.7);}
+  .pdot.off{background:rgba(100,116,139,.25);}
+  .tsrc{font-size:22px;font-weight:800;color:var(--accent);}
+  .tsrc.none{color:var(--soft);font-size:18px;}
+  .tacts{display:flex;gap:3px;}
+  .ib{width:36px;height:36px;border-radius:8px;background:transparent;border:none;color:var(--soft);display:grid;place-items:center;cursor:pointer;transition:all 100ms;}
+  .ib:hover{background:rgba(255,255,255,.07);color:var(--copy);}
+  .ib.on{color:var(--success);}
+  .srcs{display:grid;grid-template-columns:1fr 1fr;flex:1;}
+  .sb{border:none;background:transparent;cursor:pointer;min-height:66px;font-size:13px;font-weight:600;color:var(--soft);border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border);transition:all 110ms;position:relative;}
+  .sb:nth-child(2n){border-right:none;}
+  .sb:nth-child(3),.sb:nth-child(4){border-bottom:none;}
+  .sb:hover{background:rgba(255,255,255,.04);color:var(--copy);}
+  .sb.on{background:rgba(245,166,35,.1);color:#fff;}
+  .sb.on::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);}
+
+  /* BIG FOOTER — expanded, action zones clearly separated */
+  footer{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:grid;
+    grid-template-columns:auto 1px 1fr 1px auto;
+    align-items:stretch;
+    overflow:hidden;
+  }
+  .fvl{background:var(--border);width:1px;}
+
+  /* POWER ZONE */
+  .fzone-power{
+    display:flex;align-items:center;justify-content:center;
+    padding:0 28px;gap:10px;
+    background:rgba(245,166,35,.06);
+    cursor:pointer;transition:background 130ms;
+  }
+  .fzone-power:hover{background:rgba(245,166,35,.14);}
+  .fz-label{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+  .fz-val{font-size:16px;font-weight:800;color:var(--accent);}
+  .fz-icon{color:var(--accent);filter:drop-shadow(0 0 8px rgba(245,166,35,.4));}
+
+  /* MIC + AUDIO ZONE — horizontal grid */
+  .fzone-mics{
+    display:grid;
+    grid-template-columns:auto repeat(2,1fr) 1px repeat(3,1fr);
+    align-items:center;
+    gap:0;
+    padding:0 16px;
+  }
+  .fzone-label{
+    font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);padding-right:12px;white-space:nowrap;
+  }
+  .mic-big{
+    margin:8px 6px;border-radius:10px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:5px;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;transition:all 110ms;min-height:88px;
+  }
+  .mic-big:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .mic-big.muted{background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+  .mic-big svg{opacity:.7;}
+  .mic-big.muted svg{opacity:1;}
+  .mic-tag{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    padding:2px 7px;border-radius:4px;background:rgba(239,68,68,.2);color:#fca5a5;margin-top:2px;}
+  .f-mv{background:var(--border);width:1px;margin:12px 0;}
+
+  /* VOL ZONE */
+  .fzone-vol{
+    display:flex;align-items:center;justify-content:center;
+    padding:0 24px;gap:6px;
+  }
+  .vbig{
+    width:58px;height:90px;border-radius:10px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.4);color:var(--soft);
+    display:grid;place-items:center;cursor:pointer;
+    font-size:18px;font-weight:700;
+    transition:all 110ms;
+  }
+  .vbig:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .vbig.mute-btn{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:0 10px;width:auto;min-width:58px;}
+
+  .mk-badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+  .mk-desc{position:fixed;bottom:130px;left:12px;right:12px;background:rgba(2,6,23,.92);border:0.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--soft);line-height:1.5;}
+  .mk-desc strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="room">AA140</span>
+  <div class="sep"></div>
+  <span class="sub">MCCCD · AV Control</span>
+  <div class="sp"></div>
+  <div class="chip c-ok"><span class="dot"></span>Online · Occupied</div>
+  <button class="nb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>Cameras</button>
+  <button class="nb"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Settings</button>
+</header>
+
+<div class="main">
+  <div class="tile aud">
+    <div class="th">
+      <div><div class="tl-lbl"><span class="pdot on"></span>Display 1</div><div class="tsrc">Room PC</div></div>
+      <div class="tacts">
+        <button class="ib on"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 4V6L7 10H3z"/></svg></button>
+        <button class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></button>
+      </div>
+    </div>
+    <div class="srcs">
+      <button class="sb on">Room PC</button><button class="sb">Ext PC</button>
+      <button class="sb">AirMedia</button><button class="sb">Laptop</button>
+    </div>
+  </div>
+  <div class="tile">
+    <div class="th">
+      <div><div class="tl-lbl"><span class="pdot on"></span>Display 2</div><div class="tsrc none">No Source</div></div>
+      <div class="tacts">
+        <button class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 4V6L7 10H3z"/></svg></button>
+        <button class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></button>
+      </div>
+    </div>
+    <div class="srcs">
+      <button class="sb">Room PC</button><button class="sb">Ext PC</button>
+      <button class="sb">AirMedia</button><button class="sb">Laptop</button>
+    </div>
+  </div>
+  <div class="tile">
+    <div class="th">
+      <div><div class="tl-lbl" style="color:var(--muted)"><span class="pdot off"></span>Display 3</div><div class="tsrc none">No Source</div></div>
+    </div>
+    <div class="srcs">
+      <button class="sb">Room PC</button><button class="sb">Ext PC</button>
+      <button class="sb">AirMedia</button><button class="sb">Laptop</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPANDED FOOTER — 3 clear zones -->
+<footer>
+  <!-- POWER ZONE -->
+  <div class="fzone-power">
+    <svg class="fz-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+    <div>
+      <div class="fz-label">System</div>
+      <div class="fz-val">ON</div>
+    </div>
+  </div>
+
+  <div class="fvl"></div>
+
+  <!-- MIC ZONE -->
+  <div class="fzone-mics">
+    <span class="fzone-label">Mics</span>
+    <button class="mic-big">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+      Lavalier
+    </button>
+    <button class="mic-big muted">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+      Handheld
+      <span class="mic-tag">MUTED</span>
+    </button>
+    <div class="f-mv"></div>
+    <span class="fzone-label" style="padding:0 12px;">Vol</span>
+    <button class="vbig">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6"/></svg>
+    </button>
+    <button class="vbig mute-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg>
+    </button>
+    <button class="vbig">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6M19 9v6"/></svg>
+    </button>
+  </div>
+
+  <div class="fvl"></div>
+
+  <!-- VOL ZONE handled inline above -->
+  <div class="fzone-vol" style="display:none"></div>
+</footer>
+
+<div class="mk-badge">06 — Quick-Tap Footer</div>
+<div class="mk-desc"><strong>Concept:</strong> Footer expanded to 116px with 3 clearly zoned areas: Power | Mics | Volume. Mic buttons grow to 88px tall — thumb-friendly for anyone walking away from the podium. Volume gets large chunky tap targets. Power zone has colored background so it reads first.</div>
+</body>
+</html>

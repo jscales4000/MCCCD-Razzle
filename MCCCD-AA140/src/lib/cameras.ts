@@ -8,12 +8,22 @@ export interface Camera {
 }
 
 export const CAMERAS: Camera[] = [
-  { id: 'front',  label: 'Front',  model: 'i20', ip: '0.0.0.0', selectIndex: 1 },
-  { id: 'back-l', label: 'Back L', model: 'i12', ip: '0.0.0.0', selectIndex: 2 },
-  { id: 'back-r', label: 'Back R', model: 'i12', ip: '0.0.0.0', selectIndex: 3 },
+  { id: 'front',  label: 'Front',  model: 'i20', ip: '192.168.1.172', selectIndex: 1 },
+  { id: 'back-l', label: 'Back L', model: 'i12', ip: '192.168.1.172', selectIndex: 2 },
+  { id: 'back-r', label: 'Back R', model: 'i12', ip: '192.168.1.172', selectIndex: 3 },
 ];
 
-// Main RTSP stream URL pattern — adjust per 1Beyond firmware
+// 1Beyond camera defaults per CH5 Video Specialist persona:
+// - RTSP URL: rtsp://IP:554/1.h264
+// - Default credentials: admin / crestron
+// - Codec: H.264 (ch5-video supports H.264, not H.265 reliably)
+//
+// Credentials embedded via RTSP basic auth (rtsp://user:pass@host) AND also
+// passed via userid/password attributes — some camera firmware honors one
+// path, some the other. Belt-and-suspenders covers both.
+export const CAM_USER = 'admin';
+export const CAM_PASS = 'crestron';
+
 export function rtspMain(cam: Camera): string {
-  return `rtsp://${cam.ip}/stream1`;
+  return `rtsp://${CAM_USER}:${CAM_PASS}@${cam.ip}:554/1.h264`;
 }

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 03 — Source Card Grid</title>
+<style>
+  :root {
+    --bg:#0d1b2e; --accent:#f5a623; --adim:rgba(245,166,35,0.14);
+    --success:#22c55e; --danger:#ef4444;
+    --copy:#e2e8f0; --muted:#64748b; --soft:#94a3b8;
+    --border:rgba(148,163,184,0.18); --rad:14px;
+    --panel:rgba(15,23,42,0.95);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;display:grid;grid-template-rows:58px 1fr 88px;gap:10px;padding:10px;}
+
+  /* HEADER */
+  header{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;align-items:center;padding:0 22px;gap:14px;}
+  .room{font-size:20px;font-weight:800;}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);}
+  .space{flex:1;}
+  .chip{display:flex;align-items:center;gap:7px;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;}
+  .c-ok{background:rgba(34,197,94,.12);color:#86efac;border:0.5px solid rgba(34,197,94,.28);}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
+  .nav-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;background:transparent;border:none;color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;transition:all 120ms;}
+  .nav-btn:hover{background:rgba(255,255,255,.06);color:var(--copy);}
+  .pwr-btn{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:8px;background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.3);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all 140ms;}
+  .pwr-btn:hover{background:rgba(245,166,35,.2);}
+
+  /* MAIN — 3 col equal + bigger source area */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .tile{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);padding:0;display:flex;flex-direction:column;overflow:hidden;transition:border-color 200ms;}
+  .tile.audio{border-color:rgba(34,197,94,.4);}
+
+  .tile-header{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:0.5px solid var(--border);}
+
+  .tlabel{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:5px;margin-bottom:5px;}
+  .pdot{width:7px;height:7px;border-radius:50%;}
+  .pdot.on{background:var(--success);box-shadow:0 0 8px rgba(34,197,94,.6);}
+  .pdot.off{background:rgba(100,116,139,.35);}
+  .tsrc{font-size:21px;font-weight:800;color:var(--accent);line-height:1;}
+  .tsrc.none{color:var(--soft);font-size:17px;}
+  .th-right{display:flex;gap:3px;}
+  .tic{width:36px;height:36px;border-radius:7px;background:transparent;border:none;color:var(--soft);display:grid;place-items:center;cursor:pointer;transition:all 110ms;}
+  .tic:hover{background:rgba(255,255,255,.07);color:var(--copy);}
+  .tic.audio-on{color:var(--success);}
+
+  /* SOURCE CARDS — big, icon-labeled, 2x2 */
+  .src-cards{display:grid;grid-template-columns:1fr 1fr;flex:1;}
+  .src-card{
+    border:none;background:transparent;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+    padding:12px 8px;
+    position:relative;
+    transition:background 120ms;
+    color:var(--soft);
+    border-right:0.5px solid var(--border);
+    border-bottom:0.5px solid var(--border);
+  }
+  .src-card:nth-child(2n){border-right:none;}
+  .src-card:nth-child(3),.src-card:nth-child(4){border-bottom:none;}
+  .src-card:hover{background:rgba(255,255,255,.04);color:var(--copy);}
+  .src-card.active{background:rgba(245,166,35,.1);color:#fff;}
+  .src-card.active .src-icon{color:var(--accent);}
+  .src-card.active::after{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--accent),rgba(245,166,35,0));
+  }
+  .src-icon{width:30px;height:30px;transition:color 120ms;}
+  .src-name{font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
+
+  /* FOOTER */
+  footer{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;align-items:center;padding:0 20px;gap:12px;}
+  .f-pwr{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:9px;background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.3);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;}
+  .f-sep{width:1px;height:36px;background:var(--border);margin:0 4px;}
+  .flabel{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .mic-btn{height:52px;padding:0 15px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 110ms;}
+  .mic-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .mic-btn.muted{background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+  .fspace{flex:1;}
+  .vbtn{width:50px;height:50px;border-radius:8px;background:transparent;border:none;color:var(--soft);font-size:13px;font-weight:700;cursor:pointer;display:grid;place-items:center;transition:all 110ms;}
+  .vbtn:hover{background:rgba(255,255,255,.06);color:var(--copy);}
+
+  .badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+  .desc{position:fixed;bottom:12px;left:12px;right:12px;background:rgba(2,6,23,.9);border:0.5px solid var(--border);border-radius:8px;padding:10px 16px;font-size:12px;color:var(--soft);line-height:1.5;}
+  .desc strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="room">AA140</span>
+  <div class="sep"></div>
+  <span class="eyebrow">MCCCD · AV Control</span>
+  <div class="space"></div>
+  <div class="chip c-ok"><span class="dot"></span>Online · Occupied</div>
+  <button class="nav-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg> Cameras</button>
+  <button class="nav-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg> Settings</button>
+  <button class="pwr-btn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg> System On</button>
+</header>
+
+<div class="tiles">
+  <!-- D1 -->
+  <div class="tile audio">
+    <div class="tile-header">
+      <div class="th-left">
+        <div class="tlabel"><span class="pdot on"></span> Display 1</div>
+        <div class="tsrc">Room PC</div>
+      </div>
+      <div class="th-right">
+        <button class="tic audio-on">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 4V6L7 10H3z"/><path d="M16 8c1.5 1 2.5 2.5 2.5 4S17.5 15 16 16" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+        </button>
+        <button class="tic">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="src-cards">
+      <!-- Room PC -->
+      <button class="src-card active">
+        <svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="src-name">Room PC</span>
+      </button>
+      <!-- Ext PC -->
+      <button class="src-card">
+        <svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="src-name">Ext PC</span>
+      </button>
+      <!-- AirMedia -->
+      <button class="src-card">
+        <svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        <span class="src-name">AirMedia</span>
+      </button>
+      <!-- Laptop -->
+      <button class="src-card">
+        <svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M4 4h16v12H4z"/></svg>
+        <span class="src-name">Laptop</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- D2 -->
+  <div class="tile">
+    <div class="tile-header">
+      <div class="th-left">
+        <div class="tlabel"><span class="pdot on"></span> Display 2</div>
+        <div class="tsrc none">No Source</div>
+      </div>
+      <div class="th-right">
+        <button class="tic"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 4V6L7 10H3z"/></svg></button>
+        <button class="tic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></button>
+      </div>
+    </div>
+    <div class="src-cards">
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="src-name">Room PC</span></button>
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="src-name">Ext PC</span></button>
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg><span class="src-name">AirMedia</span></button>
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M4 4h16v12H4z"/></svg><span class="src-name">Laptop</span></button>
+    </div>
+  </div>
+
+  <!-- D3 -->
+  <div class="tile">
+    <div class="tile-header">
+      <div class="th-left">
+        <div class="tlabel" style="color:var(--muted)"><span class="pdot off"></span> Display 3</div>
+        <div class="tsrc none">No Source</div>
+      </div>
+    </div>
+    <div class="src-cards">
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="src-name">Room PC</span></button>
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="src-name">Ext PC</span></button>
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg><span class="src-name">AirMedia</span></button>
+      <button class="src-card"><svg class="src-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M4 4h16v12H4z"/></svg><span class="src-name">Laptop</span></button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <button class="f-pwr"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg> System On</button>
+  <div class="f-sep"></div>
+  <span class="flabel">Mics</span>
+  <button class="mic-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg> Lavalier</button>
+  <button class="mic-btn muted"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg> Handheld — MUTED</button>
+  <div class="fspace"></div>
+  <span class="flabel">Vol</span>
+  <button class="vbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6"/></svg></button>
+  <button class="vbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg></button>
+  <button class="vbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6M19 9v6"/></svg></button>
+</footer>
+
+<div class="badge">03 — Source Card Grid</div>
+<div class="desc"><strong>Concept:</strong> Source buttons upgraded to cards with unique device icons (monitor, wifi, laptop). Icon + label gives non-technical users instant recognition. Active card highlights with top-edge glow bar + cyan tint. Removes ambiguity from text-only buttons.</div>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mockup 25 — Touch Target Sizing</title>
+<style>
+  :root{
+    --bg:#0d1b2e;
+    --accent:#f5a623;
+    --copy:#e2e8f0;
+    --soft:#94a3b8;
+    --muted:#64748b;
+    --border:rgba(148,163,184,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    width:1280px;height:800px;overflow:hidden;
+    background:var(--bg);color:var(--copy);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    padding:14px 24px 0 24px;
+  }
+
+  header{
+    display:flex;align-items:baseline;gap:14px;
+    padding-bottom:8px;border-bottom:1px solid var(--border);
+    margin-bottom:8px;
+  }
+  header h1{font-size:17px;font-weight:700;letter-spacing:.04em;}
+  header .sub{font-size:11px;color:var(--soft);letter-spacing:.08em;text-transform:uppercase;}
+
+  .wcag-note{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(245,166,35,.08);
+    border:1px solid rgba(245,166,35,.28);
+    border-left:3px solid var(--accent);
+    padding:6px 12px;border-radius:6px;
+    margin-bottom:10px;
+    font-size:11px;color:var(--copy);
+  }
+  .wcag-note b{color:var(--accent);}
+
+  /* Each row = one button family */
+  .row{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    gap:14px;
+    align-items:center;
+    background:rgba(255,255,255,.015);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 14px;
+    margin-bottom:8px;
+  }
+  .row-label{
+    display:flex;flex-direction:column;gap:3px;
+  }
+  .row-label .num{
+    font-size:9px;font-weight:800;letter-spacing:.14em;
+    color:var(--accent);background:rgba(245,166,35,.1);
+    border:1px solid rgba(245,166,35,.3);
+    padding:2px 6px;border-radius:4px;align-self:flex-start;
+  }
+  .row-label .name{font-size:13px;font-weight:700;color:var(--copy);}
+  .row-label .desc{font-size:10px;color:var(--soft);line-height:1.4;}
+
+  .variants{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    align-items:end;
+  }
+  .variant{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:6px;border-radius:6px;
+  }
+  .variant .demo{
+    height:78px;display:flex;align-items:center;justify-content:center;
+  }
+  .variant .meta{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+  }
+  .variant .vname{
+    font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .variant .dim{
+    font-size:11px;font-weight:700;color:var(--copy);
+    font-feature-settings:"tnum";
+  }
+  .variant .pass{
+    font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    padding:1px 6px;border-radius:3px;
+  }
+  .pass.fail{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.4);}
+  .pass.ok{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.35);}
+
+  .row-cap{
+    grid-column:1 / -1;
+    margin-top:6px;
+    font-size:10px;color:var(--soft);line-height:1.45;
+    border-top:1px dashed var(--border);
+    padding-top:5px;
+  }
+  .row-cap b{color:var(--copy);font-weight:600;}
+
+  /* ============================================
+     ACTUAL BUTTON STYLES — at scale
+     ============================================ */
+
+  /* 1 Header nav */
+  .nav-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:transparent;border:0.5px solid var(--border);
+    color:var(--soft);
+    border-radius:6px;cursor:pointer;
+    font-family:inherit;
+  }
+  .nav-cur{height:30px;padding:0 10px;font-size:11px;font-weight:600;}
+  .nav-med{height:40px;padding:0 14px;font-size:13px;font-weight:600;border-radius:8px;}
+  .nav-lg{height:52px;padding:0 18px;font-size:14px;font-weight:600;border-radius:10px;letter-spacing:.04em;}
+
+  /* 2 Advanced Routing chip — must NOT be dark */
+  .adv{
+    display:inline-flex;align-items:center;gap:6px;
+    cursor:pointer;font-family:inherit;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;
+  }
+  .adv-cur{
+    height:22px;padding:0 8px;border-radius:11px;font-size:9px;
+    background:transparent;color:var(--soft);
+    border:0.5px solid var(--border);
+  }
+  .adv-acc{
+    height:40px;padding:0 16px;border-radius:8px;font-size:11px;
+    background:rgba(245,166,35,.15);
+    color:#fff;
+    border:1px solid rgba(245,166,35,.55);
+  }
+  .adv-prom{
+    height:52px;padding:0 20px;border-radius:10px;font-size:13px;
+    background:linear-gradient(180deg,rgba(245,166,35,.92),rgba(245,166,35,.78));
+    color:#1a1208;
+    border:1px solid rgba(245,166,35,.85);
+    box-shadow:0 4px 14px rgba(245,166,35,.25);
+  }
+  .adv-hero{
+    height:60px;padding:0 26px;border-radius:12px;font-size:14px;
+    background:var(--accent);
+    color:#1a1208;
+    border:none;
+    box-shadow:0 8px 24px rgba(245,166,35,.35),0 0 0 1px rgba(245,166,35,.6);
+    letter-spacing:.08em;
+  }
+
+  /* 3 Mic toggles */
+  .mic{
+    display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+    border-radius:6px;cursor:pointer;font-family:inherit;
+    background:transparent;border:0.5px solid var(--border);color:var(--soft);
+  }
+  .mic-cur{height:30px;width:80px;font-size:11px;font-weight:700;flex-direction:row;gap:6px;}
+  .mic-med{height:44px;width:100px;font-size:12px;font-weight:700;flex-direction:row;gap:7px;border-radius:8px;}
+  .mic-lg{height:56px;width:120px;font-size:13px;font-weight:700;border-radius:10px;}
+  .mic-lg .live{font-size:8.5px;font-weight:800;letter-spacing:.16em;color:#86efac;margin-top:1px;}
+
+  /* 4 Volume buttons */
+  .vbtn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:transparent;border:none;color:var(--soft);
+    cursor:pointer;font-family:inherit;
+  }
+  .vbtn-cur{height:30px;width:60px;font-size:13px;font-weight:700;}
+  .vbtn-med{height:44px;width:80px;font-size:15px;font-weight:700;}
+  .vbtn-lg{height:60px;width:100px;flex-direction:column;gap:2px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+
+  /* small group wrapper for the volume row demos */
+  .vol-grp{display:inline-flex;gap:4px;align-items:center;}
+
+  .badge{
+    position:fixed;top:14px;right:14px;z-index:99;
+    background:rgba(245,166,35,.15);border:1px solid var(--accent);
+    color:var(--accent);font-size:11px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;
+    padding:5px 12px;border-radius:6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Touch Target Sizing — Home Buttons</h1>
+  <span class="sub">Compare actual rendered sizes</span>
+</header>
+
+<div class="wcag-note">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  <span><b>WCAG 2.5.5</b> — minimum touch target = <b>44 &times; 44 CSS px</b>. Anything below that fails AA.</span>
+</div>
+
+<!-- ============ ROW 1 HEADER NAV ============ -->
+<div class="row">
+  <div class="row-label">
+    <span class="num">01</span>
+    <span class="name">Header Nav</span>
+    <span class="desc">Cameras / Audio / Settings</span>
+  </div>
+  <div class="variants">
+    <div class="variant">
+      <div class="demo">
+        <button class="nav-btn nav-cur">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+          Cameras
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Current</span>
+        <span class="dim">~30 &times; 95</span>
+        <span class="pass fail">Fails AA</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <button class="nav-btn nav-med">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+          Audio
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Medium</span>
+        <span class="dim">40 &times; 120</span>
+        <span class="pass fail">Borderline</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <button class="nav-btn nav-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+          Settings
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Large</span>
+        <span class="dim">52 &times; 150</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+  </div>
+  <div class="row-cap">
+    <b>Trade-off:</b> Larger targets eat header height — current header is ~56px tall, so 52px nav buttons demand a 70px+ header.
+    <b>Recommendation:</b> Medium (40&times;120) is the comfort sweet spot for stylus &amp; finger; Large for ADA-strict deployments.
+  </div>
+</div>
+
+<!-- ============ ROW 2 ADVANCED ROUTING ============ -->
+<div class="row">
+  <div class="row-label">
+    <span class="num">02</span>
+    <span class="name">Advanced Routing</span>
+    <span class="desc">Must POP — never dark</span>
+  </div>
+  <div class="variants">
+    <div class="variant">
+      <div class="demo">
+        <button class="adv adv-acc">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h9M3 18h13"/><path d="M16 6l4 4-4 4M20 14l-4 4"/></svg>
+          Adv Routing
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Compact Accent</span>
+        <span class="dim">40 &times; 140</span>
+        <span class="pass fail">Borderline</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <button class="adv adv-prom">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h9M3 18h13"/><path d="M16 6l4 4-4 4M20 14l-4 4"/></svg>
+          Adv Routing
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Prominent</span>
+        <span class="dim">52 &times; 180</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <button class="adv adv-hero">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h9M3 18h13"/><path d="M16 6l4 4-4 4M20 14l-4 4"/></svg>
+          Advanced Routing
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Hero Placement</span>
+        <span class="dim">60 &times; 220</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+  </div>
+  <div class="row-cap">
+    <b>Trade-off:</b> Compact reads as a chip in the source row; Prominent reads as a CTA below the row;
+    Hero claims dedicated real-estate as a deliberate primary action.
+    <b>Recommendation:</b> Prominent (52&times;180) — it pops, hits AA, and doesn't dominate the page.
+  </div>
+</div>
+
+<!-- ============ ROW 3 MIC TOGGLES ============ -->
+<div class="row">
+  <div class="row-label">
+    <span class="num">03</span>
+    <span class="name">Mic Toggles</span>
+    <span class="desc">Lav / Handheld</span>
+  </div>
+  <div class="variants">
+    <div class="variant">
+      <div class="demo">
+        <button class="mic mic-cur">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          Lav
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Current</span>
+        <span class="dim">30 &times; 80</span>
+        <span class="pass fail">Fails AA</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <button class="mic mic-med">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          Lav
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Medium</span>
+        <span class="dim">44 &times; 100</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <button class="mic mic-lg">
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            Handheld
+          </span>
+          <span class="live">&bull; LIVE</span>
+        </button>
+      </div>
+      <div class="meta">
+        <span class="vname">Large</span>
+        <span class="dim">56 &times; 120</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+  </div>
+  <div class="row-cap">
+    <b>Trade-off:</b> Larger mic toggles let us surface live status inline (no second pill needed).
+    <b>Recommendation:</b> Medium (44&times;100) hits the WCAG floor exactly; Large is worth it if we move "Live" status into the button itself.
+  </div>
+</div>
+
+<!-- ============ ROW 4 VOLUME ============ -->
+<div class="row">
+  <div class="row-label">
+    <span class="num">04</span>
+    <span class="name">Volume</span>
+    <span class="desc">Vol&minus; / Mute / Vol+</span>
+  </div>
+  <div class="variants">
+    <div class="variant">
+      <div class="demo">
+        <span class="vol-grp">
+          <button class="vbtn vbtn-cur">&minus;</button>
+          <button class="vbtn vbtn-cur"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg></button>
+          <button class="vbtn vbtn-cur">+</button>
+        </span>
+      </div>
+      <div class="meta">
+        <span class="vname">Current</span>
+        <span class="dim">30 &times; 60</span>
+        <span class="pass fail">Fails AA</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <span class="vol-grp">
+          <button class="vbtn vbtn-med">&minus;</button>
+          <button class="vbtn vbtn-med"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg></button>
+          <button class="vbtn vbtn-med">+</button>
+        </span>
+      </div>
+      <div class="meta">
+        <span class="vname">Medium</span>
+        <span class="dim">44 &times; 80</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="demo">
+        <span class="vol-grp">
+          <button class="vbtn vbtn-lg">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4z"/></svg>
+            Vol Down
+          </button>
+          <button class="vbtn vbtn-lg">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>
+            Mute
+          </button>
+          <button class="vbtn vbtn-lg">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15 9a4 4 0 0 1 0 6"/></svg>
+            Vol Up
+          </button>
+        </span>
+      </div>
+      <div class="meta">
+        <span class="vname">Large</span>
+        <span class="dim">60 &times; 100</span>
+        <span class="pass ok">Passes AA</span>
+      </div>
+    </div>
+  </div>
+  <div class="row-cap">
+    <b>Trade-off:</b> Volume is the most-tapped control — the current 30&times;60 is well below WCAG. All three variants stay transparent so the footer rhythm holds.
+    <b>Recommendation:</b> Large (60&times;100) with text labels. The labels disambiguate icon-only ambiguity and the footprint still leaves room for mic + adv-routing.
+  </div>
+</div>
+
+<div class="badge">Mockup 25 — Touch Target Sizes</div>
+
+</body>
+</html>

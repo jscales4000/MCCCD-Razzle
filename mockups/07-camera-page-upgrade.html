@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 07 — Camera Page Upgrade</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;
+    --copy:#e2e8f0;--muted:#64748b;--soft:#94a3b8;
+    --border:rgba(148,163,184,.18);--rad:14px;
+    --panel:rgba(15,23,42,.96);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;display:grid;grid-template-rows:58px 1fr 100px;gap:10px;padding:10px;}
+
+  header{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;align-items:center;padding:0 20px;gap:12px;}
+  .back{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all 110ms;}
+  .back:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .room{font-size:18px;font-weight:800;}
+  .page-tag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .sp{flex:1;}
+  .chip{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.25);color:#86efac;}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
+
+  /* WORK AREA — 3 col */
+  .work{display:grid;grid-template-columns:140px 1fr 200px;gap:10px;}
+
+  /* CAMERA SIDEBAR */
+  .sidebar{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);padding:14px;display:flex;flex-direction:column;gap:8px;}
+  .s-label{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .cam-btn{
+    padding:12px;border-radius:9px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    display:flex;flex-direction:column;gap:3px;cursor:pointer;
+    text-align:left;transition:all 110ms;
+  }
+  .cam-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .cam-btn.active{background:rgba(245,166,35,.12);color:#fff;border-color:rgba(245,166,35,.38);}
+  .cam-btn.active .cam-name{color:var(--accent);}
+  .cam-live{
+    display:flex;align-items:center;gap:5px;
+    font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--danger);margin-bottom:2px;
+  }
+  .live-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.2s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .cam-name{font-size:14px;font-weight:700;}
+  .cam-model{font-size:11px;color:var(--muted);}
+
+  /* PREVIEW PANEL */
+  .preview{background:transparent;border:0.5px solid var(--border);border-radius:var(--rad);display:grid;grid-template-rows:auto 1fr;gap:6px;padding:8px 12px 10px;overflow:hidden;}
+  .preview-label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;}
+  .live-badge{display:flex;align-items:center;gap:5px;background:rgba(239,68,68,.15);border:0.5px solid rgba(239,68,68,.35);color:#fca5a5;padding:3px 8px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+  .video-box{
+    background:rgba(5,13,26,.8);border:0.5px solid var(--border);border-radius:10px;
+    position:relative;aspect-ratio:16/9;height:100%;max-width:100%;place-self:center;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .video-placeholder{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-align:center;line-height:2;}
+  /* PTZ OVERLAY — diamond layout */
+  .ptz{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;}
+  .ptz-ring{
+    width:160px;height:160px;position:relative;pointer-events:none;
+  }
+  .ptz-btn{
+    position:absolute;width:52px;height:52px;border-radius:50%;
+    background:rgba(0,0,0,.45);border:0.5px solid rgba(255,255,255,.18);
+    color:#fff;display:grid;place-items:center;cursor:pointer;pointer-events:auto;
+    backdrop-filter:blur(4px);transition:background 100ms,transform 80ms;
+  }
+  .ptz-btn:hover{background:rgba(245,166,35,.2);}
+  .ptz-btn:active{transform:scale(.9);background:rgba(245,166,35,.35);}
+  .ptz-u{top:0;left:50%;transform:translateX(-50%);}
+  .ptz-d{bottom:0;left:50%;transform:translateX(-50%);}
+  .ptz-l{left:0;top:50%;transform:translateY(-50%);}
+  .ptz-r{right:0;top:50%;transform:translateY(-50%);}
+  .ptz-u:active{transform:translateX(-50%) scale(.9);}
+  .ptz-d:active{transform:translateX(-50%) scale(.9);}
+  .ptz-l:active{transform:translateY(-50%) scale(.9);}
+  .ptz-r:active{transform:translateY(-50%) scale(.9);}
+
+  /* CONTROLS PANEL */
+  .controls{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+  .c-section{display:flex;flex-direction:column;gap:8px;}
+  .c-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+
+  /* ZOOM — big +/- pair */
+  .zoom-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .zoom-btn{
+    height:52px;border-radius:9px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:13px;font-weight:700;cursor:pointer;transition:all 110ms;
+  }
+  .zoom-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .zoom-btn:active{background:rgba(245,166,35,.15);color:var(--accent);}
+
+  /* TRACKING — segmented control look */
+  .track-seg{display:grid;grid-template-columns:repeat(3,1fr);border-radius:9px;overflow:hidden;border:0.5px solid var(--border);}
+  .ts-btn{
+    border:none;background:rgba(30,41,59,.5);color:var(--soft);
+    padding:10px 4px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    cursor:pointer;transition:all 110ms;border-right:0.5px solid var(--border);text-align:center;
+  }
+  .ts-btn:last-child{border-right:none;}
+  .ts-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .ts-btn.active{background:rgba(245,166,35,.14);color:var(--accent);}
+
+  /* VTC — prominent */
+  .vtc-btn{
+    padding:14px;border-radius:9px;
+    background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.32);
+    color:var(--accent);font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    cursor:pointer;transition:all 130ms;letter-spacing:.04em;text-transform:uppercase;
+  }
+  .vtc-btn:hover{background:rgba(245,166,35,.2);}
+
+  /* SPEED sliders */
+  .speed-row{display:grid;grid-template-columns:72px 1fr 28px;gap:8px;align-items:center;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  input[type=range]{accent-color:var(--accent);width:100%;}
+
+  /* PRESETS ROW */
+  .presets{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;align-items:center;gap:12px;padding:0 20px;}
+  .p-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .presets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1;}
+  .preset-btn{
+    height:76px;border-radius:10px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    cursor:pointer;transition:all 120ms;position:relative;overflow:hidden;
+  }
+  .preset-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .preset-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent);opacity:0;transition:opacity 140ms;}
+  .preset-btn:hover::after{opacity:.5;}
+  .p-hold-hint{font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--muted);}
+
+  .mk-badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+  .mk-desc{position:fixed;bottom:112px;left:12px;right:12px;background:rgba(2,6,23,.92);border:0.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--soft);line-height:1.5;}
+  .mk-desc strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Home</button>
+  <div class="sep"></div>
+  <span class="room">AA140</span>
+  <span class="page-tag">— Cameras</span>
+  <div class="sp"></div>
+  <div class="chip"><span class="dot"></span>Online</div>
+</header>
+
+<div class="work">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <p class="s-label">Cameras</p>
+    <button class="cam-btn active">
+      <div class="cam-live"><span class="live-dot"></span>Live</div>
+      <div class="cam-name">Front</div>
+      <div class="cam-model">i20</div>
+    </button>
+    <button class="cam-btn">
+      <div class="cam-name">Back L</div>
+      <div class="cam-model">i12</div>
+    </button>
+    <button class="cam-btn">
+      <div class="cam-name">Back R</div>
+      <div class="cam-model">i12</div>
+    </button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview">
+    <div class="preview-label">
+      Front — 1Beyond i20
+      <span class="live-badge"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.2s ease-in-out infinite;display:inline-block"></span> Live</span>
+    </div>
+    <div class="video-box">
+      <div class="video-placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(100,116,139,.4)" stroke-width="1.5"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg><br>
+        RTSP Stream
+      </div>
+      <div class="ptz">
+        <div class="ptz-ring">
+          <button class="ptz-btn ptz-u"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5l7 8H5z"/></svg></button>
+          <button class="ptz-btn ptz-d"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19l-7-8h14z"/></svg></button>
+          <button class="ptz-btn ptz-l"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 12l8-7v14z"/></svg></button>
+          <button class="ptz-btn ptz-r"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 12l-8-7v14z"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="c-section">
+      <p class="c-label">Zoom</p>
+      <div class="zoom-row">
+        <button class="zoom-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="M11 8v6M8 11h6M16.5 16.5L21 21"/></svg>In</button>
+        <button class="zoom-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="M8 11h6M16.5 16.5L21 21"/></svg>Out</button>
+      </div>
+    </div>
+    <div class="c-section">
+      <p class="c-label">Tracking</p>
+      <div class="track-seg">
+        <button class="ts-btn active">People</button>
+        <button class="ts-btn">Group</button>
+        <button class="ts-btn">Auto</button>
+      </div>
+    </div>
+    <div class="c-section">
+      <p class="c-label">Speed</p>
+      <div class="speed-row"><span>Pan</span><input type="range" min="1" max="100" value="50"><span style="text-align:right">50</span></div>
+      <div class="speed-row"><span>Tilt</span><input type="range" min="1" max="100" value="50"><span style="text-align:right">50</span></div>
+    </div>
+    <button class="vtc-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14"/><rect x="3" y="8" width="12" height="8" rx="2"/></svg>
+      Send to VTC
+    </button>
+  </div>
+</div>
+
+<!-- PRESETS ROW -->
+<div class="presets">
+  <p class="p-label">Shot Presets</p>
+  <div class="presets-grid">
+    <button class="preset-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+      Default
+      <span class="p-hold-hint">Hold to save</span>
+    </button>
+    <button class="preset-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+      Primary
+      <span class="p-hold-hint">Hold to save</span>
+    </button>
+    <button class="preset-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+      Secondary
+      <span class="p-hold-hint">Hold to save</span>
+    </button>
+  </div>
+  <span style="font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;">Tap · Recall<br>Hold · Save</span>
+</div>
+
+<div class="mk-badge">07 — Camera Page Upgrade</div>
+<div class="mk-desc"><strong>Concept:</strong> Camera selector shows LIVE dot on active cam. PTZ overlay becomes a floating diamond ring centered on the video (glass-morphic circles). Tracking uses a segmented pill control. Zoom becomes large L/R split button. Presets get icon + hold-hint. Much clearer state at a glance.</div>
+</body>
+</html>

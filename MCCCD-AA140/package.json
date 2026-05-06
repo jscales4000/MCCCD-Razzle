@@ -9,8 +9,9 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "archive": "npm run build && ch5-cli archive -p MCCCD-AA140 -d dist -o output",
-    "deploy": "npm run archive && ch5-cli deploy -H 192.168.1.191 -t touchscreen -u admin -i output/MCCCD-AA140.ch5z -p",
-    "deploy:build": "npm run build && npm run archive && npm run deploy",
+    "deploy": "npm run archive && python scripts/deploy.py",
+    "deploy:tabletop": "npm run archive && cross-env PANEL_HOST=192.168.2.53 python scripts/deploy.py",
+    "deploy:wall": "npm run archive && cross-env PANEL_HOST=192.168.2.123 python scripts/deploy.py",
     "clean": "rimraf dist output",
     "verify-signals": "rg -n \"AA140\\.\" src --glob \"*.ts\" --glob \"*.svelte\"",
     "validate": "node scripts/validate.mjs"

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 04 — Dark Commander</title>
+<style>
+  :root {
+    --bg:#0a1220; --panel:rgba(10,15,28,0.98); --panel2:rgba(14,20,35,0.96);
+    --accent:#f5a623; --adim:rgba(245,166,35,.14);
+    --success:#22c55e; --danger:#ef4444; --warn:#f59e0b;
+    --copy:#e2e8f0; --muted:#4a5568; --soft:#718096;
+    --border:rgba(148,163,184,.14); --rad:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;display:grid;grid-template-rows:54px 1fr 80px;gap:8px;padding:8px;}
+
+  /* HEADER — ultra minimal command-bar */
+  header{
+    background:var(--panel);border-bottom:1px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 18px;gap:12px;
+  }
+  .logo{
+    width:34px;height:34px;border-radius:7px;
+    background:linear-gradient(135deg,rgba(245,166,35,.25),rgba(245,166,35,.05));
+    border:1px solid rgba(245,166,35,.3);
+    display:grid;place-items:center;color:var(--accent);flex-shrink:0;
+  }
+  .room{font-size:18px;font-weight:800;letter-spacing:-.01em;}
+  .room span{color:var(--accent);}
+  .sep{width:1px;height:18px;background:var(--border);}
+  .tag{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+  .sp{flex:1;}
+  .badge-online{
+    display:flex;align-items:center;gap:6px;
+    font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    padding:4px 11px;border-radius:5px;
+    background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.25);color:#86efac;
+  }
+  .badge-occ{
+    background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.25);color:var(--accent);
+  }
+  .pill-dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
+  .cmd-btn{
+    display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:7px;
+    background:transparent;border:none;color:var(--soft);font-size:11px;font-weight:600;cursor:pointer;
+    letter-spacing:.04em;transition:all 100ms;
+  }
+  .cmd-btn:hover{background:rgba(255,255,255,.05);color:var(--copy);}
+  .cmd-power{
+    background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.28);
+    color:var(--accent);font-weight:700;
+  }
+  .cmd-power:hover{background:rgba(245,166,35,.2);}
+
+  /* MAIN */
+  .main{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+
+  /* DISPLAY CARD — bordered, flat dark */
+  .dcard{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--rad);
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:border-color 200ms;
+  }
+  .dcard.active{border-color:rgba(245,166,35,.35);}
+  .dcard.audio-on{border-color:rgba(34,197,94,.4);}
+
+  /* SOURCE NAME HERO */
+  .src-hero{
+    padding:16px 18px 12px;
+    background:linear-gradient(180deg,rgba(245,166,35,.04) 0%,transparent 100%);
+    border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:flex-start;
+  }
+
+  .sh-disp{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .pwr-led{width:6px;height:6px;border-radius:50%;}
+  .led-on{background:var(--success);box-shadow:0 0 8px rgba(34,197,94,.7);}
+  .led-off{background:rgba(100,116,139,.3);}
+  .sh-name{font-size:26px;font-weight:900;letter-spacing:-.02em;color:var(--accent);line-height:1;}
+  .sh-name.empty{color:var(--soft);font-size:20px;font-weight:600;}
+  .sh-right{display:flex;gap:3px;}
+  .ib{width:34px;height:34px;border-radius:7px;background:transparent;border:none;color:var(--soft);display:grid;place-items:center;cursor:pointer;transition:all 100ms;}
+  .ib:hover{background:rgba(255,255,255,.07);color:var(--copy);}
+  .ib.on{color:var(--success);}
+
+  /* SOURCES — 4-up row of flat chips */
+  .src-chips{display:grid;grid-template-columns:1fr 1fr;flex:1;}
+  .sc{
+    border:none;background:transparent;cursor:pointer;
+    padding:0 14px;
+    display:flex;align-items:center;gap:10px;
+    font-size:13px;font-weight:600;color:var(--soft);
+    border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+    min-height:64px;
+    transition:background 100ms,color 100ms;
+    position:relative;overflow:hidden;
+  }
+  .sc:nth-child(2n){border-right:none;}
+  .sc:nth-child(3),.sc:nth-child(4){border-bottom:none;}
+  .sc:hover{background:rgba(255,255,255,.035);color:var(--copy);}
+  .sc.active{background:rgba(245,166,35,.1);color:#fff;}
+  .sc-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:rgba(100,116,139,.3);flex-shrink:0;
+    transition:background 140ms,box-shadow 140ms;
+  }
+  .sc.active .sc-dot{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+  .sc-check{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    width:18px;height:18px;border-radius:4px;
+    background:rgba(245,166,35,.2);border:1px solid rgba(245,166,35,.5);
+    display:none;place-items:center;color:var(--accent);
+  }
+  .sc.active .sc-check{display:grid;}
+
+  /* FOOTER */
+  footer{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 18px;gap:10px;
+  }
+  .fpwr{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:7px;background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.28);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all 130ms;}
+  .fpwr:hover{background:rgba(245,166,35,.18);}
+  .fvl{width:1px;height:32px;background:var(--border);margin:0 6px;}
+  .flbl{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .mbtn{height:46px;padding:0 14px;border-radius:7px;border:0.5px solid var(--border);background:rgba(14,20,35,.8);color:var(--soft);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 100ms;}
+  .mbtn:hover{background:rgba(255,255,255,.05);color:var(--copy);}
+  .mbtn.muted{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.28);}
+  .fsp{flex:1;}
+  .vbtn{width:46px;height:46px;border-radius:7px;background:transparent;border:none;color:var(--soft);display:grid;place-items:center;cursor:pointer;transition:all 100ms;}
+  .vbtn:hover{background:rgba(255,255,255,.05);color:var(--copy);}
+
+  .mk-badge{position:fixed;top:10px;right:10px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:5px;}
+  .mk-desc{position:fixed;bottom:10px;left:10px;right:10px;background:rgba(2,6,23,.92);border:0.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--soft);line-height:1.5;}
+  .mk-desc strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  </div>
+  <span class="room">AA<span>140</span></span>
+  <div class="sep"></div>
+  <span class="tag">MCCCD · Room Control</span>
+  <div class="sp"></div>
+  <div class="badge-online"><span class="pill-dot"></span> Online</div>
+  <div class="badge-online badge-occ"><span class="pill-dot"></span> Occupied</div>
+  <button class="cmd-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg> Cameras</button>
+  <button class="cmd-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg> Settings</button>
+  <button class="cmd-btn cmd-power"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg> ON</button>
+</header>
+
+<div class="main">
+  <!-- D1 -->
+  <div class="dcard audio-on">
+    <div class="src-hero">
+      <div class="sh-left">
+        <div class="sh-disp"><span class="pwr-led led-on"></span>Display 1</div>
+        <div class="sh-name">Room PC</div>
+      </div>
+      <div class="sh-right">
+        <button class="ib on"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 4V6L7 10H3z"/></svg></button>
+        <button class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></button>
+      </div>
+    </div>
+    <div class="src-chips">
+      <button class="sc active"><span class="sc-dot"></span>Room PC<span class="sc-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span></button>
+      <button class="sc"><span class="sc-dot"></span>Ext PC<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>AirMedia<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>Laptop<span class="sc-check"></span></button>
+    </div>
+  </div>
+  <!-- D2 -->
+  <div class="dcard">
+    <div class="src-hero">
+      <div class="sh-left">
+        <div class="sh-disp"><span class="pwr-led led-on"></span>Display 2</div>
+        <div class="sh-name empty">No Source</div>
+      </div>
+      <div class="sh-right">
+        <button class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 4V6L7 10H3z"/></svg></button>
+        <button class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></button>
+      </div>
+    </div>
+    <div class="src-chips">
+      <button class="sc"><span class="sc-dot"></span>Room PC<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>Ext PC<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>AirMedia<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>Laptop<span class="sc-check"></span></button>
+    </div>
+  </div>
+  <!-- D3 -->
+  <div class="dcard">
+    <div class="src-hero">
+      <div class="sh-left">
+        <div class="sh-disp" style="color:var(--muted)"><span class="pwr-led led-off"></span>Display 3</div>
+        <div class="sh-name empty">No Source</div>
+      </div>
+    </div>
+    <div class="src-chips">
+      <button class="sc"><span class="sc-dot"></span>Room PC<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>Ext PC<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>AirMedia<span class="sc-check"></span></button>
+      <button class="sc"><span class="sc-dot"></span>Laptop<span class="sc-check"></span></button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <button class="fpwr"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg> System On</button>
+  <div class="fvl"></div>
+  <span class="flbl">Mics</span>
+  <button class="mbtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>Lavalier</button>
+  <button class="mbtn muted"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>Handheld · MUTED</button>
+  <div class="fsp"></div>
+  <span class="flbl">Volume</span>
+  <button class="vbtn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6"/></svg></button>
+  <button class="vbtn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6"/></svg></button>
+  <button class="vbtn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z" fill="currentColor"/><path d="M16 12h6M19 9v6"/></svg></button>
+</footer>
+
+<div class="mk-badge">04 — Dark Commander</div>
+<div class="mk-desc"><strong>Concept:</strong> Deeper blacks (#06090f), tighter spacing, 1px solid border system instead of hairlines. Check badge appears inside active source cell. Ultra-compact header as command bar. Feels like a pro broadcast tool or flight-deck console — high contrast for bright room use.</div>
+</body>
+</html>

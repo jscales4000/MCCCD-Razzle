@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 08 — Component Upgrades Showcase</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;--warn:#f59e0b;
+    --copy:#e2e8f0;--muted:#64748b;--soft:#94a3b8;
+    --border:rgba(148,163,184,.18);--rad:14px;
+    --panel:rgba(15,23,42,.95);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;gap:0;}
+
+  .page-title{
+    background:rgba(10,15,28,.98);border-bottom:0.5px solid var(--border);
+    padding:12px 24px;display:flex;align-items:center;gap:12px;
+  }
+  .pt-h{font-size:16px;font-weight:800;}
+  .pt-sub{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+
+  .grid{
+    flex:1;display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:1fr 1fr;
+    gap:12px;padding:12px;
+    overflow:hidden;
+  }
+
+  .comp{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);padding:18px 20px;display:flex;flex-direction:column;gap:12px;}
+  .c-tag{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+  .c-name{font-size:15px;font-weight:800;margin-bottom:10px;}
+  .comp-divider{width:100%;height:0.5px;background:var(--border);}
+
+  /* === COMPONENT 1: STATUS PILL — upgraded === */
+  .status-pills{display:flex;gap:8px;flex-wrap:wrap;}
+  .sp-old{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(30,41,59,.5);border:0.5px solid var(--border);color:var(--soft);}
+  .sp-dot-old{width:7px;height:7px;border-radius:50%;}
+  .sp-new{
+    display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;
+    transition:all 140ms;
+  }
+  .sp-online{background:rgba(34,197,94,.12);border:0.5px solid rgba(34,197,94,.3);color:#86efac;}
+  .sp-occupied{background:rgba(245,166,35,.12);border:0.5px solid rgba(245,166,35,.3);color:var(--accent);}
+  .sp-offline{background:rgba(239,68,68,.12);border:0.5px solid rgba(239,68,68,.3);color:#fca5a5;}
+  .sp-dot-new{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* === COMPONENT 2: POWER BUTTON — upgraded === */
+  .pwr-old{padding:8px 16px;border-radius:8px;background:rgba(30,41,59,.5);border:0.5px solid var(--border);color:var(--soft);font-size:13px;font-weight:700;cursor:pointer;}
+  .pwr-on-new{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 24px;border-radius:12px;
+    background:rgba(245,166,35,.12);
+    border:1px solid rgba(245,166,35,.4);
+    color:var(--accent);font-size:14px;font-weight:800;
+    cursor:pointer;letter-spacing:.04em;text-transform:uppercase;
+    box-shadow:0 0 0 0 rgba(245,166,35,.3);
+    transition:all 180ms;
+    position:relative;overflow:hidden;
+  }
+  .pwr-on-new::before{
+    content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 100%,rgba(245,166,35,.15),transparent 70%);
+  }
+  .pwr-on-new:hover{box-shadow:0 0 0 4px rgba(245,166,35,.15),0 8px 24px rgba(245,166,35,.12);}
+  .pwr-off-new{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 24px;border-radius:12px;
+    background:rgba(239,68,68,.1);
+    border:1px solid rgba(239,68,68,.35);
+    color:#fca5a5;font-size:14px;font-weight:800;
+    cursor:pointer;letter-spacing:.04em;text-transform:uppercase;
+  }
+  .pwr-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+  /* === COMPONENT 3: MIC BUTTON — upgraded === */
+  .mic-old{display:flex;align-items:center;gap:8px;padding:0 14px;height:48px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:13px;font-weight:600;cursor:pointer;}
+  .mic-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;}
+  .mic-new{
+    display:flex;flex-direction:column;align-items:center;
+    padding:12px 18px;border-radius:12px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:12px;font-weight:700;cursor:pointer;gap:6px;
+    transition:all 110ms;min-width:90px;
+  }
+  .mic-new:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .mic-new.muted{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5;}
+  .mic-new .mic-tag-new{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(239,68,68,.2);color:#fca5a5;}
+  .mic-new .live-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.15);color:#86efac;}
+
+  /* === COMPONENT 4: OCCUPANCY — upgraded === */
+  .occ-old{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--soft);}
+  .occ-new{
+    display:flex;align-items:center;gap:14px;
+    padding:10px 18px;border-radius:10px;
+    background:rgba(14,20,36,.8);border:0.5px solid var(--border);
+  }
+  .occ-icon{width:40px;height:40px;border-radius:8px;background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.25);display:grid;place-items:center;color:var(--accent);}
+
+  .occ-val{font-size:24px;font-weight:900;line-height:1;color:var(--copy);}
+  .occ-lbl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+  .occ-timer{margin-left:auto;display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .occ-timer-val{font-size:18px;font-weight:800;color:var(--warn);font-variant-numeric:tabular-nums;}
+  .occ-timer-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+
+  /* === COMPONENT 5: VU METER — upgraded === */
+  .meter-old{height:14px;border-radius:8px;background:rgba(15,23,42,.6);border:0.5px solid var(--border);overflow:hidden;position:relative;}
+  .meter-fill-old{height:100%;width:65%;background:linear-gradient(90deg,var(--success) 0%,#facc15 70%,var(--danger) 95%);}
+  .meter-new{display:flex;align-items:center;gap:10px;}
+  .meter-bars{display:flex;gap:2px;align-items:flex-end;height:28px;flex:1;}
+  .mbar{
+    flex:1;border-radius:2px 2px 0 0;
+    background:var(--success);transition:height 60ms linear;
+  }
+  /* simulate audio bars at various heights */
+  .mbar:nth-child(1){height:40%;background:var(--success);}
+  .mbar:nth-child(2){height:60%;background:var(--success);}
+  .mbar:nth-child(3){height:80%;background:var(--success);}
+  .mbar:nth-child(4){height:100%;background:#facc15;}
+  .mbar:nth-child(5){height:90%;background:#facc15;}
+  .mbar:nth-child(6){height:70%;background:var(--success);}
+  .mbar:nth-child(7){height:50%;background:var(--success);}
+  .mbar:nth-child(8){height:75%;background:var(--success);}
+  .mbar:nth-child(9){height:95%;background:var(--danger);}
+  .mbar:nth-child(10){height:60%;background:var(--success);}
+  .meter-val-new{font-size:13px;font-weight:700;color:var(--soft);font-variant-numeric:tabular-nums;min-width:28px;text-align:right;}
+
+  /* === COMPONENT 6: SOURCE BTN — upgraded === */
+  .src-compare{display:flex;gap:10px;flex-wrap:wrap;}
+  .src-old{
+    padding:0 16px;height:52px;border-radius:8px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .src-new-row{display:flex;gap:8px;}
+  .src-new{
+    padding:0;height:60px;min-width:90px;border-radius:10px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);font-size:12px;font-weight:700;
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    position:relative;overflow:hidden;transition:all 110ms;
+  }
+  .src-new:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .src-new.active-src{background:rgba(245,166,35,.1);color:#fff;border-color:rgba(245,166,35,.38);}
+  .src-new.active-src .src-ico{color:var(--accent);}
+  .src-new.active-src::after{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:var(--accent);box-shadow:0 0 8px rgba(245,166,35,.5);}
+  .src-ico{color:var(--muted);transition:color 110ms;}
+
+  .old-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+  .new-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;}
+
+  .mk-badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <span class="pt-h">Component Upgrades</span>
+  <span class="pt-sub">Before → After comparisons for 6 key components</span>
+</div>
+
+<div class="grid">
+
+  <!-- 1. STATUS PILL -->
+  <div class="comp">
+    <p class="c-tag">Component 1</p>
+    <p class="c-name">Status Pills</p>
+    <p class="old-label">Current</p>
+    <div class="status-pills">
+      <div class="sp-old"><span class="sp-dot-old" style="background:var(--success)"></span>Online</div>
+      <div class="sp-old"><span class="sp-dot-old" style="background:var(--accent)"></span>Occupied</div>
+    </div>
+    <div class="comp-divider"></div>
+    <p class="new-label">Upgraded</p>
+    <div class="status-pills">
+      <div class="sp-new sp-online"><span class="sp-dot-new"></span>Online</div>
+      <div class="sp-new sp-occupied"><span class="sp-dot-new" style="animation-delay:.6s"></span>Occupied</div>
+      <div class="sp-new sp-offline"><span class="sp-dot-new" style="animation:none;opacity:.6"></span>Offline</div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">Full-pill color fill · animated dot · rounded pill shape</p>
+  </div>
+
+  <!-- 2. POWER BUTTON -->
+  <div class="comp">
+    <p class="c-tag">Component 2</p>
+    <p class="c-name">Power Button</p>
+    <p class="old-label">Current</p>
+    <div class="pwr-row">
+      <button class="pwr-old">System On</button>
+    </div>
+    <div class="comp-divider"></div>
+    <p class="new-label">Upgraded</p>
+    <div class="pwr-row">
+      <button class="pwr-on-new">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+        System On
+      </button>
+      <button class="pwr-off-new">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+        Shutdown
+      </button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">Larger target · inner radial glow · hover ring · 2 states</p>
+  </div>
+
+  <!-- 3. MIC BUTTON -->
+  <div class="comp">
+    <p class="c-tag">Component 3</p>
+    <p class="c-name">Mic Buttons</p>
+    <p class="old-label">Current</p>
+    <div class="mic-row">
+      <button class="mic-old"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>Lavalier</button>
+      <button class="mic-old" style="color:#fca5a5;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>Handheld (Muted)</button>
+    </div>
+    <div class="comp-divider"></div>
+    <p class="new-label">Upgraded</p>
+    <div class="mic-row">
+      <button class="mic-new">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+        Lavalier
+        <span class="live-tag">Live</span>
+      </button>
+      <button class="mic-new muted">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+        Handheld
+        <span class="mic-tag-new">Muted</span>
+      </button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">Vertical card · icon + label + state tag · thumb-friendly</p>
+  </div>
+
+  <!-- 4. OCCUPANCY -->
+  <div class="comp">
+    <p class="c-tag">Component 4</p>
+    <p class="c-name">Occupancy Indicator</p>
+    <p class="old-label">Current (text badge)</p>
+    <div class="occ-old">
+      <span class="sp-dot-old" style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block"></span>
+      Occupied · 42 min
+    </div>
+    <div class="comp-divider"></div>
+    <p class="new-label">Upgraded</p>
+    <div class="occ-new">
+      <div class="occ-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <div class="occ-info">
+        <div class="occ-val">Occupied</div>
+        <div class="occ-lbl">Room Status</div>
+      </div>
+      <div class="occ-timer">
+        <div class="occ-timer-val">42:18</div>
+        <div class="occ-timer-lbl">Session</div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">Icon card · session timer · scan-at-a-glance</p>
+  </div>
+
+  <!-- 5. VU METER -->
+  <div class="comp">
+    <p class="c-tag">Component 5</p>
+    <p class="c-name">VU Meter</p>
+    <p class="old-label">Current (horizontal bar)</p>
+    <div class="meter-old"><div class="meter-fill-old"></div></div>
+    <div class="comp-divider"></div>
+    <p class="new-label">Upgraded (vertical bars)</p>
+    <div class="meter-new">
+      <div class="meter-bars">
+        <div class="mbar"></div><div class="mbar"></div><div class="mbar"></div>
+        <div class="mbar"></div><div class="mbar"></div><div class="mbar"></div>
+        <div class="mbar"></div><div class="mbar"></div><div class="mbar"></div>
+        <div class="mbar"></div>
+      </div>
+      <span class="meter-val-new">68</span>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">Vertical bar spectrum · taller · clips at top with red · more analog feel</p>
+  </div>
+
+  <!-- 6. SOURCE BUTTON -->
+  <div class="comp">
+    <p class="c-tag">Component 6</p>
+    <p class="c-name">Source Select Button</p>
+    <p class="old-label">Current</p>
+    <div class="src-compare">
+      <button class="src-old">Room PC</button>
+      <button class="src-old" style="background:rgba(245,166,35,.1);color:#fff;border-color:rgba(245,166,35,.38);">AirMedia ✓</button>
+    </div>
+    <div class="comp-divider"></div>
+    <p class="new-label">Upgraded</p>
+    <div class="src-new-row">
+      <button class="src-new active-src">
+        <svg class="src-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Room PC
+      </button>
+      <button class="src-new">
+        <svg class="src-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>
+        AirMedia
+      </button>
+      <button class="src-new">
+        <svg class="src-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 20h20M4 4h16v12H4z"/></svg>
+        Laptop
+      </button>
+      <button class="src-new">
+        <svg class="src-ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Ext PC
+      </button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:4px;">Icon + label · top glow bar on active · taller card format</p>
+  </div>
+
+</div>
+
+<div class="mk-badge">08 — Component Upgrades</div>
+</body>
+</html>

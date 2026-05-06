@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 16 — Room Booking / Schedule</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;--warn:#f59e0b;
+    --copy:#e2e8f0;--muted:#4d6070;--soft:#7c93a8;
+    --border:rgba(148,163,184,.14);--rad:14px;
+    --panel:rgba(12,20,36,.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    width:1280px;height:800px;overflow:hidden;
+    background:var(--bg);color:var(--copy);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    display:grid;grid-template-rows:60px 1fr 88px;gap:10px;padding:10px;
+  }
+  body::before{content:'';position:fixed;top:-80px;left:50%;transform:translateX(-50%);width:900px;height:400px;background:radial-gradient(ellipse,rgba(245,166,35,.04),transparent 70%);pointer-events:none;}
+
+  /* HEADER */
+  header{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 20px;gap:14px;
+  }
+  .back{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;}
+  .room{font-size:18px;font-weight:900;}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .htag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .hsp{flex:1;}
+  .time-chip{
+    display:flex;flex-direction:column;align-items:flex-end;gap:1px;
+  }
+  .time-big{font-size:22px;font-weight:900;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .time-date{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+
+  /* MAIN */
+  .main{display:grid;grid-template-columns:340px 1fr;gap:10px;}
+
+  /* ── LEFT: CURRENT SESSION ── */
+  .session-panel{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+
+  .now-band{
+    padding:16px 18px;
+    background:linear-gradient(135deg,rgba(245,166,35,.1),rgba(245,166,35,.03));
+    border-bottom:0.5px solid rgba(245,166,35,.18);
+  }
+  .now-eye{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,166,35,.7);margin-bottom:6px;}
+  .now-title{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px;}
+  .now-host{font-size:12px;color:var(--soft);margin-bottom:12px;}
+
+  /* Progress bar */
+  .progress-wrap{margin-bottom:10px;}
+  .progress-label{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .progress-label span:last-child{color:var(--accent);}
+  .progress-track{height:6px;border-radius:3px;background:rgba(148,163,184,.12);overflow:hidden;}
+  .progress-fill{height:100%;width:42%;border-radius:3px;background:linear-gradient(90deg,var(--accent),rgba(245,166,35,.5));box-shadow:0 0 8px rgba(245,166,35,.3);}
+
+  .time-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--soft);}
+  .time-now{font-size:16px;font-weight:800;color:var(--copy);font-variant-numeric:tabular-nums;}
+  .time-end{font-size:13px;font-weight:700;color:var(--muted);}
+  .time-arr{color:var(--border);}
+
+  /* Action buttons */
+  .session-actions{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    padding:14px 18px;border-bottom:0.5px solid var(--border);
+  }
+  .sa-btn{
+    padding:12px 8px;border-radius:10px;
+    border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:12px;font-weight:700;letter-spacing:.04em;
+    cursor:pointer;transition:all 110ms;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .sa-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .sa-btn.primary{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.3);color:var(--accent);}
+  .sa-btn.primary:hover{background:rgba(245,166,35,.18);}
+  .sa-btn.danger{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.22);color:#fca5a5;}
+  .sa-btn.danger:hover{background:rgba(239,68,68,.16);}
+  .sa-icon{color:currentColor;}
+
+  /* Attendees strip */
+  .attendees{
+    padding:14px 18px;border-bottom:0.5px solid var(--border);
+  }
+  .att-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .att-row{display:flex;gap:0;}
+  .att-avatar{
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(245,166,35,.15);border:2px solid var(--bg);
+    display:grid;place-items:center;
+    font-size:11px;font-weight:800;color:var(--accent);
+    margin-left:-6px;
+  }
+  .att-avatar:first-child{margin-left:0;}
+  .att-more{background:rgba(30,41,59,.7);color:var(--soft);}
+  .att-count{margin-left:10px;font-size:12px;font-weight:600;color:var(--muted);align-self:center;}
+
+  /* Room info */
+  .room-info{
+    padding:14px 18px;flex:1;display:flex;flex-direction:column;gap:8px;
+  }
+  .ri-row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft);}
+  .ri-ico{color:var(--muted);}
+  .ri-val{font-weight:600;color:var(--copy);}
+
+  /* ── RIGHT: SCHEDULE TIMELINE ── */
+  .schedule-panel{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .sch-head{
+    padding:14px 20px 10px;border-bottom:0.5px solid var(--border);
+    display:flex;align-items:center;gap:12px;
+    background:rgba(8,14,26,.4);
+  }
+  .sch-title{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);flex:1;}
+  .day-nav{display:flex;gap:6px;}
+  .day-btn{
+    padding:6px 12px;border-radius:7px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:11px;font-weight:700;cursor:pointer;transition:all 100ms;
+  }
+  .day-btn:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .day-btn.active{background:rgba(245,166,35,.12);color:var(--accent);border-color:rgba(245,166,35,.3);}
+  .sch-legend{display:flex;align-items:center;gap:12px;font-size:10px;font-weight:600;color:var(--muted);}
+  .leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+  .leg-dot.booked{background:rgba(245,166,35,.5);}
+  .leg-dot.free{background:rgba(34,197,94,.4);}
+  .leg-dot.now{background:var(--accent);}
+
+  .sch-body{flex:1;overflow-y:auto;display:flex;}
+
+  /* Hour axis */
+  .hour-axis{
+    width:60px;flex-shrink:0;
+    padding-top:0;border-right:0.5px solid var(--border);
+  }
+  .hour-tick{
+    height:72px;display:flex;align-items:flex-start;justify-content:flex-end;
+    padding:4px 10px 0 0;
+    font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--muted);
+    border-bottom:0.5px solid rgba(148,163,184,.06);
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* Events lane */
+  .events-lane{flex:1;position:relative;padding:0 14px;}
+
+  /* Each event block = 72px per hour */
+  .evt{
+    position:absolute;left:14px;right:14px;
+    border-radius:10px;overflow:hidden;
+    border:0.5px solid transparent;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:8px 12px;cursor:pointer;
+    transition:filter 150ms;
+  }
+  .evt:hover{filter:brightness(1.1);}
+
+  .evt-free{
+    background:rgba(34,197,94,.06);
+    border-color:rgba(34,197,94,.18);
+  }
+  .evt-free-label{
+    font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(134,239,172,.5);
+    display:flex;align-items:center;gap:6px;
+  }
+  .evt-free-label span{font-size:14px;font-weight:900;color:rgba(134,239,172,.7);}
+
+  .evt-booked{
+    background:rgba(245,166,35,.08);
+    border-color:rgba(245,166,35,.22);
+  }
+  .evt-now{
+    background:rgba(245,166,35,.14);
+    border-color:rgba(245,166,35,.4);
+    box-shadow:0 0 0 1px rgba(245,166,35,.08),inset 0 0 0 1px rgba(245,166,35,.12);
+  }
+  .evt-now::before{
+    content:'NOW';
+    position:absolute;top:6px;right:10px;
+    font-size:9px;font-weight:900;letter-spacing:.14em;
+    color:var(--accent);opacity:.8;
+  }
+  .evt-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .evt-sub{font-size:11px;color:var(--muted);}
+  .evt-time{font-size:10px;font-weight:700;color:var(--soft);margin-top:4px;font-variant-numeric:tabular-nums;}
+
+  /* Now indicator line */
+  .now-line{
+    position:absolute;left:0;right:0;
+    height:2px;background:var(--accent);
+    box-shadow:0 0 8px rgba(245,166,35,.6);
+    z-index:5;
+  }
+  .now-line::before{
+    content:'';position:absolute;left:60px;top:-4px;
+    width:10px;height:10px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 8px rgba(245,166,35,.8);
+  }
+
+  /* ── FOOTER ── */
+  footer{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 20px;gap:14px;
+  }
+  .f-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .ext-btn{
+    display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;
+    background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.28);
+    color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all 120ms;
+  }
+  .ext-btn:hover{background:rgba(245,166,35,.2);}
+  .fsp{flex:1;}
+  .book-btn{
+    display:flex;align-items:center;gap:7px;padding:9px 20px;border-radius:9px;
+    background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.28);
+    color:#86efac;font-size:13px;font-weight:700;cursor:pointer;transition:all 120ms;
+  }
+  .book-btn:hover{background:rgba(34,197,94,.18);}
+
+  .badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Home
+  </button>
+  <div class="sep"></div>
+  <span class="room">AA140</span>
+  <div class="sep"></div>
+  <span class="htag">Room Schedule</span>
+  <div class="hsp"></div>
+  <div class="time-chip">
+    <span class="time-big">2:18 PM</span>
+    <span class="time-date">Thu, May 1, 2025</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- CURRENT SESSION -->
+  <div class="session-panel">
+
+    <div class="now-band">
+      <p class="now-eye">● Active Session</p>
+      <h2 class="now-title">ENG 101 — Composition</h2>
+      <p class="now-host">Prof. Sarah Mitchell · Room AA140</p>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>1:00 PM</span>
+          <span>42 min remaining</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill"></div></div>
+      </div>
+
+      <div class="time-row">
+        <span class="time-now">2:18 PM</span>
+        <span class="time-arr">→</span>
+        <span class="time-end">ends 3:00 PM</span>
+      </div>
+    </div>
+
+    <div class="session-actions">
+      <button class="sa-btn primary">
+        <svg class="sa-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+        Extend +30
+      </button>
+      <button class="sa-btn primary">
+        <svg class="sa-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        Extend +60
+      </button>
+      <button class="sa-btn">
+        <svg class="sa-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Change Date
+      </button>
+      <button class="sa-btn danger">
+        <svg class="sa-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+        End Session
+      </button>
+    </div>
+
+    <div class="attendees">
+      <p class="att-label">Attendees</p>
+      <div style="display:flex;align-items:center;">
+        <div class="att-row">
+          <div class="att-avatar">SM</div>
+          <div class="att-avatar" style="background:rgba(34,197,94,.15);color:#86efac;">JD</div>
+          <div class="att-avatar" style="background:rgba(99,102,241,.15);color:#a5b4fc;">KL</div>
+          <div class="att-avatar" style="background:rgba(236,72,153,.15);color:#f9a8d4;">RP</div>
+          <div class="att-avatar att-more">+24</div>
+        </div>
+        <span class="att-count">28 registered · 22 checked in</span>
+      </div>
+    </div>
+
+    <div class="room-info">
+      <div class="ri-row">
+        <svg class="ri-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span class="ri-val">Building A · Floor 1</span>
+      </div>
+      <div class="ri-row">
+        <svg class="ri-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span class="ri-val">Capacity: 32 seats</span>
+      </div>
+      <div class="ri-row">
+        <svg class="ri-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="ri-val">3 Displays · 2 PTZ Cameras · 5 Mics</span>
+      </div>
+      <div class="ri-row">
+        <svg class="ri-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+        <span class="ri-val">Zoom · Teams · Webex Ready</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCHEDULE TIMELINE -->
+  <div class="schedule-panel">
+    <div class="sch-head">
+      <span class="sch-title">Today's Schedule · AA140</span>
+      <div class="day-nav">
+        <button class="day-btn">← Yesterday</button>
+        <button class="day-btn active">Today</button>
+        <button class="day-btn">Tomorrow →</button>
+      </div>
+      <div class="sch-legend">
+        <span class="leg-dot now"></span><span>Now</span>
+        <span class="leg-dot booked"></span><span>Booked</span>
+        <span class="leg-dot free"></span><span>Free</span>
+      </div>
+    </div>
+
+    <div class="sch-body">
+      <div class="hour-axis">
+        <div class="hour-tick">7 AM</div>
+        <div class="hour-tick">8 AM</div>
+        <div class="hour-tick">9 AM</div>
+        <div class="hour-tick">10 AM</div>
+        <div class="hour-tick">11 AM</div>
+        <div class="hour-tick">12 PM</div>
+        <div class="hour-tick">1 PM</div>
+        <div class="hour-tick">2 PM</div>
+        <div class="hour-tick">3 PM</div>
+        <div class="hour-tick">4 PM</div>
+        <div class="hour-tick">5 PM</div>
+        <div class="hour-tick">6 PM</div>
+      </div>
+      <div class="events-lane">
+
+        <!-- Now indicator at 2:18 PM = row 7 (1PM) + 1.3 hours = 7*72 + 1.3*72 = 504+94 = 598px -->
+        <div class="now-line" style="top:598px;left:60px;"></div>
+
+        <!-- 8:00-9:00 free (72px per hour, top=72px for 8AM) -->
+        <div class="evt evt-free" style="top:76px;height:68px;">
+          <div class="evt-free-label"><span>+</span>Available 8:00 – 9:00 AM</div>
+        </div>
+
+        <!-- 9:00-10:30 booked -->
+        <div class="evt evt-booked" style="top:148px;height:106px;">
+          <div class="evt-title">MAT 151 — Calculus I</div>
+          <div class="evt-sub">Prof. David Chen</div>
+          <div class="evt-time">9:00 AM – 10:30 AM · 30 students</div>
+        </div>
+
+        <!-- 10:30-12:00 free -->
+        <div class="evt evt-free" style="top:256px;height:106px;">
+          <div class="evt-free-label"><span>+</span>Available 10:30 AM – 12:00 PM</div>
+        </div>
+
+        <!-- 12:00-1:00 booked -->
+        <div class="evt evt-booked" style="top:364px;height:72px;">
+          <div class="evt-title">Staff Meeting — AV Dept</div>
+          <div class="evt-sub">Recurring · AV Team</div>
+          <div class="evt-time">12:00 – 1:00 PM · 8 attendees</div>
+        </div>
+
+        <!-- 1:00-3:00 NOW booked -->
+        <div class="evt evt-now" style="top:436px;height:144px;">
+          <div class="evt-title">ENG 101 — Composition</div>
+          <div class="evt-sub">Prof. Sarah Mitchell</div>
+          <div class="evt-time">1:00 PM – 3:00 PM · 28 students</div>
+        </div>
+
+        <!-- 3:00-4:30 free -->
+        <div class="evt evt-free" style="top:580px;height:106px;">
+          <div class="evt-free-label"><span>+</span>Available 3:00 – 4:30 PM</div>
+        </div>
+
+        <!-- 4:30-6:00 booked -->
+        <div class="evt evt-booked" style="top:688px;height:106px;">
+          <div class="evt-title">CIS 133 — Web Dev</div>
+          <div class="evt-sub">Prof. James Park</div>
+          <div class="evt-time">4:30 PM – 6:00 PM · 24 students</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span class="f-label">Quick Actions</span>
+  <button class="ext-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+    Extend Session
+  </button>
+  <button class="ext-btn" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.22);color:#fca5a5;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+    End & Power Off
+  </button>
+  <div class="fsp"></div>
+  <button class="book-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Book Free Slot
+  </button>
+</footer>
+
+<div class="badge">Mockup 16</div>
+</body>
+</html>

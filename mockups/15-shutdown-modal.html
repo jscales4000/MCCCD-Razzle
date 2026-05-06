@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 15 — Shutdown Countdown Modal</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;
+    --copy:#e2e8f0;--muted:#4d6070;--soft:#7c93a8;
+    --border:rgba(148,163,184,.14);--rad:14px;
+    --panel:rgba(12,20,36,.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    width:1280px;height:800px;overflow:hidden;
+    background:var(--bg);color:var(--copy);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    position:relative;
+  }
+
+  /* ── BACKGROUND — blurred Home page stand-in ── */
+  .bg-home{
+    position:absolute;inset:0;
+    display:grid;grid-template-rows:60px 1fr 88px;gap:10px;padding:10px;
+    filter:blur(3px);opacity:.35;pointer-events:none;
+  }
+  .bg-header{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);}
+  .bg-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .bg-tile{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);}
+  .bg-footer{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);}
+
+  /* ── BACKDROP ── */
+  .backdrop{
+    position:absolute;inset:0;
+    background:rgba(4,8,18,.72);
+    backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;
+    z-index:10;
+  }
+
+  /* ── MODAL CARD ── */
+  .modal{
+    width:560px;
+    background:rgba(12,20,36,.98);
+    border:1px solid rgba(239,68,68,.3);
+    border-radius:20px;
+    box-shadow:0 0 0 1px rgba(239,68,68,.08),0 40px 80px rgba(0,0,0,.7),0 0 60px rgba(239,68,68,.06);
+    display:flex;flex-direction:column;align-items:center;
+    overflow:hidden;
+    animation:modal-in .25s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  @keyframes modal-in{
+    from{opacity:0;transform:scale(.94) translateY(12px);}
+    to{opacity:1;transform:scale(1) translateY(0);}
+  }
+
+  /* Danger top stripe */
+  .modal-stripe{
+    width:100%;height:4px;
+    background:linear-gradient(90deg,var(--danger),#f97316,var(--danger));
+    background-size:200% 100%;
+    animation:stripe-slide 2s linear infinite;
+  }
+  @keyframes stripe-slide{
+    0%{background-position:0% 50%;}
+    100%{background-position:200% 50%;}
+  }
+
+  .modal-body{padding:36px 40px 32px;display:flex;flex-direction:column;align-items:center;gap:0;width:100%;}
+
+  /* Power icon */
+  .modal-icon{
+    width:72px;height:72px;border-radius:50%;
+    background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.35);
+    display:grid;place-items:center;color:#fca5a5;
+    margin-bottom:20px;
+    box-shadow:0 0 30px rgba(239,68,68,.12);
+  }
+
+  .modal-title{font-size:26px;font-weight:900;letter-spacing:-.02em;color:var(--copy);margin-bottom:8px;text-align:center;}
+  .modal-body-text{font-size:14px;color:var(--soft);text-align:center;line-height:1.6;max-width:380px;margin-bottom:32px;}
+  .modal-body-text strong{color:var(--copy);}
+
+  /* Countdown ring */
+  .countdown-wrap{
+    position:relative;width:120px;height:120px;
+    margin-bottom:32px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .countdown-svg{
+    position:absolute;inset:0;
+    transform:rotate(-90deg);
+  }
+  .countdown-track{
+    fill:none;stroke:rgba(239,68,68,.12);stroke-width:6;
+  }
+  .countdown-fill{
+    fill:none;stroke:var(--danger);stroke-width:6;
+    stroke-linecap:round;
+    stroke-dasharray:326;
+    stroke-dashoffset:98; /* ~70% complete = ~21s of 30s */
+    transition:stroke-dashoffset 1s linear;
+    filter:drop-shadow(0 0 4px rgba(239,68,68,.5));
+  }
+  .countdown-num{
+    font-size:42px;font-weight:900;color:#fca5a5;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-.02em;line-height:1;
+    position:relative;z-index:1;
+  }
+  .countdown-sec{
+    font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(252,165,165,.6);
+    position:absolute;bottom:16px;
+  }
+
+  /* Action buttons */
+  .modal-actions{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;
+  }
+  .btn-cancel{
+    padding:16px 24px;border-radius:12px;
+    background:rgba(30,41,59,.7);border:0.5px solid var(--border);
+    color:var(--copy);font-size:15px;font-weight:700;letter-spacing:.02em;
+    cursor:pointer;transition:all 140ms;
+    display:flex;align-items:center;justify-content:center;gap:9px;
+  }
+  .btn-cancel:hover{background:rgba(51,65,85,.8);border-color:rgba(148,163,184,.3);}
+  .btn-confirm{
+    padding:16px 24px;border-radius:12px;
+    background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+    color:#fca5a5;font-size:15px;font-weight:700;letter-spacing:.02em;
+    cursor:pointer;transition:all 140ms;
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    box-shadow:0 0 20px rgba(239,68,68,.06);
+  }
+  .btn-confirm:hover{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.6);}
+
+  /* Shutdown checklist — what will happen */
+  .shutdown-list{
+    width:100%;border-top:0.5px solid var(--border);
+    padding:20px 40px;
+    display:flex;flex-direction:column;gap:10px;
+    background:rgba(6,10,20,.5);
+  }
+  .sl-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .sl-item{
+    display:flex;align-items:center;gap:10px;
+    font-size:12px;color:var(--soft);
+  }
+  .sl-icon{
+    width:24px;height:24px;border-radius:5px;
+    background:rgba(239,68,68,.08);border:0.5px solid rgba(239,68,68,.18);
+    display:grid;place-items:center;color:#fca5a5;flex-shrink:0;
+  }
+
+  /* Vacancy timer context strip at very bottom */
+  .vacancy-bar{
+    width:100%;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:10px 40px;
+    background:rgba(245,158,11,.05);border-top:0.5px solid rgba(245,158,11,.12);
+    font-size:11px;color:rgba(252,211,77,.7);font-weight:600;
+  }
+  .vacancy-dot{width:6px;height:6px;border-radius:50%;background:#fcd34d;box-shadow:0 0 6px rgba(252,211,77,.4);animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  .badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<!-- Blurred home background -->
+<div class="bg-home">
+  <div class="bg-header"></div>
+  <div class="bg-tiles">
+    <div class="bg-tile"></div>
+    <div class="bg-tile"></div>
+    <div class="bg-tile"></div>
+  </div>
+  <div class="bg-footer"></div>
+</div>
+
+<!-- Modal backdrop -->
+<div class="backdrop">
+  <div class="modal">
+
+    <!-- Animated danger stripe -->
+    <div class="modal-stripe"></div>
+
+    <div class="modal-body">
+
+      <!-- Icon -->
+      <div class="modal-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 3v9"/>
+          <path d="M6.5 7.5a8 8 0 1 0 11 0"/>
+        </svg>
+      </div>
+
+      <h2 class="modal-title">Shut Down Room?</h2>
+      <p class="modal-body-text">
+        The room has been <strong>vacant for 18 minutes</strong>. All displays, audio, and cameras will power off. This cannot be undone without a full restart.
+      </p>
+
+      <!-- Countdown ring -->
+      <div class="countdown-wrap">
+        <svg class="countdown-svg" viewBox="0 0 120 120">
+          <circle class="countdown-track" cx="60" cy="60" r="52"/>
+          <circle class="countdown-fill" cx="60" cy="60" r="52"/>
+        </svg>
+        <span class="countdown-num">21</span>
+        <span class="countdown-sec">sec</span>
+      </div>
+
+      <!-- Buttons -->
+      <div class="modal-actions">
+        <button class="btn-cancel">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Cancel
+        </button>
+        <button class="btn-confirm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          Shut Down Now
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Shutdown checklist -->
+    <div class="shutdown-list">
+      <p class="sl-label">Will be powered off</p>
+      <div class="sl-item">
+        <div class="sl-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        3 Displays (D1 Front Left, D2 Front Right, D3 Rear)
+      </div>
+      <div class="sl-item">
+        <div class="sl-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        </div>
+        Audio system + all 5 microphone channels
+      </div>
+      <div class="sl-item">
+        <div class="sl-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+        </div>
+        Camera system (2 PTZ cameras)
+      </div>
+    </div>
+
+    <!-- Vacancy context -->
+    <div class="vacancy-bar">
+      <span class="vacancy-dot"></span>
+      Triggered by occupancy timeout · Room vacant 18 min · Auto-shutdown threshold: 15 min
+    </div>
+
+  </div>
+</div>
+
+<div class="badge">Mockup 15</div>
+</body>
+</html>

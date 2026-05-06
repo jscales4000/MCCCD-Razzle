@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 09 — Settings Page Upgrade</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;
+    --copy:#e2e8f0;--muted:#64748b;--soft:#94a3b8;
+    --border:rgba(148,163,184,.18);--rad:14px;
+    --panel:rgba(15,23,42,.95);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--copy);font-family:"Segoe UI",system-ui,sans-serif;display:grid;grid-template-rows:60px 1fr;gap:10px;padding:10px;}
+
+  header{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;align-items:center;padding:0 20px;gap:12px;}
+  .back{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all 110ms;}
+  .back:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .room{font-size:18px;font-weight:800;}
+  .ptag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .sp{flex:1;}
+  .chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(34,197,94,.1);border:0.5px solid rgba(34,197,94,.25);color:#86efac;}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;}
+
+  /* MAIN — 2 col: sidebar + content */
+  .main{display:grid;grid-template-columns:220px 1fr;gap:10px;}
+
+  /* SIDEBAR NAV */
+  .snav{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:6px;}
+  .sn-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0 4px;}
+  .sn-btn{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:9px;
+    background:transparent;border:none;color:var(--soft);
+    font-size:13px;font-weight:600;cursor:pointer;
+    text-align:left;transition:all 110ms;
+  }
+  .sn-btn:hover{background:rgba(255,255,255,.05);color:var(--copy);}
+  .sn-btn.active{background:rgba(245,166,35,.1);color:var(--accent);border:0.5px solid rgba(245,166,35,.25);}
+  .sn-btn.active .sn-ico{color:var(--accent);}
+  .sn-ico{color:var(--muted);flex-shrink:0;transition:color 110ms;}
+
+  /* CONTENT */
+  .content{background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);display:flex;flex-direction:column;gap:0;overflow-y:auto;}
+  .c-head{padding:18px 24px 16px;border-bottom:0.5px solid var(--border);}
+  .c-title{font-size:20px;font-weight:800;}
+  .c-sub{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500;}
+  .c-body{padding:18px 24px;display:flex;flex-direction:column;gap:14px;}
+
+  /* MIC CHANNEL — redesigned as horizontal strip */
+  .mc{
+    background:rgba(10,16,28,.7);border:0.5px solid var(--border);border-radius:12px;
+    padding:14px 18px;display:grid;
+    grid-template-columns:160px auto 1fr 1fr auto;
+    gap:16px;align-items:center;
+    transition:border-color 180ms;
+  }
+  .mc.connected{border-color:rgba(34,197,94,.25);}
+
+  .mc-name{font-size:15px;font-weight:800;}
+  .mc-status{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+  .mc-led{width:6px;height:6px;border-radius:50%;}
+  .mc-led.on{background:var(--success);box-shadow:0 0 6px rgba(34,197,94,.7);}
+  .mc-led.off{background:rgba(100,116,139,.3);}
+
+  /* LEVEL METER — compact vertical bars */
+  .mc-meter{display:flex;align-items:flex-end;gap:1.5px;height:28px;width:44px;}
+  .mb{width:4px;border-radius:2px 2px 0 0;transition:height 60ms linear;}
+  .mb:nth-child(1){height:30%;background:var(--success);}
+  .mb:nth-child(2){height:55%;background:var(--success);}
+  .mb:nth-child(3){height:80%;background:var(--success);}
+  .mb:nth-child(4){height:100%;background:#facc15;}
+  .mb:nth-child(5){height:70%;background:var(--success);}
+  .mb:nth-child(6){height:40%;background:var(--success);}
+  .mb:nth-child(7){height:20%;background:var(--success);}
+
+  /* SLIDER ROW */
+  .mc-slider{display:flex;flex-direction:column;gap:6px;}
+  .mcs-row{display:grid;grid-template-columns:70px 1fr 28px;gap:8px;align-items:center;}
+  .mcs-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+  input[type=range]{accent-color:var(--accent);width:100%;height:18px;}
+  .mcs-val{font-size:12px;font-weight:700;color:var(--soft);text-align:right;font-variant-numeric:tabular-nums;}
+
+  /* MUTE BUTTON */
+  .mc-mute{
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    padding:10px 14px;border-radius:10px;border:0.5px solid var(--border);
+    background:rgba(30,41,59,.5);color:var(--soft);
+    font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    cursor:pointer;transition:all 110ms;min-width:70px;
+  }
+  .mc-mute:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+  .mc-mute.muted{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.3);}
+  .mc-mute-tag{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 5px;border-radius:3px;}
+  .muted .mc-mute-tag{background:rgba(239,68,68,.2);color:#fca5a5;}
+
+  .mk-badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+  .mk-desc{position:fixed;bottom:12px;left:12px;right:12px;background:rgba(2,6,23,.92);border:0.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--soft);line-height:1.5;}
+  .mk-desc strong{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Home</button>
+  <div class="sep"></div>
+  <span class="room">AA140</span>
+  <span class="ptag">— Settings</span>
+  <div class="sp"></div>
+  <div class="chip"><span class="dot"></span>Online</div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="snav">
+    <p class="sn-label">Settings</p>
+    <button class="sn-btn active">
+      <svg class="sn-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+      Microphones
+    </button>
+    <button class="sn-btn">
+      <svg class="sn-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      Audio Routing
+    </button>
+    <button class="sn-btn">
+      <svg class="sn-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+      Camera Config
+    </button>
+    <button class="sn-btn">
+      <svg class="sn-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Display Config
+    </button>
+    <button class="sn-btn">
+      <svg class="sn-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M16.9 16.9l2.1 2.1M4.9 19.1l2.1-2.1M16.9 7.1l2.1-2.1"/></svg>
+      System Info
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="c-head">
+      <div class="c-title">Microphone Management</div>
+      <div class="c-sub">Trim, line-out levels, and mute state for all 5 microphone channels</div>
+    </div>
+    <div class="c-body">
+      <!-- LAVALIER -->
+      <div class="mc connected">
+        <div class="mc-id">
+          <div class="mc-name">Lavalier</div>
+          <div class="mc-status"><span class="mc-led on"></span>Connected</div>
+        </div>
+        <div class="mc-meter">
+          <div class="mb"></div><div class="mb"></div><div class="mb"></div>
+          <div class="mb"></div><div class="mb"></div><div class="mb"></div><div class="mb"></div>
+        </div>
+        <div class="mc-slider">
+          <div class="mcs-row"><span class="mcs-lbl">Mic Trim</span><input type="range" min="0" max="100" value="72"><span class="mcs-val">72</span></div>
+          <div class="mcs-row"><span class="mcs-lbl">Line Out</span><input type="range" min="0" max="100" value="85"><span class="mcs-val">85</span></div>
+        </div>
+        <div class="mc-slider">
+          <div class="mcs-row"><span class="mcs-lbl">Trim</span><input type="range" min="0" max="100" value="60"><span class="mcs-val">60</span></div>
+          <div class="mcs-row"><span class="mcs-lbl">Out</span><input type="range" min="0" max="100" value="80"><span class="mcs-val">80</span></div>
+        </div>
+        <button class="mc-mute">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/></svg>
+          Live
+        </button>
+      </div>
+      <!-- HANDHELD -->
+      <div class="mc connected">
+        <div class="mc-id">
+          <div class="mc-name">Handheld</div>
+          <div class="mc-status"><span class="mc-led on"></span>Connected</div>
+        </div>
+        <div class="mc-meter" style="filter:grayscale(.8)opacity(.3)">
+          <div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div>
+          <div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div>
+        </div>
+        <div class="mc-slider">
+          <div class="mcs-row"><span class="mcs-lbl">Mic Trim</span><input type="range" min="0" max="100" value="68"><span class="mcs-val">68</span></div>
+          <div class="mcs-row"><span class="mcs-lbl">Line Out</span><input type="range" min="0" max="100" value="75"><span class="mcs-val">75</span></div>
+        </div>
+        <div class="mc-slider">
+          <div class="mcs-row"><span class="mcs-lbl">Trim</span><input type="range" min="0" max="100" value="55"><span class="mcs-val">55</span></div>
+          <div class="mcs-row"><span class="mcs-lbl">Out</span><input type="range" min="0" max="100" value="70"><span class="mcs-val">70</span></div>
+        </div>
+        <button class="mc-mute muted">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M16 9l6 6M22 9l-6 6"/></svg>
+          <span class="mc-mute-tag">Muted</span>
+        </button>
+      </div>
+      <!-- CEILING 1 -->
+      <div class="mc">
+        <div class="mc-id">
+          <div class="mc-name">Ceiling 1</div>
+          <div class="mc-status"><span class="mc-led off"></span>No Signal</div>
+        </div>
+        <div class="mc-meter" style="opacity:.25">
+          <div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div>
+          <div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div><div class="mb" style="height:5%"></div>
+        </div>
+        <div class="mc-slider">
+          <div class="mcs-row"><span class="mcs-lbl">Mic Trim</span><input type="range" min="0" max="100" value="50"><span class="mcs-val">50</span></div>
+          <div class="mcs-row"><span class="mcs-lbl">Line Out</span><input type="range" min="0" max="100" value="50"><span class="mcs-val">50</span></div>
+        </div>
+        <div class="mc-slider">
+          <div class="mcs-row"><span class="mcs-lbl">Trim</span><input type="range" min="0" max="100" value="50"><span class="mcs-val">50</span></div>
+          <div class="mcs-row"><span class="mcs-lbl">Out</span><input type="range" min="0" max="100" value="50"><span class="mcs-val">50</span></div>
+        </div>
+        <button class="mc-mute">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/></svg>
+          Live
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mk-badge">09 — Settings Upgrade</div>
+<div class="mk-desc"><strong>Concept:</strong> Settings gets a left sidebar nav (ready for future sections). Each MicChannel becomes a full-width horizontal strip: name + status LED + vertical VU bars + 2 sliders + mute button all in one scannable row. No scrolling per channel. 5 channels fit in view at 1280x800.</div>
+</body>
+</html>

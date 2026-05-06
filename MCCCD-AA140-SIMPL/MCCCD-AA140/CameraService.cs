@@ -18,8 +18,7 @@ namespace MCCCD_AA140
         private readonly CrestronControlSystem _cs;
 
         // Camera index 1..3 → IP. Index 0 unused.
-        // TODO field-config: fill in actual camera IPs on installation.
-        private readonly string[] _camIps = { "0.0.0.0", "0.0.0.0", "0.0.0.0", "0.0.0.0" };
+        private readonly string[] _camIps = { "192.168.1.172", "192.168.1.172", "192.168.1.172", "192.168.1.172" };
 
         // Currently-selected camera (1..3)
         private int _active = 1;

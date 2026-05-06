@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 17 — Tech Support / Help</title>
+<style>
+  :root{
+    --bg:#0d1b2e;--accent:#f5a623;--adim:rgba(245,166,35,.14);
+    --success:#22c55e;--danger:#ef4444;--warn:#f59e0b;
+    --copy:#e2e8f0;--muted:#4d6070;--soft:#7c93a8;
+    --border:rgba(148,163,184,.14);--rad:14px;
+    --panel:rgba(12,20,36,.97);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    width:1280px;height:800px;overflow:hidden;
+    background:var(--bg);color:var(--copy);
+    font-family:"Segoe UI",system-ui,sans-serif;
+    display:grid;grid-template-rows:60px 1fr 88px;gap:10px;padding:10px;
+  }
+  body::before{content:'';position:fixed;top:-80px;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(245,166,35,.04),transparent 70%);pointer-events:none;}
+
+  /* HEADER */
+  header{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 20px;gap:14px;
+  }
+  .back{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:0.5px solid var(--border);background:rgba(30,41,59,.5);color:var(--soft);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;}
+  .room{font-size:18px;font-weight:900;}
+  .sep{width:1px;height:20px;background:var(--border);}
+  .htag{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .hsp{flex:1;}
+  .alert-chip{
+    display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:9px;
+    background:rgba(239,68,68,.1);border:0.5px solid rgba(239,68,68,.28);
+    color:#fca5a5;font-size:12px;font-weight:700;
+    animation:blink-border 2s ease-in-out infinite;
+  }
+  @keyframes blink-border{0%,100%{border-color:rgba(239,68,68,.28);}50%{border-color:rgba(239,68,68,.6);}}
+  .alert-dot{width:7px;height:7px;border-radius:50%;background:#fca5a5;box-shadow:0 0 6px rgba(252,165,165,.6);animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* MAIN */
+  .main{display:grid;grid-template-columns:300px 1fr 240px;gap:10px;}
+
+  /* ── SYSTEM DIAGNOSTICS ── */
+  .diag-panel{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .dp-head{
+    padding:14px 16px 10px;border-bottom:0.5px solid var(--border);
+    font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+    background:rgba(8,14,26,.4);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .refresh-btn{
+    width:26px;height:26px;border-radius:6px;background:transparent;border:0.5px solid var(--border);
+    color:var(--soft);display:grid;place-items:center;cursor:pointer;transition:all 100ms;
+  }
+  .refresh-btn:hover{background:rgba(255,255,255,.06);color:var(--copy);}
+  .diag-list{flex:1;overflow-y:auto;padding:8px;}
+
+  .diag-item{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:9px;border:0.5px solid transparent;
+    margin-bottom:4px;cursor:pointer;transition:all 100ms;
+  }
+  .diag-item:hover{background:rgba(255,255,255,.03);border-color:var(--border);}
+  .diag-item.err{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.18);}
+  .diag-item.warn{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.18);}
+  .diag-icon{
+    width:36px;height:36px;border-radius:8px;
+    background:rgba(30,41,59,.6);border:0.5px solid var(--border);
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .diag-item.err .diag-icon{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#fca5a5;}
+  .diag-item.warn .diag-icon{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25);color:#fcd34d;}
+  .diag-item.ok .diag-icon{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:#86efac;}
+  .diag-info{flex:1;min-width:0;}
+  .diag-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+  .diag-sub{font-size:11px;color:var(--muted);}
+  .diag-status{
+    font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 7px;border-radius:5px;flex-shrink:0;
+  }
+  .status-ok{background:rgba(34,197,94,.1);color:#86efac;}
+  .status-err{background:rgba(239,68,68,.12);color:#fca5a5;}
+  .status-warn{background:rgba(245,158,11,.12);color:#fcd34d;}
+  .status-off{background:rgba(100,116,139,.1);color:var(--muted);}
+
+  /* ── ACTIONS / HELP CENTER ── */
+  .help-panel{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .hp-head{
+    padding:14px 18px 10px;border-bottom:0.5px solid var(--border);
+    font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+    background:rgba(8,14,26,.4);
+  }
+  .help-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+
+  /* Issue category */
+  .issue-section{display:flex;flex-direction:column;gap:6px;}
+  .issue-label{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+  .issue-btn{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 14px;border-radius:10px;
+    border:0.5px solid var(--border);background:rgba(20,32,52,.6);
+    cursor:pointer;transition:all 110ms;
+    text-align:left;
+  }
+  .issue-btn:hover{background:rgba(30,45,70,.8);border-color:rgba(148,163,184,.22);}
+  .issue-btn.active{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.28);}
+  .ib-icon{
+    width:40px;height:40px;border-radius:9px;flex-shrink:0;
+    background:rgba(30,41,59,.6);border:0.5px solid var(--border);
+    display:grid;place-items:center;color:var(--soft);transition:all 110ms;
+  }
+  .issue-btn.active .ib-icon{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.25);color:var(--accent);}
+  .issue-btn.danger-btn .ib-icon{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#fca5a5;}
+  .ib-text{flex:1;}
+  .ib-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .ib-sub{font-size:11px;color:var(--muted);}
+  .ib-badge{
+    font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:2px 6px;border-radius:4px;
+    background:rgba(239,68,68,.12);color:#fca5a5;
+    flex-shrink:0;
+  }
+  .ib-badge.warn{background:rgba(245,158,11,.12);color:#fcd34d;}
+
+  /* ── QR PANEL ── */
+  .qr-panel{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .qp-head{
+    padding:14px 16px 10px;border-bottom:0.5px solid var(--border);
+    font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+    background:rgba(8,14,26,.4);
+  }
+  .qr-body{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    padding:20px 16px;gap:14px;
+  }
+
+  /* Fake QR code grid */
+  .qr-code{
+    width:140px;height:140px;
+    border:3px solid var(--copy);border-radius:8px;
+    padding:8px;background:white;
+    display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);
+    gap:2px;
+  }
+  .qr-cell{border-radius:1px;}
+  .qr-b{background:#0d1b2e;}
+  .qr-w{background:white;}
+
+  .qr-label{font-size:12px;font-weight:700;color:var(--copy);text-align:center;}
+  .qr-sub{font-size:11px;color:var(--muted);text-align:center;line-height:1.5;}
+  .qr-url{
+    font-size:10px;font-weight:700;letter-spacing:.06em;
+    color:var(--accent);text-align:center;
+    padding:6px 10px;border-radius:6px;
+    background:rgba(245,166,35,.08);border:0.5px solid rgba(245,166,35,.2);
+    width:100%;
+  }
+
+  /* Contact block */
+  .contact-block{
+    width:100%;padding:12px;border-radius:10px;
+    background:rgba(30,41,59,.4);border:0.5px solid var(--border);
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .cb-label{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+  .cb-item{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--soft);}
+  .cb-ico{color:var(--muted);}
+  .cb-val{color:var(--copy);}
+
+  /* Emergency call button */
+  .emergency-btn{
+    width:100%;padding:12px;border-radius:10px;
+    background:rgba(239,68,68,.1);border:0.5px solid rgba(239,68,68,.3);
+    color:#fca5a5;font-size:13px;font-weight:700;letter-spacing:.04em;
+    cursor:pointer;transition:all 120ms;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .emergency-btn:hover{background:rgba(239,68,68,.2);}
+
+  /* FOOTER */
+  footer{
+    background:var(--panel);border:0.5px solid var(--border);border-radius:var(--rad);
+    display:flex;align-items:center;padding:0 20px;gap:14px;
+  }
+  .f-label{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+  .restart-btn{
+    display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;
+    background:rgba(245,166,35,.1);border:0.5px solid rgba(245,166,35,.28);
+    color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all 120ms;
+  }
+  .restart-btn:hover{background:rgba(245,166,35,.2);}
+  .fsp{flex:1;}
+  .diag-run{
+    display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;
+    background:rgba(30,41,59,.6);border:0.5px solid var(--border);
+    color:var(--soft);font-size:12px;font-weight:700;cursor:pointer;transition:all 120ms;
+  }
+  .diag-run:hover{background:rgba(51,65,85,.7);color:var(--copy);}
+
+  .badge{position:fixed;top:12px;right:12px;z-index:99;background:rgba(245,166,35,.15);border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Home
+  </button>
+  <div class="sep"></div>
+  <span class="room">AA140</span>
+  <div class="sep"></div>
+  <span class="htag">Tech Support</span>
+  <div class="hsp"></div>
+  <div class="alert-chip">
+    <span class="alert-dot"></span>
+    1 Active Issue
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- DIAGNOSTICS -->
+  <div class="diag-panel">
+    <div class="dp-head">
+      System Diagnostics
+      <button class="refresh-btn" title="Refresh">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+    <div class="diag-list">
+
+      <div class="diag-item ok">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Network</div>
+          <div class="diag-sub">10.200.5.22 · Ping 4ms</div>
+        </div>
+        <span class="diag-status status-ok">Online</span>
+      </div>
+
+      <div class="diag-item ok">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Display D1</div>
+          <div class="diag-sub">65" NEC · HDMI-1 · 4K</div>
+        </div>
+        <span class="diag-status status-ok">Active</span>
+      </div>
+
+      <div class="diag-item ok">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Display D2</div>
+          <div class="diag-sub">65" NEC · HDMI-2 · 4K</div>
+        </div>
+        <span class="diag-status status-ok">Active</span>
+      </div>
+
+      <div class="diag-item err">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Display D3</div>
+          <div class="diag-sub">No signal · HDMI-3</div>
+        </div>
+        <span class="diag-status status-err">Error</span>
+      </div>
+
+      <div class="diag-item ok">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Camera 1</div>
+          <div class="diag-sub">PTZ · RTSP · 192.168.10.20</div>
+        </div>
+        <span class="diag-status status-ok">Online</span>
+      </div>
+
+      <div class="diag-item warn">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h4l2-2h4l2 2h4v12H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Camera 2</div>
+          <div class="diag-sub">PTZ · High latency 340ms</div>
+        </div>
+        <span class="diag-status status-warn">Slow</span>
+      </div>
+
+      <div class="diag-item ok">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Lav + Handheld</div>
+          <div class="diag-sub">CCS-UWB · Both connected</div>
+        </div>
+        <span class="diag-status status-ok">OK</span>
+      </div>
+
+      <div class="diag-item ok">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">Ceiling Mics ×3</div>
+          <div class="diag-sub">TCCM · Zones A B C</div>
+        </div>
+        <span class="diag-status status-ok">OK</span>
+      </div>
+
+      <div class="diag-item">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">TSW-770 Panel</div>
+          <div class="diag-sub">FW 3.12.1 · IP 10.200.5.21</div>
+        </div>
+        <span class="diag-status status-ok">OK</span>
+      </div>
+
+      <div class="diag-item">
+        <div class="diag-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        </div>
+        <div class="diag-info">
+          <div class="diag-name">MPC3201B</div>
+          <div class="diag-sub">Control Processor · S# AA140-01</div>
+        </div>
+        <span class="diag-status status-ok">Running</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HELP / ACTIONS -->
+  <div class="help-panel">
+    <div class="hp-head">Common Issues & Quick Fixes</div>
+    <div class="help-body">
+
+      <div class="issue-section">
+        <p class="issue-label">Display Issues</p>
+        <button class="issue-btn active">
+          <div class="ib-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="ib-text">
+            <div class="ib-title">Display D3 — No Signal</div>
+            <div class="ib-sub">Check HDMI-3 cable connection. Try re-route source.</div>
+          </div>
+          <span class="ib-badge">Active</span>
+        </button>
+        <button class="issue-btn">
+          <div class="ib-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/></svg>
+          </div>
+          <div class="ib-text">
+            <div class="ib-title">Display Won't Power On</div>
+            <div class="ib-sub">Verify power cable. Check RS-232 control.</div>
+          </div>
+        </button>
+      </div>
+
+      <div class="issue-section">
+        <p class="issue-label">Audio Issues</p>
+        <button class="issue-btn">
+          <div class="ib-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+          </div>
+          <div class="ib-text">
+            <div class="ib-title">Microphone Not Picked Up</div>
+            <div class="ib-sub">Check mute state. Verify battery / charge.</div>
+          </div>
+        </button>
+        <button class="issue-btn">
+          <div class="ib-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </div>
+          <div class="ib-text">
+            <div class="ib-title">No Audio from Speaker</div>
+            <div class="ib-sub">Check master volume and output routing.</div>
+          </div>
+        </button>
+      </div>
+
+      <div class="issue-section">
+        <p class="issue-label">System Restarts</p>
+        <button class="issue-btn">
+          <div class="ib-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </div>
+          <div class="ib-text">
+            <div class="ib-title">Restart AV Program</div>
+            <div class="ib-sub">Restart SIMPL# program on MPC3201B. ~15s.</div>
+          </div>
+          <span class="ib-badge warn">15 sec</span>
+        </button>
+        <button class="issue-btn danger-btn">
+          <div class="ib-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          </div>
+          <div class="ib-text">
+            <div class="ib-title">Reboot Control Processor</div>
+            <div class="ib-sub">Full cold reboot of MPC3201B. ~90s downtime.</div>
+          </div>
+          <span class="ib-badge">90 sec</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QR + CONTACT -->
+  <div class="qr-panel">
+    <div class="qp-head">Get Help</div>
+    <div class="qr-body">
+
+      <!-- Simulated QR code -->
+      <div class="qr-code">
+        <div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div>
+        <div class="qr-b"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-b"></div>
+        <div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div>
+        <div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div>
+        <div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-w"></div><div class="qr-b"></div>
+        <div class="qr-b"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-w"></div><div class="qr-b"></div>
+        <div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div><div class="qr-b"></div>
+      </div>
+
+      <div class="qr-label">Scan for IT Help Desk</div>
+      <div class="qr-sub">Open a support ticket directly from your phone</div>
+      <div class="qr-url">help.maricopa.edu/av-support</div>
+
+      <div class="contact-block">
+        <p class="cb-label">Direct Contact</p>
+        <div class="cb-item">
+          <svg class="cb-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.6 19.79 19.79 0 0 1 1.58 1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 6.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span class="cb-val">(480) 784-0123</span>
+        </div>
+        <div class="cb-item">
+          <svg class="cb-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span class="cb-val">av-support@mcccd.edu</span>
+        </div>
+        <div class="cb-item">
+          <svg class="cb-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>M–F 7 AM – 8 PM</span>
+        </div>
+      </div>
+
+      <button class="emergency-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.6 19.79 19.79 0 0 1 1.58 1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 6.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Emergency Call AV Tech
+      </button>
+
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span class="f-label">Quick Actions</span>
+  <button class="restart-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    Restart AV Program
+  </button>
+  <button class="restart-btn" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.22);color:#fca5a5;">
+    Reboot Processor
+  </button>
+  <div class="fsp"></div>
+  <button class="diag-run">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Run Full Diagnostic
+  </button>
+</footer>
+
+<div class="badge">Mockup 17</div>
+</body>
+</html>

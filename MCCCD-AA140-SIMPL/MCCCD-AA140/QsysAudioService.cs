@@ -2,6 +2,8 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 // using QSC.QSysPaModule;  // adjust to actual namespace of installed PA module
 using MCCCD_AA140.Generated;
+using UShortInputSig = MCCCD_AA140.Generated.UShortInputSig;
+using UShortOutputSig = MCCCD_AA140.Generated.UShortOutputSig;
 
 namespace MCCCD_AA140
 {

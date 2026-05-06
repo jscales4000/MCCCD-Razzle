@@ -3,8 +3,8 @@
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import { panelOnline, camTrackingModeFb } from '../lib/stores/signals';
-  import { goToPage } from '../lib/stores/page';
-  import { CAMERAS, rtspMain, type Camera } from '../lib/cameras';
+  import { goToPage, currentPage } from '../lib/stores/page';
+  import { CAMERAS, rtspMain, CAM_USER, CAM_PASS, type Camera } from '../lib/cameras';
   import PresetButton from '../components/PresetButton.svelte';
 
   let activeCamera: Camera = $state(CAMERAS[0]);
@@ -32,6 +32,39 @@
   let profileLabel = $state('Auto');
   let showPreviewDock = $state(false);
   let applyViewport = () => {};
+
+  // === ch5-video positioning ===
+  // The ch5-video element lives at body level (build.mjs); we just position it
+  // to match this page's .video-window placeholder. This sidesteps the issue
+  // where a deeply-nested ch5-video doesn't receive a usable bounding rect.
+  // Pattern lifted from c:/Users/scale/CascadeProjects/1Beyond/1beyond-multicam/
+  // src/components/CameraPreview.svelte (proven working).
+  let videoWindow: HTMLDivElement | undefined = $state();
+  let resizeObs: ResizeObserver | null = null;
+
+  function syncVideoToWindow() {
+    const vid = document.getElementById('cam-preview') as HTMLElement | null;
+    if (!vid || !videoWindow) return;
+    const r = videoWindow.getBoundingClientRect();
+    vid.style.top = `${r.top}px`;
+    vid.style.left = `${r.left}px`;
+    vid.style.width = `${r.width}px`;
+    vid.style.height = `${r.height}px`;
+    vid.style.display = 'block';
+  }
+
+  function hideVideo() {
+    const vid = document.getElementById('cam-preview') as HTMLElement | null;
+    if (vid) vid.style.display = 'none';
+  }
+
+  // Hide the video element BEFORE the route change paints, otherwise the
+  // native cutout lingers on top of the next page for a frame or two.
+  // Svelte's onDestroy fires after the page swap, so we tear down here first.
+  function leaveCameras(target: 'home' | 'settings' = 'home') {
+    hideVideo();
+    goToPage(target);
+  }
 
   function selectCamera(cam: Camera) {
     activeCamera = cam;
@@ -92,7 +125,28 @@
     };
     applyViewport();
     window.addEventListener('resize', applyViewport);
-    return () => window.removeEventListener('resize', applyViewport);
+
+    if (videoWindow) {
+      syncVideoToWindow();
+      resizeObs = new ResizeObserver(syncVideoToWindow);
+      resizeObs.observe(videoWindow);
+    }
+
+    // Page-change pre-emption: hide the body-level ch5-video the instant the
+    // page store flips away from 'cameras', BEFORE Svelte renders the new
+    // page. onDestroy fires after that paint and was leaving the cutout
+    // visible on top of Home/Settings for a frame.
+    const unsubPage = currentPage.subscribe((p) => {
+      if (p !== 'cameras') hideVideo();
+    });
+
+    return () => {
+      window.removeEventListener('resize', applyViewport);
+      resizeObs?.disconnect();
+      resizeObs = null;
+      unsubPage();
+      hideVideo();
+    };
   });
 </script>
 
@@ -104,7 +158,7 @@
   <div class="app-shell layout-cameras">
 
     <header class="app-header glass-card">
-      <button class="btn back-btn" onclick={() => goToPage('home')}>← Home</button>
+      <button class="btn back-btn" onclick={() => leaveCameras('home')}>← Home</button>
       <div class="header-copy">
         <p class="eyebrow">CH5 Touch Panel</p>
         <h1>{ROOM_NAME} — Cameras</h1>
@@ -136,16 +190,14 @@
       <!-- Live preview + transparent PTZ overlay -->
       <div class="glass-card preview-panel">
         <p class="panel-label">Preview — {activeCamera.label} ({activeCamera.model})</p>
-        <div class="video-container">
-          <ch5-video
-            id="cam-preview"
-            indexId={String(activeCamera.selectIndex)}
-            url={rtspMain(activeCamera)}
-            sourceType="Network"
-            aspectRatio="16:9"
-            stretch="false"
-            zindex="0"
-          ></ch5-video>
+        <!--
+          .video-window is a positioning HINT for the body-level <ch5-video>
+          (declared in build.mjs). The Svelte mount (above) syncs the body
+          element's inline top/left/width/height to this div's bounding rect.
+          The PTZ overlay renders ON TOP via z-index because ch5-video sits at
+          z-index:0 of the body and the Svelte UI is above it at z-index:1.
+        -->
+        <div class="video-container" bind:this={videoWindow}>
           <div class="ptz-overlay">
             <button
               class="icon-btn ptz-btn ptz-up"
@@ -303,18 +355,22 @@
 <style>
   .layout-cameras {
     display: grid;
-    grid-template-rows: 92px 1fr 168px;
-    gap: 16px;
+    /* Tightened from 92/168 + 20px padding + 16px gap so the work-area row gets
+       ~64 more px of height for the camera preview. */
+    grid-template-rows: 72px 1fr 112px;
+    gap: 12px;
     width: 100%;
     height: 100%;
-    padding: 20px;
+    padding: 12px;
   }
   .back-btn { min-height: 56px; padding: 0 18px; font-size: 13px; margin-right: 16px; }
 
   .work-area {
     display: grid;
-    grid-template-columns: 180px 1fr 240px;
-    gap: 16px;
+    /* Tightened sidebar 180→140 and controls 240→200 + gap 16→12 to give the
+       middle column ~56 more px for the video. */
+    grid-template-columns: 140px 1fr 200px;
+    gap: 12px;
     min-height: 0;
   }
 
@@ -347,23 +403,53 @@
   .camera-select-btn strong { font-size: 16px; font-weight: 700; }
   .camera-select-btn em { font-style: normal; font-size: 12px; color: var(--color-copy-muted); }
 
+  /*
+    CH5 Video Specialist hard rule: any CSS bg on any ANCESTOR of ch5-video
+    paints OPAQUE over the native cutout, making the stream invisible.
+    .preview-panel inherits a dark gradient from .glass-card and is an ancestor
+    of ch5-video, so we override it transparent here. The visual frame is still
+    defined by the .glass-card border. Other glass-cards on this page (sidebar,
+    controls-panel, presets-row) are NOT ancestors of ch5-video, so they keep
+    their gradients.
+  */
   .preview-panel {
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    /* tight padding — every px the panel keeps for itself is a px the video
+       cutout doesn't get. Keep enough horizontal padding to balance the label,
+       almost none vertical. */
+    padding: 6px 14px 10px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 6px;
     min-height: 0;
+    background: transparent !important;
+    /* The body-level ch5-video sits BEHIND the Svelte UI. backdrop-filter
+       (inherited from .glass-card) would blur the video; disable it here. */
+    backdrop-filter: none;
+    box-shadow: none;
   }
 
+  /*
+    Make the bordered container itself 16:9 so the ch5-video cutout (also 16:9
+    via aspectratio="16:9") fills it edge-to-edge with no internal letterbox.
+    height:100% claims the full 1fr cell; aspect-ratio + max-width:100% then
+    fits the largest 16:9 box that fits, centered in the cell.
+  */
   .video-container {
     position: relative;
-    flex: 1;
+    aspect-ratio: 16 / 9;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    place-self: center;
+    min-height: 0;
     border-radius: var(--radius-button);
     overflow: hidden;
-    background: #050d1a;
-    border: 1px solid var(--color-border);
+    background: transparent;  /* was #050d1a — opaque, blocked the cutout */
+    border: 0.5px solid var(--color-border);
   }
   .video-container :global(ch5-video) {
+    position: absolute;
+    inset: 0;
     background: transparent;
     width: 100%;
     height: 100%;
