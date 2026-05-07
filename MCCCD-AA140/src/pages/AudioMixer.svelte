@@ -27,14 +27,17 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb, micCeiling3MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initAudioMixerStateSubscriptions, teardownAudioMixerStateSubscriptions,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
-  // Mic level meters (10-30 Hz from Q-SYS) are subscribed lazily so they
-  // don't fire a callback storm when this page isn't mounted. Per-audit H4.
+  // Per-audit H4 + H4-followup: all AudioMixer-specific signals are subscribed
+  // lazily and torn down when the page unmounts.
   onMount(initMicLevelSubscriptions);
+  onMount(initAudioMixerStateSubscriptions);
   onDestroy(teardownMicLevelSubscriptions);
+  onDestroy(teardownAudioMixerStateSubscriptions);
 
   // ── Header actions ─────────────────────────────────────────────────
   function volDown() { pulseDigital(SIGNALS.volumeDown); }
