@@ -27,14 +27,17 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb, micCeiling3MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initAudioMixerStateSubscriptions, teardownAudioMixerStateSubscriptions,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
   // Mic level meters (10-30 Hz from Q-SYS) are subscribed lazily so they
   // don't fire a callback storm when this page isn't mounted. Per-audit H4.
-  onMount(initMicLevelSubscriptions);
-  onDestroy(teardownMicLevelSubscriptions);
+  // State signals (trim/lineOut/mute/connected/scene/link) also gated here
+  // per H4-followup — they only fire on user action but kept 20 registry refs at boot.
+  onMount(() => { initMicLevelSubscriptions(); initAudioMixerStateSubscriptions(); });
+  onDestroy(() => { teardownMicLevelSubscriptions(); teardownAudioMixerStateSubscriptions(); });
 
   // ── Header actions ─────────────────────────────────────────────────
   function volDown() { pulseDigital(SIGNALS.volumeDown); }
