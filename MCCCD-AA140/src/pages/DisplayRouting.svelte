@@ -7,6 +7,7 @@
 -->
 
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -29,7 +30,12 @@
     display2SourceFb,
     display3SourceFb,
     routingModeFb,
+    initDisplayRoutingSubscriptions, teardownDisplayRoutingSubscriptions,
   } from '../lib/stores/signals';
+
+  // Gate routingModeFb + autoRouteEnableFb to this page's lifetime. Per-audit H4-followup.
+  onMount(initDisplayRoutingSubscriptions);
+  onDestroy(teardownDisplayRoutingSubscriptions);
   import SourceListItem from '../components/routing/SourceListItem.svelte';
   import DisplayCell from '../components/routing/DisplayCell.svelte';
 
