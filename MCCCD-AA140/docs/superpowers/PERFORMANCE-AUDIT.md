@@ -137,7 +137,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
 | 2026-05-04 | Loop final summary | f5201e1 | All HIGH addressed (prior loop), stop conditions met |
-| 2026-05-14 | H4-followup per-page signal gating (partial) | pending iter-10 | 16 subs moved: 2→DisplayRouting, 14→AudioMixer; initSignals() 37→21; index.js +301 B, index.css +115 B (gate-fn overhead) |
+| 2026-05-14 | H4-followup per-page signal gating (partial) | 284de32 | 16 subs moved: 2→DisplayRouting, 14→AudioMixer; initSignals() 37→21; index.js +301 B, index.css +115 B (gate-fn overhead) |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
