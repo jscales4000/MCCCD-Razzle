@@ -7,6 +7,7 @@
 -->
 
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -29,9 +30,16 @@
     display2SourceFb,
     display3SourceFb,
     routingModeFb,
+    initRoutingSubscriptions, teardownRoutingSubscriptions,
   } from '../lib/stores/signals';
   import SourceListItem from '../components/routing/SourceListItem.svelte';
   import DisplayCell from '../components/routing/DisplayCell.svelte';
+
+  // Display 2+3 source feedback, display power flags, routing mode, and
+  // auto-route are gated to this page — they fire on user action only.
+  // Per-audit H4-followup.
+  onMount(initRoutingSubscriptions);
+  onDestroy(teardownRoutingSubscriptions);
 
   // ── Source-list metadata (4 sources, matching SOURCES in router.ts) ────
   // Sub-labels match the mockup: connector type per input.
