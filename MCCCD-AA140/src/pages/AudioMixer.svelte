@@ -27,14 +27,15 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb, micCeiling3MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initAudioMixerStateSignals, teardownAudioMixerStateSignals,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
-  // Mic level meters (10-30 Hz from Q-SYS) are subscribed lazily so they
-  // don't fire a callback storm when this page isn't mounted. Per-audit H4.
-  onMount(initMicLevelSubscriptions);
-  onDestroy(teardownMicLevelSubscriptions);
+  // Mic level meters (10-30 Hz) and ceiling/scene/link state signals are
+  // gated per-page so they don't hold CrComLib registrations at idle. H4+H4-followup.
+  onMount(() => { initMicLevelSubscriptions(); initAudioMixerStateSignals(); });
+  onDestroy(() => { teardownMicLevelSubscriptions(); teardownAudioMixerStateSignals(); });
 
   // ── Header actions ─────────────────────────────────────────────────
   function volDown() { pulseDigital(SIGNALS.volumeDown); }
