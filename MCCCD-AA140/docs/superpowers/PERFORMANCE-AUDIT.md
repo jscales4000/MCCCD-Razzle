@@ -137,7 +137,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
 | 2026-05-04 | Loop final summary | f5201e1 | All HIGH addressed, stop conditions met |
-| 2026-05-24 | H4-followup gate low-freq signals | TBD | Main bundle +589 B JS / +119 B CSS; crcomlib boot slots 37 → 15; 22 signals now lazy (20 AudioMixer + 2 DisplayRouting); camTrackingModeFb deferred (Cameras WIP) |
+| 2026-05-24 | H4-followup gate low-freq signals | 15c7672 | Main bundle +589 B JS / +119 B CSS; crcomlib boot slots 37 → 15; 22 signals now lazy (20 AudioMixer + 2 DisplayRouting); camTrackingModeFb deferred (Cameras WIP) |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
