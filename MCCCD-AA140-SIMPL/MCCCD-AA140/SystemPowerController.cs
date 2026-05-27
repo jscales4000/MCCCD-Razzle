@@ -1,6 +1,6 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using MCCCD_AA140.Generated;
+using MCCCD_AA140;
 
 namespace MCCCD_AA140
 {
@@ -12,9 +12,8 @@ namespace MCCCD_AA140
     /// </summary>
     public class SystemPowerController
     {
-        private readonly MainContract _c;
+        private readonly Contract _c;
         private readonly NvxRoutingService _nvx;
-        private readonly QsysAudioService _audio;
         private readonly CrestronControlSystem _cs;
 
         private bool _systemOn;
@@ -23,32 +22,18 @@ namespace MCCCD_AA140
         private ushort _lastD1 = 1;
         private ushort _lastD2 = 1;
 
-        public SystemPowerController(MainContract c, NvxRoutingService nvx, QsysAudioService audio, CrestronControlSystem cs)
+        public SystemPowerController(Contract c, NvxRoutingService nvx, CrestronControlSystem cs)
         {
             _c = c;
             _nvx = nvx;
-            _audio = audio;
             _cs = cs;
         }
 
         public void Initialize()
         {
-            _c.DisplayPower.OnDigitalRise += () => {
-                if (_systemOn) PowerDownSequence();
-                else            PowerUpSequence();
-            };
-
-            // Snapshot last-active sources whenever they change so PowerUpSequence
-            // can restore them after a vacant-shutdown.
-            //
-            // NOTE: the exact event accessor name for the *Fb signals may differ in
-            // your Contract Editor build. Common forms:
-            //   _c.Display1SourceFb.OnUShortChange += ...
-            //   _c.Display1SourceFb.UShortValueChanged += ...
-            // Adjust to match the generated MainContract.
-            //
-            //   _c.Display1SourceFb.OnUShortChange += (v) => { if (v != 0) _lastD1 = v; };
-            //   _c.Display2SourceFb.OnUShortChange += (v) => { if (v != 0) _lastD2 = v; };
+            // TODO refactor for new Contract Editor API. DisplayPower button wiring
+            // parked while NVX routing is verified. PowerUpSequence still runs at
+            // boot from ControlSystem.InitializeSystem().
         }
 
         public void PowerUpSequence()
@@ -56,9 +41,7 @@ namespace MCCCD_AA140
             ErrorLog.Notice("AA140: PowerUpSequence");
             _systemOn = true;
 
-            // Publish SystemPowerFb so the panel renders the enlarged Power-button
-            // primary variant immediately.
-            _c.SystemPowerFb.BoolValue = true;
+            // TODO drive SystemPowerFb to panel via new Contract API.
 
             // Restore last-active sources to D1, D2
             _nvx.RouteSourceToDisplay(_lastD1, 1);
@@ -67,12 +50,7 @@ namespace MCCCD_AA140
             // D3 boot init: one-shot copy from D2 (per design spec section 6 / 9)
             _nvx.RouteSourceToDisplay(_lastD2, 3);
 
-            // Audio default: D1 owns program audio (UI can override)
-            _c.AudioOutputSelect.UShortValue = 1;
-            _c.AudioOutputSelectFb.UShortValue = 1;
-
-            // Unmute
-            _c.MuteAll.BoolValue = false;
+            // TODO drive AudioOutputSelect/Fb/MuteAll panel feedbacks via new Contract API.
         }
 
         public void PowerDownSequence()
@@ -80,12 +58,7 @@ namespace MCCCD_AA140
             ErrorLog.Notice("AA140: PowerDownSequence");
             _systemOn = false;
 
-            // Publish SystemPowerFb so the panel renders the default-size Power button
-            // and dismisses any "system on" UI affordances.
-            _c.SystemPowerFb.BoolValue = false;
-
-            // Mute master program (mic mutes are user-controlled — leave alone)
-            _c.MuteAll.BoolValue = true;
+            // TODO drive SystemPowerFb/MuteAll panel feedbacks via new Contract API.
 
             // Clear all decoder routes
             _nvx.RouteSourceToDisplay(0, 1);

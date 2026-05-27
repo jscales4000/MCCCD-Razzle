@@ -1,9 +1,13 @@
 <!--
-  AudioMixer — Mockup #13 broadcast-style 5-channel mixer page.
+  AudioMixer — Mockup #13 broadcast-style 4-channel mixer page.
 
-  Replaces the legacy Settings page. Five MixerChannel strips (Lav, Handheld,
-  Ceiling 1-3) + a MasterStrip. Footer hosts scene presets + Link-Ceilings
-  toggle. Reached via the "Audio" button in Home's footer.
+  Replaces the legacy Settings page. Four MixerChannel strips (Lav, Handheld,
+  MXA920 Array A + B) + a MasterStrip. Footer hosts scene presets +
+  Link-Arrays toggle. Reached via the "Audio" button in Home's footer.
+
+  4-mic design (2026-05-26): Q-SYS replaced by Shure P300-IMX + 2x MXA920W-S.
+  The legacy 5th "Ceiling 3" strip was dropped — only 2 ceiling arrays exist
+  and Auto Coverage emits one Dante channel per array.
 -->
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
@@ -17,22 +21,22 @@
     sceneRecallFb,
     audioLinkCeilings12Fb,
     micLavConnected, micHandheldConnected,
-    micCeiling1Connected, micCeiling2Connected, micCeiling3Connected,
+    micCeiling1Connected, micCeiling2Connected,
     micLavLevel, micHandheldLevel,
-    micCeiling1Level, micCeiling2Level, micCeiling3Level,
+    micCeiling1Level, micCeiling2Level,
     micLavTrimFb, micHandheldTrimFb,
-    micCeiling1TrimFb, micCeiling2TrimFb, micCeiling3TrimFb,
+    micCeiling1TrimFb, micCeiling2TrimFb,
     micLavLineOutFb, micHandheldLineOutFb,
-    micCeiling1LineOutFb, micCeiling2LineOutFb, micCeiling3LineOutFb,
+    micCeiling1LineOutFb, micCeiling2LineOutFb,
     micLavMuteFb, micHandheldMuteFb,
-    micCeiling1MuteFb, micCeiling2MuteFb, micCeiling3MuteFb,
+    micCeiling1MuteFb, micCeiling2MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
-  // Mic level meters (10-30 Hz from Q-SYS) are subscribed lazily so they
-  // don't fire a callback storm when this page isn't mounted. Per-audit H4.
+  // Mic level meters (10 Hz from Shure P300 SAMPLE_IN) are subscribed lazily so
+  // they don't fire a callback storm when this page isn't mounted. Per-audit H4.
   onMount(initMicLevelSubscriptions);
   onDestroy(teardownMicLevelSubscriptions);
 
@@ -142,8 +146,8 @@
     />
     <MixerChannel
       type="Ceiling · Ch 3"
-      name="Ceiling 1"
-      model="TCCM · Zone A"
+      name="Array A"
+      model="MXA920W-S"
       connected={$micCeiling1Connected}
       level={$micCeiling1Level}
       lineOut={$micCeiling1LineOutFb}
@@ -155,8 +159,8 @@
     />
     <MixerChannel
       type="Ceiling · Ch 4"
-      name="Ceiling 2"
-      model="TCCM · Zone B"
+      name="Array B"
+      model="MXA920W-S"
       connected={$micCeiling2Connected}
       level={$micCeiling2Level}
       lineOut={$micCeiling2LineOutFb}
@@ -165,19 +169,6 @@
       onLineOutChange={(n) => publishAnalog(SIGNALS.micCeiling2LineOut, n)}
       onTrimChange={(n) => publishAnalog(SIGNALS.micCeiling2Trim, n)}
       onMuteToggle={() => publishDigital(SIGNALS.micCeiling2Mute, !$micCeiling2MuteFb)}
-    />
-    <MixerChannel
-      type="Ceiling · Ch 5"
-      name="Ceiling 3"
-      model="TCCM · Zone C"
-      connected={$micCeiling3Connected}
-      level={$micCeiling3Level}
-      lineOut={$micCeiling3LineOutFb}
-      trim={$micCeiling3TrimFb}
-      muted={$micCeiling3MuteFb}
-      onLineOutChange={(n) => publishAnalog(SIGNALS.micCeiling3LineOut, n)}
-      onTrimChange={(n) => publishAnalog(SIGNALS.micCeiling3Trim, n)}
-      onMuteToggle={() => publishDigital(SIGNALS.micCeiling3Mute, !$micCeiling3MuteFb)}
     />
 
     <div class="divider" aria-hidden="true"></div>
@@ -216,7 +207,7 @@
       aria-pressed={$audioLinkCeilings12Fb}
     >
       <span class="link-dot" class:on={$audioLinkCeilings12Fb}></span>
-      Link Ceilings 1+2
+      Link Arrays A+B
     </button>
   </footer>
 </div>
@@ -370,7 +361,7 @@
   /* ── Body ───────────────────────────────────────────────────────── */
   .mixer-body {
     display: grid;
-    grid-template-columns: repeat(5, 1fr) 2px 140px;
+    grid-template-columns: repeat(4, 1fr) 2px 140px;
     gap: 0;
     min-height: 0;
   }

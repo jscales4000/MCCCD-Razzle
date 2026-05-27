@@ -1,7 +1,7 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharpPro;
-using MCCCD_AA140.Generated;
+using MCCCD_AA140;
 
 namespace MCCCD_AA140
 {
@@ -14,7 +14,7 @@ namespace MCCCD_AA140
     /// </summary>
     public class CameraService
     {
-        private readonly MainContract _c;
+        private readonly Contract _c;
         private readonly CrestronControlSystem _cs;
 
         // Camera index 1..3 → IP. Index 0 unused.
@@ -23,7 +23,7 @@ namespace MCCCD_AA140
         // Currently-selected camera (1..3)
         private int _active = 1;
 
-        public CameraService(MainContract c, CrestronControlSystem cs)
+        public CameraService(Contract c, CrestronControlSystem cs)
         {
             _c = c;
             _cs = cs;
@@ -31,24 +31,8 @@ namespace MCCCD_AA140
 
         public void Initialize()
         {
-            _c.CameraSelect.OnAnalogChange += (v) => { _active = (v >= 1 && v <= 3) ? v : 1; };
-
-            // PTZ — press-and-hold (start on rising edge, stop on falling edge)
-            _c.PtzUp.OnDigitalChange    += (v) => { if (v) StartMove("up");    else StopMove(); };
-            _c.PtzDown.OnDigitalChange  += (v) => { if (v) StartMove("down");  else StopMove(); };
-            _c.PtzLeft.OnDigitalChange  += (v) => { if (v) StartMove("left");  else StopMove(); };
-            _c.PtzRight.OnDigitalChange += (v) => { if (v) StartMove("right"); else StopMove(); };
-
-            _c.ShotPresetRecall.OnAnalogChange += (v) => RecallPreset(v);
-            _c.ShotPresetSave.OnAnalogChange   += (v) => SavePreset(v);
-            _c.ShotPresetDelete.OnAnalogChange += (v) => DeletePreset(v);
-
-            _c.CamSendToVtc.OnDigitalRise      += () => SendActiveToVtc();
-            _c.CamTrackingMode.OnAnalogChange  += (v) => SetTrackingMode(v);
-
-            // Zoom — press-and-hold like PTZ
-            _c.ZoomIn.OnDigitalChange  += (v) => { if (v) StartZoom("in");  else StopZoom(); };
-            _c.ZoomOut.OnDigitalChange += (v) => { if (v) StartZoom("out"); else StopZoom(); };
+            // TODO refactor for new Contract Editor API. Camera panel wiring parked
+            // while NVX routing is verified. Public methods below remain callable.
         }
 
         private void StartZoom(string direction)
@@ -100,7 +84,7 @@ namespace MCCCD_AA140
             // 1=People, 2=Group, 3=VX AutoSwitch
             string m = mode == 1 ? "people" : mode == 2 ? "group" : "autoswitch";
             HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/tracking?mode={m}");
-            _c.CamTrackingModeFb.UShortValue = mode;
+            // TODO drive CamTrackingModeFb back to panel via _c.AA140.CamTrackingMode(callback)
         }
 
         private void HttpFireAndForget(string url)
