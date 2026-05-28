@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AA140 Debug</title>
+  <link rel="stylesheet" href="./debug.css" />
+</head>
+<body>
+  <header class="hdr">
+    <h1>MCCCD-AA140 Debug</h1>
+    <div class="hdr-meta">
+      <span id="poll-status" class="pill">connecting…</span>
+      <span id="poll-cur" class="meta">events: 0</span>
+      <span class="meta"><span id="poll-host"></span></span>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- Devices: IP + enable toggle per device -->
+    <section class="card" id="devices-card">
+      <h2>Devices</h2>
+      <div id="devices-body" class="devices-body">
+        <div class="muted">loading…</div>
+      </div>
+    </section>
+
+    <!-- System power -->
+    <section class="card" id="power-card">
+      <h2>System</h2>
+      <div class="row">
+        <button class="btn" data-power="on">Power On</button>
+        <button class="btn warn" data-power="off">Power Off</button>
+      </div>
+    </section>
+
+    <!-- Audio master + mic mutes/trims -->
+    <section class="card wide" id="audio-card">
+      <h2>Audio (Shure P300)</h2>
+
+      <div class="row">
+        <button class="btn" data-audio="vol-down">Vol −</button>
+        <button class="btn" data-audio="mute">Mute</button>
+        <button class="btn" data-audio="vol-up">Vol +</button>
+      </div>
+
+      <h3>Mics</h3>
+      <table class="mic-table">
+        <thead><tr><th>Mic</th><th>Mute</th><th>Trim</th><th>Line out</th></tr></thead>
+        <tbody>
+          <tr data-mic="lav">
+            <td>Lav</td>
+            <td><button class="btn small" data-act="mute-on">Mute</button>
+                <button class="btn small" data-act="mute-off">Unmute</button></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="trim"/></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="lineout"/></td>
+          </tr>
+          <tr data-mic="handheld">
+            <td>Handheld</td>
+            <td><button class="btn small" data-act="mute-on">Mute</button>
+                <button class="btn small" data-act="mute-off">Unmute</button></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="trim"/></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="lineout"/></td>
+          </tr>
+          <tr data-mic="ceiling1">
+            <td>Ceiling A</td>
+            <td><button class="btn small" data-act="mute-on">Mute</button>
+                <button class="btn small" data-act="mute-off">Unmute</button></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="trim"/></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="lineout"/></td>
+          </tr>
+          <tr data-mic="ceiling2">
+            <td>Ceiling B</td>
+            <td><button class="btn small" data-act="mute-on">Mute</button>
+                <button class="btn small" data-act="mute-off">Unmute</button></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="trim"/></td>
+            <td><input class="rng" type="range" min="0" max="65535" value="32768" data-act="lineout"/></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Cameras: PTZ + presets + tracking -->
+    <section class="card wide" id="cameras-card">
+      <h2>Cameras</h2>
+      <div class="cam-grid">
+
+        <div class="cam-panel" data-cam="1">
+          <h3>Camera 1 <span class="muted small" data-cam-ip>—</span></h3>
+          <div class="ptz">
+            <div></div>
+            <button data-act="ptz" data-dir="up">▲</button>
+            <div></div>
+            <button data-act="ptz" data-dir="left">◀</button>
+            <button data-act="ptz-stop">●</button>
+            <button data-act="ptz" data-dir="right">▶</button>
+            <div></div>
+            <button data-act="ptz" data-dir="down">▼</button>
+            <div></div>
+          </div>
+          <div class="row">
+            <button data-act="zoom" data-dir="in">Zoom +</button>
+            <button data-act="zoom" data-dir="out">Zoom −</button>
+          </div>
+          <h4>Presets</h4>
+          <div class="presets">
+            <div class="preset"><span>1</span>
+              <button data-act="recall" data-id="1">Recall</button>
+              <button data-act="save"   data-id="1">Save</button>
+              <button data-act="delete" data-id="1">Delete</button>
+            </div>
+            <div class="preset"><span>2</span>
+              <button data-act="recall" data-id="2">Recall</button>
+              <button data-act="save"   data-id="2">Save</button>
+              <button data-act="delete" data-id="2">Delete</button>
+            </div>
+            <div class="preset"><span>3</span>
+              <button data-act="recall" data-id="3">Recall</button>
+              <button data-act="save"   data-id="3">Save</button>
+              <button data-act="delete" data-id="3">Delete</button>
+            </div>
+          </div>
+          <h4>Tracking</h4>
+          <div class="row">
+            <button data-act="tracking" data-mode="1">People</button>
+            <button data-act="tracking" data-mode="2">Group</button>
+            <button data-act="tracking" data-mode="3">Auto</button>
+            <button data-act="vtc">→ VTC</button>
+          </div>
+        </div>
+
+        <div class="cam-panel" data-cam="2">
+          <h3>Camera 2 <span class="muted small" data-cam-ip>—</span></h3>
+          <div class="ptz">
+            <div></div>
+            <button data-act="ptz" data-dir="up">▲</button>
+            <div></div>
+            <button data-act="ptz" data-dir="left">◀</button>
+            <button data-act="ptz-stop">●</button>
+            <button data-act="ptz" data-dir="right">▶</button>
+            <div></div>
+            <button data-act="ptz" data-dir="down">▼</button>
+            <div></div>
+          </div>
+          <div class="row">
+            <button data-act="zoom" data-dir="in">Zoom +</button>
+            <button data-act="zoom" data-dir="out">Zoom −</button>
+          </div>
+          <h4>Presets</h4>
+          <div class="presets">
+            <div class="preset"><span>1</span>
+              <button data-act="recall" data-id="1">Recall</button>
+              <button data-act="save"   data-id="1">Save</button>
+              <button data-act="delete" data-id="1">Delete</button>
+            </div>
+            <div class="preset"><span>2</span>
+              <button data-act="recall" data-id="2">Recall</button>
+              <button data-act="save"   data-id="2">Save</button>
+              <button data-act="delete" data-id="2">Delete</button>
+            </div>
+            <div class="preset"><span>3</span>
+              <button data-act="recall" data-id="3">Recall</button>
+              <button data-act="save"   data-id="3">Save</button>
+              <button data-act="delete" data-id="3">Delete</button>
+            </div>
+          </div>
+          <h4>Tracking</h4>
+          <div class="row">
+            <button data-act="tracking" data-mode="1">People</button>
+            <button data-act="tracking" data-mode="2">Group</button>
+            <button data-act="tracking" data-mode="3">Auto</button>
+            <button data-act="vtc">→ VTC</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Live log -->
+    <section class="card wide" id="log-card">
+      <h2>Live Log
+        <button id="log-clear" class="btn small">clear</button>
+        <label class="muted small"><input id="log-pause" type="checkbox"/> pause</label>
+      </h2>
+      <div id="log-body" class="log-body"></div>
+    </section>
+
+  </main>
+
+  <script src="./debug.js"></script>
+</body>
+</html>

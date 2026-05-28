@@ -22,6 +22,8 @@ namespace MCCCD_AA140
         private SonyVplService _projectors;
         private NewlineService _newline;
         private SystemPowerController _power;
+        private MCCCD_AA140.Debug.DeviceConfigStore _deviceStore;
+        private MCCCD_AA140.Debug.DebugServer _debug;
 
         // Touchpanels. IPID 0x03 is the physical TSW-1070 wall panel; IPID 0x04 is
         // reserved for a future second panel (registered but expected to sit offline).
@@ -105,6 +107,10 @@ namespace MCCCD_AA140
                 _projectors = new SonyVplService(_contract, this);
                 _newline    = new NewlineService(_contract, this);
                 _power      = new SystemPowerController(_panel, _nvx, this);
+
+                _deviceStore = new MCCCD_AA140.Debug.DeviceConfigStore();
+                _debug       = new MCCCD_AA140.Debug.DebugServer();
+                _debug.Configure(_deviceStore, _audio, _mxa, _cameras, _nvx, _power);
             }
             catch (System.Exception e)
             {
@@ -120,6 +126,12 @@ namespace MCCCD_AA140
                 // handlers are wired before the first panel publish lands.
                 _panel.Start();
 
+                // Load persisted device IPs + enabled flags BEFORE services
+                // start. Anything not in the file falls back to baked defaults.
+                string cfgSource;
+                _deviceStore.Load(out cfgSource);
+                ErrorLog.Notice("DeviceConfigStore: loaded from {0}", cfgSource);
+
                 _nvx.Initialize();
                 _audio.Initialize();
                 _mxa.Initialize();
@@ -128,6 +140,14 @@ namespace MCCCD_AA140
                 _projectors.Initialize();
                 _newline.Initialize();
                 _power.Initialize();
+
+                // Apply each stored config to its service — gates TCP connects
+                // by the enabled flag, so disabled devices stay silent.
+                foreach (var kv in _deviceStore.Snapshot()) {
+                    _debug.ApplyConfigToService(kv.Key, kv.Value.Host, kv.Value.Enabled);
+                }
+
+                _debug.Start();
 
                 // Initial system-on (also handles D3 boot init: D2 source -> D3)
                 _power.PowerUpSequence();

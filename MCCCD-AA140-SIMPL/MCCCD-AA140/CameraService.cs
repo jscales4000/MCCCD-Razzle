@@ -151,6 +151,56 @@ namespace MCCCD_AA140
             return _camIps[camIndex];
         }
 
+        // -----------------------------------------------------------------
+        // Debug-panel hooks (called from DebugServer). Each takes an explicit
+        // cam id so debug commands target the specified camera rather than
+        // the panel's currently-selected one.
+        // -----------------------------------------------------------------
+
+        public void SetActiveCameraFromDebug(int camId)
+        {
+            if (camId < 1 || camId > 2) return;
+            _active = camId;
+            ErrorLog.Notice("Cameras (debug): active = {0}", _active);
+        }
+
+        public void StartMoveFromDebug(int camId, string dir)
+        {
+            int saved = _active; _active = camId; StartMove(dir); _active = saved;
+        }
+        public void StopMoveFromDebug(int camId)
+        {
+            int saved = _active; _active = camId; StopMove(); _active = saved;
+        }
+        public void StartZoomFromDebug(int camId, string direction)
+        {
+            int saved = _active; _active = camId; StartZoom(direction); _active = saved;
+        }
+        public void StopZoomFromDebug(int camId)
+        {
+            int saved = _active; _active = camId; StopZoom(); _active = saved;
+        }
+        public void RecallPresetFromDebug(int camId, ushort idx)
+        {
+            int saved = _active; _active = camId; RecallPreset(idx); _active = saved;
+        }
+        public void SavePresetFromDebug(int camId, ushort idx)
+        {
+            int saved = _active; _active = camId; SavePreset(idx); _active = saved;
+        }
+        public void DeletePresetFromDebug(int camId, ushort idx)
+        {
+            int saved = _active; _active = camId; DeletePreset(idx); _active = saved;
+        }
+        public void SetTrackingModeFromDebug(int camId, ushort mode)
+        {
+            int saved = _active; _active = camId; SetTrackingMode(mode); _active = saved;
+        }
+        public void SendToVtcFromDebug(int camId)
+        {
+            int saved = _active; _active = camId; SendActiveToVtc(); _active = saved;
+        }
+
         // ---------------------------------------------------------------------
         // HTTP fire-and-forget on a worker thread
         // ---------------------------------------------------------------------

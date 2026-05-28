@@ -13,4 +13,19 @@
     <PackageReference Include="Crestron.SimplSharp.SDK.Program" Version="2.21.226" />
   </ItemGroup>
 
+  <!-- Embed the browser debug-panel files (HTML/JS/CSS) so ResourceServer can
+       read them at runtime. LogicalName matches what ResourceServer.Prefix
+       expects: "MCCCD_AA140.Resources.<filename>". -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\debug-ui-src\debug.html">
+      <LogicalName>MCCCD_AA140.Resources.debug.html</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\debug-ui-src\debug.js">
+      <LogicalName>MCCCD_AA140.Resources.debug.js</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\debug-ui-src\debug.css">
+      <LogicalName>MCCCD_AA140.Resources.debug.css</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

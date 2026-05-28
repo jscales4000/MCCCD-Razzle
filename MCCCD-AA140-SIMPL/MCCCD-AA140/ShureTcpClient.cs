@@ -28,13 +28,15 @@ namespace MCCCD_AA140
         private const int FAST_RECONNECT_ATTEMPTS = 3;
         private const int RX_BUFFER_SIZE          = 4096;
 
-        private readonly string _host;
+        private string _host;
         private readonly int _port;
         private readonly string _name;
         private TCPClient _client;
         private readonly StringBuilder _rxBuf = new StringBuilder();
         private CTimer _reconnectTimer;
         private int _failedAttempts; // resets on successful connect
+        private bool _enabled;       // gates Connect() — false = no TCP, no logs
+        private readonly object _stateLock = new object();
 
         public System.Action<ShureTcpClient> OnConnected;
         public System.Action<string> OnFrame;
@@ -51,7 +53,58 @@ namespace MCCCD_AA140
             get { return _client != null && _client.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED; }
         }
 
-        public void Start() { Connect(); }
+        public string Host { get { return _host; } }
+        public bool Enabled { get { return _enabled; } }
+
+        /// <summary>Begin connecting. If <c>Enabled=false</c> this is a no-op.</summary>
+        public void Start()
+        {
+            lock (_stateLock) { _enabled = true; }
+            Connect();
+        }
+
+        /// <summary>Closes the socket and stops further reconnects until Start() / SetEnabled(true).</summary>
+        public void Stop()
+        {
+            lock (_stateLock) { _enabled = false; }
+            CloseAndCancelReconnect();
+        }
+
+        public void SetEnabled(bool value)
+        {
+            if (value) Start();
+            else       Stop();
+        }
+
+        /// <summary>
+        /// Change the target host and reconnect if currently enabled. Use
+        /// when the debug panel saves a new IP for this device.
+        /// </summary>
+        public void SetHost(string host)
+        {
+            lock (_stateLock) {
+                if (host == _host) return;
+                _host = host ?? "";
+                _failedAttempts = 0;
+            }
+            CloseAndCancelReconnect();
+            if (_enabled) Connect();
+        }
+
+        private void CloseAndCancelReconnect()
+        {
+            try {
+                _reconnectTimer?.Dispose();
+                _reconnectTimer = null;
+            } catch { }
+            try {
+                if (_client != null) {
+                    _client.DisconnectFromServer();
+                    _client.Dispose();
+                    _client = null;
+                }
+            } catch { /* swallow — socket might already be in a bad state */ }
+        }
 
         public void Send(string command)
         {
@@ -65,6 +118,10 @@ namespace MCCCD_AA140
 
         private void Connect()
         {
+            lock (_stateLock) {
+                if (!_enabled) return;        // disabled = never attempt; no log spam
+                if (string.IsNullOrEmpty(_host)) return;
+            }
             try {
                 _client = new TCPClient(_host, _port, RX_BUFFER_SIZE);
                 _client.SocketStatusChange += OnSocketStatusChange;
@@ -107,6 +164,9 @@ namespace MCCCD_AA140
 
         private void ScheduleReconnect()
         {
+            lock (_stateLock) {
+                if (!_enabled) return;        // disabled = no further attempts
+            }
             _reconnectTimer?.Dispose();
             int delay = _failedAttempts < FAST_RECONNECT_ATTEMPTS ? RECONNECT_FAST_MS : RECONNECT_SLOW_MS;
             _reconnectTimer = new CTimer(_ => Connect(), delay);

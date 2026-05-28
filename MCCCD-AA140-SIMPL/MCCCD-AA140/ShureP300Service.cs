@@ -64,8 +64,57 @@ namespace MCCCD_AA140
         public void Initialize()
         {
             WirePanelSignals();
-            _client.Start();
+            // Note: caller (ControlSystem) toggles Start/Stop based on
+            // DeviceConfigStore.enabled; we do NOT auto-start here.
         }
+
+        /// <summary>Apply a config entry (host + enabled) and start/stop the TCP client accordingly.</summary>
+        public void ApplyConfig(string host, bool enabled)
+        {
+            _client.SetHost(host);
+            _client.SetEnabled(enabled);
+        }
+
+        public string Host    => _client.Host;
+        public bool   Enabled => _client.Enabled;
+
+        // -----------------------------------------------------------------
+        // Debug-panel hooks (called from DebugServer). Same effect as the
+        // panel buttons going through PanelDispatcher.
+        // -----------------------------------------------------------------
+
+        public void SetMicMuteFromDebug(string key, bool muted)
+        {
+            switch (key) {
+                case "lav":      SetMicMute(CH_MIC_LAV,       muted, ref _muteLav,      PanelJoins.BoolIn.MicLavMuteFb);      break;
+                case "handheld": SetMicMute(CH_MIC_HANDHELD,  muted, ref _muteHandheld, PanelJoins.BoolIn.MicHandheldMuteFb); break;
+                case "ceiling1": SetMicMute(CH_MIC_CEILING_A, muted, ref _muteCeiling1, PanelJoins.BoolIn.MicCeiling1MuteFb); break;
+                case "ceiling2": SetMicMute(CH_MIC_CEILING_B, muted, ref _muteCeiling2, PanelJoins.BoolIn.MicCeiling2MuteFb); break;
+            }
+        }
+
+        public void SetMicTrimFromDebug(string key, ushort value)
+        {
+            switch (key) {
+                case "lav":      SetMicTrim(CH_MIC_LAV,       value, PanelJoins.UShortIn.MicLavTrimFb);      break;
+                case "handheld": SetMicTrim(CH_MIC_HANDHELD,  value, PanelJoins.UShortIn.MicHandheldTrimFb); break;
+                case "ceiling1": SetMicTrim(CH_MIC_CEILING_A, value, PanelJoins.UShortIn.MicCeiling1TrimFb); break;
+                case "ceiling2": SetMicTrim(CH_MIC_CEILING_B, value, PanelJoins.UShortIn.MicCeiling2TrimFb); break;
+            }
+        }
+
+        public void SetMicLineOutFromDebug(string key, ushort value)
+        {
+            switch (key) {
+                case "lav":      SetChannelGain(CH_MIC_LAV,       value, PanelJoins.UShortIn.MicLavLineOutFb);      break;
+                case "handheld": SetChannelGain(CH_MIC_HANDHELD,  value, PanelJoins.UShortIn.MicHandheldLineOutFb); break;
+                case "ceiling1": SetChannelGain(CH_MIC_CEILING_A, value, PanelJoins.UShortIn.MicCeiling1LineOutFb); break;
+                case "ceiling2": SetChannelGain(CH_MIC_CEILING_B, value, PanelJoins.UShortIn.MicCeiling2LineOutFb); break;
+            }
+        }
+
+        public void NudgeProgramVolumeFromDebug(int tenthsDb) { NudgeProgramVolume(tenthsDb); }
+        public void ToggleMasterMuteFromDebug()               { ToggleMasterMute(); }
 
         // =========================================================================
         // Panel -> P300 signal wiring (via PanelDispatcher → SmartObject 1)

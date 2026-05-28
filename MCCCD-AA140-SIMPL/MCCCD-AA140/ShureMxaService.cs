@@ -48,9 +48,16 @@ namespace MCCCD_AA140
 
         public void Initialize()
         {
-            _mxaA.Start();
-            _mxaB.Start();
+            // Caller (ControlSystem) toggles Start/Stop via ApplyConfigA/B based
+            // on DeviceConfigStore.enabled. No auto-start.
         }
+
+        public void ApplyConfigA(string host, bool enabled) { _mxaA.SetHost(host); _mxaA.SetEnabled(enabled); }
+        public void ApplyConfigB(string host, bool enabled) { _mxaB.SetHost(host); _mxaB.SetEnabled(enabled); }
+        public string HostA    => _mxaA.Host;
+        public string HostB    => _mxaB.Host;
+        public bool   EnabledA => _mxaA.Enabled;
+        public bool   EnabledB => _mxaB.Enabled;
 
         // Public commands. Wireable from contract signals later, or callable from
         // console diagnostics. The MXA "00" channel = global (affects all coverage).
