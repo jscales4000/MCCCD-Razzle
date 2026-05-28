@@ -17,3 +17,6 @@ MCCCD-AA140-SIMPL/**/*.suo
 
 # Git worktrees (isolated implementation workspaces)
 .worktrees/
+
+# Brainstorming visual-companion sessions
+.superpowers/
