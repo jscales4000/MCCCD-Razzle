@@ -49,51 +49,52 @@ namespace MCCCD_AA140
                 _tswPrimary.Register();
                 _tswSecondary.Register();
 
-                // Raw CIP-signal diagnostic — fires for EVERY signal the TSW publishes
-                // (button presses, slider moves, etc.) regardless of contract wiring.
-                // Track last value per join so we only log VALUE CHANGES (the panel
-                // republishes some joins on a heartbeat — that floods the log otherwise).
+                // Raw CIP-signal capture — every panel publish (button, slider,
+                // heartbeat) routed to the DebugTrace ring buffer so the browser
+                // /events poll can see ALL panel activity, not just SmartObject 1.
+                // Dedupe by last value per join under a lock so heartbeat
+                // republishes don't fill the ring. PanelDispatcher additionally
+                // captures the SmartObject-1 join space; the two streams have
+                // disjoint join numbers (raw CIP vs SmartObject-local).
+                var sigLock    = new CCriticalSection();
                 var lastBool   = new System.Collections.Generic.Dictionary<uint, bool>();
                 var lastUShort = new System.Collections.Generic.Dictionary<uint, ushort>();
                 _tswPrimary.SigChange += (dev, args) => {
                     if (args.Sig == null) return;
                     uint n = args.Sig.Number;
-                    string val;
-                    if (args.Sig.Type == eSigType.Bool) {
-                        bool b = args.Sig.BoolValue;
-                        if (lastBool.TryGetValue(n, out bool prev) && prev == b) return; // dedupe
-                        lastBool[n] = b;
-                        val = b.ToString();
-                    } else if (args.Sig.Type == eSigType.UShort) {
-                        ushort u = args.Sig.UShortValue;
-                        if (lastUShort.TryGetValue(n, out ushort prev) && prev == u) return; // dedupe
-                        lastUShort[n] = u;
-                        val = u.ToString();
-                    } else if (args.Sig.Type == eSigType.String) {
-                        val = "'" + (args.Sig.StringValue ?? "") + "'";
-                    } else {
-                        val = "?";
+                    try {
+                        if (args.Sig.Type == eSigType.Bool) {
+                            bool b = args.Sig.BoolValue;
+                            sigLock.Enter();
+                            try {
+                                if (lastBool.TryGetValue(n, out bool prev) && prev == b) return;
+                                lastBool[n] = b;
+                            } finally { sigLock.Leave(); }
+                            MCCCD_AA140.Debug.DebugTrace.SigChange("panel-cip", "join-" + n, "bool", b);
+                        } else if (args.Sig.Type == eSigType.UShort) {
+                            ushort u = args.Sig.UShortValue;
+                            sigLock.Enter();
+                            try {
+                                if (lastUShort.TryGetValue(n, out ushort prev) && prev == u) return;
+                                lastUShort[n] = u;
+                            } finally { sigLock.Leave(); }
+                            MCCCD_AA140.Debug.DebugTrace.SigChange("panel-cip", "join-" + n, "ushort", u);
+                        } else if (args.Sig.Type == eSigType.String) {
+                            MCCCD_AA140.Debug.DebugTrace.SigChange("panel-cip", "join-" + n, "string", args.Sig.StringValue ?? "");
+                        }
+                    } catch (System.Exception ex) {
+                        ErrorLog.Warn("TSW SigChange handler: {0}", ex.Message);
                     }
-                    ErrorLog.Notice("TSW CHANGE: type={0} join={1} val={2}",
-                        args.Sig.Type, n, val);
                 };
-                _tswPrimary.OnlineStatusChange += (dev, args) =>
+                _tswPrimary.OnlineStatusChange += (dev, args) => {
                     ErrorLog.Notice("TSW PRIMARY: OnlineStatusChange OnLine={0}", args.DeviceOnLine);
+                    MCCCD_AA140.Debug.DebugTrace.Lifecycle("panel_online_change",
+                        new System.Collections.Generic.Dictionary<string, object> {
+                            { "device", "tsw-primary" },
+                            { "online", args.DeviceOnLine },
+                        });
+                };
 
-                // Diagnostic — log SmartObject events too (these are what the Contract
-                // mediator hooks; if these don't fire, the .cce doesn't match panel)
-                foreach (var soKvp in _tswPrimary.SmartObjects) {
-                    var so = soKvp.Value;
-                    if (so == null) continue;
-                    var soId = soKvp.Key;
-                    so.SigChange += (sender, args) => {
-                        ErrorLog.Notice("TSW SmartObj[{0}] SIG: type={1} join={2} bool={3} ushort={4} str='{5}'",
-                            soId, args.Sig.Type, args.Sig.Number,
-                            args.Sig.Type == eSigType.Bool ? args.Sig.BoolValue.ToString() : "-",
-                            args.Sig.Type == eSigType.UShort ? args.Sig.UShortValue.ToString() : "-",
-                            args.Sig.Type == eSigType.String ? args.Sig.StringValue : "-");
-                    };
-                }
                 ErrorLog.Notice("TSW PRIMARY: {0} SmartObject slot(s) discovered", _tswPrimary.SmartObjects.Count);
 
                 // Contract bridge from the rebuilt .cce. We keep Contract for the
