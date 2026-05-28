@@ -19,8 +19,14 @@ namespace MCCCD_AA140
     /// </summary>
     public class ShureTcpClient
     {
-        private const int RECONNECT_DELAY_MS = 5000;
-        private const int RX_BUFFER_SIZE     = 4096;
+        // Reconnect backoff: 5s for the first N tries, then 60s steady-state.
+        // Avoids flooding the err log when stub IPs (placeholder devices not
+        // yet on the network) reject TCP connects. Once a successful connect
+        // happens, the fast cadence resumes for the next outage.
+        private const int RECONNECT_FAST_MS       = 5000;
+        private const int RECONNECT_SLOW_MS       = 60000;
+        private const int FAST_RECONNECT_ATTEMPTS = 3;
+        private const int RX_BUFFER_SIZE          = 4096;
 
         private readonly string _host;
         private readonly int _port;
@@ -28,6 +34,7 @@ namespace MCCCD_AA140
         private TCPClient _client;
         private readonly StringBuilder _rxBuf = new StringBuilder();
         private CTimer _reconnectTimer;
+        private int _failedAttempts; // resets on successful connect
 
         public System.Action<ShureTcpClient> OnConnected;
         public System.Action<string> OnFrame;
@@ -72,10 +79,18 @@ namespace MCCCD_AA140
         {
             if (c.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED) {
                 ErrorLog.Notice("Shure {0}: connected to {1}:{2}", _name, _host, _port);
+                _failedAttempts = 0; // resume fast reconnect on next drop
                 c.ReceiveDataAsync(OnDataReceived);
                 OnConnected?.Invoke(this);
             } else {
-                ErrorLog.Warn("Shure {0}: connect returned status {1}", _name, c.ClientStatus);
+                _failedAttempts++;
+                // Log every fast-attempt failure; once we switch to slow,
+                // log every 10th retry so the operator still sees periodic
+                // status without the log being overwhelmed.
+                if (_failedAttempts <= FAST_RECONNECT_ATTEMPTS || _failedAttempts % 10 == 0) {
+                    ErrorLog.Warn("Shure {0}: connect returned status {1} (attempt {2})",
+                        _name, c.ClientStatus, _failedAttempts);
+                }
                 ScheduleReconnect();
             }
         }
@@ -83,7 +98,9 @@ namespace MCCCD_AA140
         private void OnSocketStatusChange(TCPClient c, SocketStatus status)
         {
             if (status != SocketStatus.SOCKET_STATUS_CONNECTED) {
-                ErrorLog.Notice("Shure {0}: socket {1}, reconnecting in {2}ms", _name, status, RECONNECT_DELAY_MS);
+                if (_failedAttempts <= FAST_RECONNECT_ATTEMPTS) {
+                    ErrorLog.Notice("Shure {0}: socket {1}, reconnecting", _name, status);
+                }
                 ScheduleReconnect();
             }
         }
@@ -91,7 +108,8 @@ namespace MCCCD_AA140
         private void ScheduleReconnect()
         {
             _reconnectTimer?.Dispose();
-            _reconnectTimer = new CTimer(_ => Connect(), RECONNECT_DELAY_MS);
+            int delay = _failedAttempts < FAST_RECONNECT_ATTEMPTS ? RECONNECT_FAST_MS : RECONNECT_SLOW_MS;
+            _reconnectTimer = new CTimer(_ => Connect(), delay);
         }
 
         private void OnDataReceived(TCPClient c, int bytesReceived)

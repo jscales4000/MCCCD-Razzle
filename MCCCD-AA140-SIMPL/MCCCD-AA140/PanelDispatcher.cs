@@ -126,24 +126,30 @@ namespace MCCCD_AA140
                 if (args.Sig.Type == eSigType.Bool) {
                     var v = args.Sig.BoolValue;
                     Action<bool> handler;
+                    bool dispatched;
                     _lock.Enter();
                     try {
                         // Dedupe — both panels mirror state so the same value
                         // can echo back. We only fire on actual change.
                         if (_lastBool.TryGetValue(args.Sig.Number, out bool prev) && prev == v) return;
                         _lastBool[args.Sig.Number] = v;
-                        _boolHandlers.TryGetValue(args.Sig.Number, out handler);
+                        dispatched = _boolHandlers.TryGetValue(args.Sig.Number, out handler);
                     } finally { _lock.Leave(); }
+                    ErrorLog.Notice("PanelDispatcher: bool join={0} val={1} dispatched={2}",
+                        args.Sig.Number, v, dispatched);
                     handler?.Invoke(v);
                 } else if (args.Sig.Type == eSigType.UShort) {
                     var v = args.Sig.UShortValue;
                     Action<ushort> handler;
+                    bool dispatched;
                     _lock.Enter();
                     try {
                         if (_lastUShort.TryGetValue(args.Sig.Number, out ushort prev) && prev == v) return;
                         _lastUShort[args.Sig.Number] = v;
-                        _ushortHandlers.TryGetValue(args.Sig.Number, out handler);
+                        dispatched = _ushortHandlers.TryGetValue(args.Sig.Number, out handler);
                     } finally { _lock.Leave(); }
+                    ErrorLog.Notice("PanelDispatcher: ushort join={0} val={1} dispatched={2}",
+                        args.Sig.Number, v, dispatched);
                     handler?.Invoke(v);
                 }
             } catch (Exception ex) {
