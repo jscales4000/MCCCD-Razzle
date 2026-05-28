@@ -80,10 +80,10 @@ namespace MCCCD_AA140
             _sourceStreamUrls[3] = "rtsp://" + MCAST_VIDEO_AIRMEDIA + ":554/live.sdp";
             _sourceStreamUrls[4] = "rtsp://" + MCAST_VIDEO_NVX384   + ":554/live.sdp";
 
-            WireEncoderOnline(_encRoomPc,   MCAST_VIDEO_ROOM_PC,  "RoomPC");
-            WireEncoderOnline(_encExtPc,    MCAST_VIDEO_EXT_PC,   "ExtPC");
-            WireEncoderOnline(_encAirMedia, MCAST_VIDEO_AIRMEDIA, "AirMedia");
-            WireEncoderOnline(_encHdmiUsbc, MCAST_VIDEO_NVX384,   "NVX-384");
+            WireEncoderOnline(_encRoomPc,   MCAST_VIDEO_ROOM_PC,  "RoomPC",   1);
+            WireEncoderOnline(_encExtPc,    MCAST_VIDEO_EXT_PC,   "ExtPC",    2);
+            WireEncoderOnline(_encAirMedia, MCAST_VIDEO_AIRMEDIA, "AirMedia", 3);
+            WireEncoderOnline(_encHdmiUsbc, MCAST_VIDEO_NVX384,   "NVX-384",  4);
 
             // ============ Decoders (receivers) ============
             _decDisp1 = new DmNvxD30(IPID_D30_DISP1, _cs);
@@ -119,7 +119,7 @@ namespace MCCCD_AA140
             // updated to expose D1MirrorToD3Fb/D2MirrorToD3Fb as panel-publish signals.
         }
 
-        private void WireEncoderOnline(DmNvxBaseClass enc, string mcastVideo, string label)
+        private void WireEncoderOnline(DmNvxBaseClass enc, string mcastVideo, string label, int sourceIndex)
         {
             enc.OnlineStatusChange += (dev, args) => {
                 if (!args.DeviceOnLine) {
@@ -130,10 +130,102 @@ namespace MCCCD_AA140
                     enc.Control.DeviceMode = eDeviceMode.Transmitter;
                     enc.Control.MulticastAddress.StringValue = mcastVideo;
                     ErrorLog.Notice("NVX {0}: ONLINE — configured TX @ {1}", label, mcastVideo);
+
+                    // Discover encoder IP and switch the source URL from
+                    // multicast to unicast RTSP. The encoder still broadcasts
+                    // on multicast (Control.MulticastAddress above); decoders
+                    // pull from its unicast RTSP server instead, which doesn't
+                    // depend on IGMP snooping being configured on the switch.
+                    //
+                    // Three discovery sources tried in order. ConnectedIpList
+                    // may be empty at OnlineStatusChange time (CIP up but the
+                    // peer-info table not yet propagated). IpAddressFeedback
+                    // is a CIPNet feedback sig populated whenever the device
+                    // reports its current IP (DHCP or static).
+                    var encIp = TryDiscoverEncoderIp(enc, label, out var ipSource);
+                    if (!string.IsNullOrEmpty(encIp)) {
+                        var oldUrl = _sourceStreamUrls[sourceIndex];
+                        var unicastUrl = "rtsp://" + encIp + ":554/live.sdp";
+                        _sourceStreamUrls[sourceIndex] = unicastUrl;
+                        ErrorLog.Notice("NVX {0}: src{1} ip={2} via {3} -> {4} (was {5})",
+                            label, sourceIndex, encIp, ipSource, unicastUrl, oldUrl);
+                        ReapplyRoutesForSource(oldUrl, unicastUrl);
+                    } else {
+                        ErrorLog.Warn("NVX {0}: no IP yet (ConnectedIpList + IpAddressFeedback both empty) — staying on multicast {1}; will retry on next online event",
+                            label, mcastVideo);
+                        // Schedule a single retry in 5s — the encoder usually
+                        // populates its IP feedback shortly after the CIP join.
+                        ScheduleEncoderIpRetry(enc, mcastVideo, label, sourceIndex);
+                    }
                 } catch (System.Exception ex) {
                     ErrorLog.Warn("NVX {0}: online config failed: {1}", label, ex.Message);
                 }
             };
+        }
+
+        // Encoder IP discovery. `source` reports which sub-path provided the
+        // value, for debug logging.
+        // Primary source: enc.ConnectedIpList[0].DeviceIpAddress — the CIP
+        // peer-info table on this IPID. May be empty at OnlineStatusChange
+        // time on a fresh CIP join; the caller schedules a retry if so.
+        private static string TryDiscoverEncoderIp(DmNvxBaseClass enc, string label, out string source)
+        {
+            source = "none";
+            try {
+                var list = enc.ConnectedIpList;
+                if (list != null && list.Count > 0) {
+                    var ip = list[0].DeviceIpAddress;
+                    if (!string.IsNullOrEmpty(ip) && ip != "0.0.0.0") {
+                        source = "ConnectedIpList";
+                        return ip;
+                    }
+                }
+            } catch (System.Exception ex) {
+                ErrorLog.Notice("NVX {0}: ConnectedIpList read threw: {1}", label, ex.Message);
+            }
+            return null;
+        }
+
+        // One-shot 5s retry after a failed initial IP discovery. NVX devices
+        // sometimes report OnlineStatusChange before the IP feedback sig has
+        // populated; a single short delay is usually enough.
+        private void ScheduleEncoderIpRetry(DmNvxBaseClass enc, string mcastVideo, string label, int sourceIndex)
+        {
+            new CTimer((_) => {
+                try {
+                    var encIp = TryDiscoverEncoderIp(enc, label, out var ipSource);
+                    if (!string.IsNullOrEmpty(encIp)) {
+                        var oldUrl = _sourceStreamUrls[sourceIndex];
+                        var unicastUrl = "rtsp://" + encIp + ":554/live.sdp";
+                        _sourceStreamUrls[sourceIndex] = unicastUrl;
+                        ErrorLog.Notice("NVX {0}: src{1} ip={2} via {3} (retry) -> {4} (was {5})",
+                            label, sourceIndex, encIp, ipSource, unicastUrl, oldUrl);
+                        ReapplyRoutesForSource(oldUrl, unicastUrl);
+                    } else {
+                        ErrorLog.Warn("NVX {0}: IP retry still empty — multicast remains in effect", label);
+                    }
+                } catch (System.Exception ex) {
+                    ErrorLog.Warn("NVX {0}: IP retry threw: {1}", label, ex.Message);
+                }
+            }, null, 5000);
+        }
+
+        // When an encoder reports its IP (typically a few seconds after CIP
+        // online), any decoder we already routed to the old multicast URL for
+        // that source needs to be moved to the new unicast URL. Compare by
+        // string equality on _pendingUrl — we don't track source index per
+        // display, but the URL itself uniquely identifies the source.
+        private void ReapplyRoutesForSource(string oldUrl, string newUrl)
+        {
+            if (oldUrl == newUrl) return;
+            for (int d = 1; d <= 3; d++) {
+                if (_pendingUrl[d] != oldUrl) continue;
+                _pendingUrl[d] = newUrl;
+                var dec = GetDecoder(d);
+                if (dec != null && dec.IsOnline) {
+                    ApplyDecoderUrl(dec, d, newUrl);
+                }
+            }
         }
 
         private void WireDecoderOnline(DmNvxD30 dec, int displayNum)
