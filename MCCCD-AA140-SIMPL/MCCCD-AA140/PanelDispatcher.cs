@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -137,6 +138,7 @@ namespace MCCCD_AA140
                     } finally { _lock.Leave(); }
                     ErrorLog.Notice("PanelDispatcher: bool join={0} val={1} dispatched={2}",
                         args.Sig.Number, v, dispatched);
+                    DebugTrace.SigChange("panel", "join-" + args.Sig.Number, "bool", v);
                     handler?.Invoke(v);
                 } else if (args.Sig.Type == eSigType.UShort) {
                     var v = args.Sig.UShortValue;
@@ -150,6 +152,7 @@ namespace MCCCD_AA140
                     } finally { _lock.Leave(); }
                     ErrorLog.Notice("PanelDispatcher: ushort join={0} val={1} dispatched={2}",
                         args.Sig.Number, v, dispatched);
+                    DebugTrace.SigChange("panel", "join-" + args.Sig.Number, "ushort", v);
                     handler?.Invoke(v);
                 }
             } catch (Exception ex) {
