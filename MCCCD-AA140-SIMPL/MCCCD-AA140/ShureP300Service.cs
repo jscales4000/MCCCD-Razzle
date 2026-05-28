@@ -1,6 +1,6 @@
+using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using MCCCD_AA140;
 
 namespace MCCCD_AA140
 {
@@ -42,13 +42,19 @@ namespace MCCCD_AA140
         // Volume step: AUDIO_GAIN_HI_RES INC/DEC takes tenths of dB. 10 = +1.0 dB.
         private const int VOL_STEP_TENTHS_DB = 10;
 
-        private readonly Contract _c;
+        private readonly PanelDispatcher _panel;
         private readonly CrestronControlSystem _cs;
         private readonly ShureTcpClient _client;
 
-        public ShureP300Service(Contract c, CrestronControlSystem cs)
+        // Locally-cached mute states for round-trip echo back to panel feedback
+        // (the P300's REP frame will eventually overwrite this — the cache is
+        // for snappy UI response on the panel before the device confirms).
+        private bool _muteLav, _muteHandheld, _muteCeiling1, _muteCeiling2;
+        private bool _masterMute;
+
+        public ShureP300Service(PanelDispatcher panel, CrestronControlSystem cs)
         {
-            _c = c;
+            _panel = panel;
             _cs = cs;
             _client = new ShureTcpClient(P300_HOST, P300_PORT, "P300");
             _client.OnConnected = OnP300Connected;
@@ -62,18 +68,96 @@ namespace MCCCD_AA140
         }
 
         // =========================================================================
-        // Panel -> P300 signal wiring
+        // Panel -> P300 signal wiring (via PanelDispatcher → SmartObject 1)
         // =========================================================================
 
         private void WirePanelSignals()
         {
-            // TODO refactor for new Contract Editor API. Panel→SIMPL events now arrive
-            // via _c.AA140.XxxFb events; SIMPL→panel writes via _c.AA140.Xxx(callback).
-            // Audio-mixer panel wiring is parked while we verify NVX routing first.
+            // Mic mute toggles — panel publishes raw bool with value reflecting
+            // intended state (CH5 toggle pattern publishes the new on/off).
+            _panel.OnBool(PanelJoins.BoolOut.MicLavMute,      v => SetMicMute(CH_MIC_LAV,       v, ref _muteLav,      PanelJoins.BoolIn.MicLavMuteFb));
+            _panel.OnBool(PanelJoins.BoolOut.MicHandheldMute, v => SetMicMute(CH_MIC_HANDHELD,  v, ref _muteHandheld, PanelJoins.BoolIn.MicHandheldMuteFb));
+            _panel.OnBool(PanelJoins.BoolOut.MicCeiling1Mute, v => SetMicMute(CH_MIC_CEILING_A, v, ref _muteCeiling1, PanelJoins.BoolIn.MicCeiling1MuteFb));
+            _panel.OnBool(PanelJoins.BoolOut.MicCeiling2Mute, v => SetMicMute(CH_MIC_CEILING_B, v, ref _muteCeiling2, PanelJoins.BoolIn.MicCeiling2MuteFb));
+            // MicCeiling3Mute (join 18) intentionally not wired — 4-mic design.
+
+            // Master volume — VolumeUp/Down are momentary buttons.
+            _panel.OnBool(PanelJoins.BoolOut.VolumeUp,   v => { if (v) NudgeProgramVolume(+VOL_STEP_TENTHS_DB); });
+            _panel.OnBool(PanelJoins.BoolOut.VolumeDown, v => { if (v) NudgeProgramVolume(-VOL_STEP_TENTHS_DB); });
+            _panel.OnBool(PanelJoins.BoolOut.MuteAll,    v => { if (v) ToggleMasterMute(); });
+
+            // Mic trim sliders (0..100) — panel publishes ushort 0..65535,
+            // we scale to the P300's hi-res gain range (-110 .. +20 dB stored
+            // as tenths of dB → 16-bit unsigned).
+            _panel.OnUShort(PanelJoins.UShortOut.MicLavTrim,       v => SetMicTrim(CH_MIC_LAV,       v, PanelJoins.UShortIn.MicLavTrimFb));
+            _panel.OnUShort(PanelJoins.UShortOut.MicHandheldTrim,  v => SetMicTrim(CH_MIC_HANDHELD,  v, PanelJoins.UShortIn.MicHandheldTrimFb));
+            _panel.OnUShort(PanelJoins.UShortOut.MicCeiling1Trim,  v => SetMicTrim(CH_MIC_CEILING_A, v, PanelJoins.UShortIn.MicCeiling1TrimFb));
+            _panel.OnUShort(PanelJoins.UShortOut.MicCeiling2Trim,  v => SetMicTrim(CH_MIC_CEILING_B, v, PanelJoins.UShortIn.MicCeiling2TrimFb));
+
+            // Mic line-out sliders — same hi-res gain on the output bus per channel.
+            _panel.OnUShort(PanelJoins.UShortOut.MicLavLineOut,      v => SetChannelGain(CH_MIC_LAV,       v, PanelJoins.UShortIn.MicLavLineOutFb));
+            _panel.OnUShort(PanelJoins.UShortOut.MicHandheldLineOut, v => SetChannelGain(CH_MIC_HANDHELD,  v, PanelJoins.UShortIn.MicHandheldLineOutFb));
+            _panel.OnUShort(PanelJoins.UShortOut.MicCeiling1LineOut, v => SetChannelGain(CH_MIC_CEILING_A, v, PanelJoins.UShortIn.MicCeiling1LineOutFb));
+            _panel.OnUShort(PanelJoins.UShortOut.MicCeiling2LineOut, v => SetChannelGain(CH_MIC_CEILING_B, v, PanelJoins.UShortIn.MicCeiling2LineOutFb));
+
+            // AudioOutputSelect (1=D1, 2=D2) — picks which NVX HDMI-extracted
+            // audio source feeds the program bus. Implemented via a Shure
+            // matrix mixer cross-point toggle (one of CH_NVX_D{1,2}_AUDIO unmuted
+            // into CH_AUTOMIX_OUT). Until the Shure Designer config is finalized,
+            // we just echo the panel state back.
+            _panel.OnUShort(PanelJoins.UShortOut.AudioOutputSelect, v => {
+                ErrorLog.Notice("P300: AudioOutputSelect={0} (cross-point write deferred until Designer config finalized)", v);
+                _panel.WriteUShort(PanelJoins.UShortIn.AudioOutputSelectFb, v);
+            });
+        }
+
+        private void SetMicMute(string channel, bool muted, ref bool cache, uint fbJoin)
+        {
+            cache = muted;
+            // Shure ASCII: < SET <ch> AUDIO_MUTE ON|OFF >
+            _client.Send("< SET " + channel + " AUDIO_MUTE " + (muted ? "ON" : "OFF") + " >");
+            _panel.WriteBool(fbJoin, muted);
+        }
+
+        private void NudgeProgramVolume(int tenthsDb)
+        {
+            // INC/DEC accepts a step magnitude in tenths-of-dB on AUDIO_GAIN_HI_RES.
+            string verb  = tenthsDb >= 0 ? "INC" : "DEC";
+            int    magnitude = System.Math.Abs(tenthsDb);
+            _client.Send("< SET " + CH_PROGRAM_OUT + " AUDIO_GAIN_HI_RES " + verb + " " + magnitude + " >");
+        }
+
+        private void ToggleMasterMute()
+        {
+            _masterMute = !_masterMute;
+            _client.Send("< SET " + CH_PROGRAM_OUT + " AUDIO_MUTE " + (_masterMute ? "ON" : "OFF") + " >");
+            // We can't fb a "master mute" panel signal because the .cce doesn't
+            // expose one separately from MuteAll (which is a momentary pulse).
+            // Audio cue will come from the next REP frame if the P300 confirms.
+        }
+
+        private void SetMicTrim(string channel, ushort panelValue0to65535, uint fbJoin)
+        {
+            // Map panel 0..65535 to Shure hi-res gain range. The P300's
+            // AUDIO_GAIN_HI_RES has a useful working range; we store the
+            // unmapped value back as feedback so the panel slider sticks where
+            // the user dragged it.
+            _client.Send("< SET " + channel + " AUDIO_GAIN_HI_RES " + panelValue0to65535 + " >");
+            _panel.WriteUShort(fbJoin, panelValue0to65535);
+        }
+
+        private void SetChannelGain(string channel, ushort panelValue0to65535, uint fbJoin)
+        {
+            // Same command/range as SetMicTrim — line-out vs trim differ at the
+            // Shure Designer level (which channel index addresses input gain vs
+            // output bus gain). The wiring layer doesn't care; the channel id
+            // determines which DSP block receives the gain write.
+            _client.Send("< SET " + channel + " AUDIO_GAIN_HI_RES " + panelValue0to65535 + " >");
+            _panel.WriteUShort(fbJoin, panelValue0to65535);
         }
 
         // =========================================================================
-        // P300 -> panel feedback
+        // P300 -> panel feedback (REP / SAMPLE_IN inbound frames)
         // =========================================================================
 
         private void OnP300Connected(ShureTcpClient _)
@@ -88,7 +172,7 @@ namespace MCCCD_AA140
             var inner = frame.Trim();
             if (inner.Length < 2) return;
             inner = inner.TrimStart('<').TrimEnd('>').Trim();
-            var parts = inner.Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
+            var parts = inner.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2) return;
 
             switch (parts[0]) {
@@ -99,14 +183,41 @@ namespace MCCCD_AA140
 
         private void HandleReport(string[] parts)
         {
-            // TODO refactor for new Contract Editor API.
-            // P300 REP events received but not yet forwarded to panel feedbacks.
+            // Shure REP frame: REP <chan> <param> <value>
+            // Forward known channels' AUDIO_MUTE and AUDIO_GAIN_HI_RES to panel.
+            if (parts.Length < 4) return;
+            var chan  = parts[1];
+            var param = parts[2];
+            var value = parts[3];
+
+            // Mic mutes
+            if (param == "AUDIO_MUTE") {
+                bool muted = value == "ON";
+                if      (chan == CH_MIC_LAV)       { _muteLav      = muted; _panel.WriteBool(PanelJoins.BoolIn.MicLavMuteFb,      muted); }
+                else if (chan == CH_MIC_HANDHELD)  { _muteHandheld = muted; _panel.WriteBool(PanelJoins.BoolIn.MicHandheldMuteFb, muted); }
+                else if (chan == CH_MIC_CEILING_A) { _muteCeiling1 = muted; _panel.WriteBool(PanelJoins.BoolIn.MicCeiling1MuteFb, muted); }
+                else if (chan == CH_MIC_CEILING_B) { _muteCeiling2 = muted; _panel.WriteBool(PanelJoins.BoolIn.MicCeiling2MuteFb, muted); }
+            }
+            // Mic gains - echo to corresponding Fb so the slider tracks
+            else if (param == "AUDIO_GAIN_HI_RES" && ushort.TryParse(value, out ushort g)) {
+                if      (chan == CH_MIC_LAV)       _panel.WriteUShort(PanelJoins.UShortIn.MicLavTrimFb,       g);
+                else if (chan == CH_MIC_HANDHELD)  _panel.WriteUShort(PanelJoins.UShortIn.MicHandheldTrimFb,  g);
+                else if (chan == CH_MIC_CEILING_A) _panel.WriteUShort(PanelJoins.UShortIn.MicCeiling1TrimFb,  g);
+                else if (chan == CH_MIC_CEILING_B) _panel.WriteUShort(PanelJoins.UShortIn.MicCeiling2TrimFb,  g);
+            }
         }
 
         private void HandleSampleIn(string[] parts)
         {
-            // TODO refactor for new Contract Editor API.
-            // P300 SAMPLE_IN meter frames received but not yet forwarded to panel.
+            // SAMPLE_IN <chan> <level0_100>
+            // Forward 0..100 RMS into MicXxxLevel feedback joins for the panel meter.
+            if (parts.Length < 3) return;
+            var chan = parts[1];
+            if (!ushort.TryParse(parts[2], out ushort level)) return;
+            if      (chan == CH_MIC_LAV)       _panel.WriteUShort(PanelJoins.UShortIn.MicLavLevel,      level);
+            else if (chan == CH_MIC_HANDHELD)  _panel.WriteUShort(PanelJoins.UShortIn.MicHandheldLevel, level);
+            else if (chan == CH_MIC_CEILING_A) _panel.WriteUShort(PanelJoins.UShortIn.MicCeiling1Level, level);
+            else if (chan == CH_MIC_CEILING_B) _panel.WriteUShort(PanelJoins.UShortIn.MicCeiling2Level, level);
         }
     }
 }

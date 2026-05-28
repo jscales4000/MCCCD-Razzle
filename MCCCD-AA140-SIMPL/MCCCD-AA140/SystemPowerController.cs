@@ -1,6 +1,5 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
-using MCCCD_AA140;
 
 namespace MCCCD_AA140
 {
@@ -12,7 +11,7 @@ namespace MCCCD_AA140
     /// </summary>
     public class SystemPowerController
     {
-        private readonly Contract _c;
+        private readonly PanelDispatcher _panel;
         private readonly NvxRoutingService _nvx;
         private readonly CrestronControlSystem _cs;
 
@@ -22,18 +21,25 @@ namespace MCCCD_AA140
         private ushort _lastD1 = 1;
         private ushort _lastD2 = 1;
 
-        public SystemPowerController(Contract c, NvxRoutingService nvx, CrestronControlSystem cs)
+        public SystemPowerController(PanelDispatcher panel, NvxRoutingService nvx, CrestronControlSystem cs)
         {
-            _c = c;
+            _panel = panel;
             _nvx = nvx;
             _cs = cs;
         }
 
         public void Initialize()
         {
-            // TODO refactor for new Contract Editor API. DisplayPower button wiring
-            // parked while NVX routing is verified. PowerUpSequence still runs at
-            // boot from ControlSystem.InitializeSystem().
+            // DisplayPower is a momentary panel pulse; we toggle on the rising edge.
+            _panel.OnBool(PanelJoins.BoolOut.DisplayPower, v => {
+                if (!v) return; // ignore release
+                if (_systemOn) PowerDownSequence();
+                else           PowerUpSequence();
+            });
+
+            // Mirror buttons — one-shot copy of D1/D2 current source onto D3.
+            _panel.OnBool(PanelJoins.BoolOut.D1MirrorToD3, v => { if (v) _nvx.MirrorTo3(_lastD1); });
+            _panel.OnBool(PanelJoins.BoolOut.D2MirrorToD3, v => { if (v) _nvx.MirrorTo3(_lastD2); });
         }
 
         public void PowerUpSequence()
@@ -41,7 +47,10 @@ namespace MCCCD_AA140
             ErrorLog.Notice("AA140: PowerUpSequence");
             _systemOn = true;
 
-            // TODO drive SystemPowerFb to panel via new Contract API.
+            _panel.WriteBool(PanelJoins.BoolIn.SystemPowerFb,   true);
+            _panel.WriteBool(PanelJoins.BoolIn.Display1PowerFb, true);
+            _panel.WriteBool(PanelJoins.BoolIn.Display2PowerFb, true);
+            _panel.WriteBool(PanelJoins.BoolIn.Display3PowerFb, true);
 
             // Restore last-active sources to D1, D2
             _nvx.RouteSourceToDisplay(_lastD1, 1);
@@ -50,7 +59,8 @@ namespace MCCCD_AA140
             // D3 boot init: one-shot copy from D2 (per design spec section 6 / 9)
             _nvx.RouteSourceToDisplay(_lastD2, 3);
 
-            // TODO drive AudioOutputSelect/Fb/MuteAll panel feedbacks via new Contract API.
+            // Audio defaults to D1.
+            _panel.WriteUShort(PanelJoins.UShortIn.AudioOutputSelectFb, 1);
         }
 
         public void PowerDownSequence()
@@ -58,7 +68,10 @@ namespace MCCCD_AA140
             ErrorLog.Notice("AA140: PowerDownSequence");
             _systemOn = false;
 
-            // TODO drive SystemPowerFb/MuteAll panel feedbacks via new Contract API.
+            _panel.WriteBool(PanelJoins.BoolIn.SystemPowerFb,   false);
+            _panel.WriteBool(PanelJoins.BoolIn.Display1PowerFb, false);
+            _panel.WriteBool(PanelJoins.BoolIn.Display2PowerFb, false);
+            _panel.WriteBool(PanelJoins.BoolIn.Display3PowerFb, false);
 
             // Clear all decoder routes
             _nvx.RouteSourceToDisplay(0, 1);

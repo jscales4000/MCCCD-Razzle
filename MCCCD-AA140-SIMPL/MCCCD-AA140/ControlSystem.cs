@@ -13,6 +13,7 @@ namespace MCCCD_AA140
     public class ControlSystem : CrestronControlSystem
     {
         private Contract _contract;
+        private PanelDispatcher _panel;
         private NvxRoutingService _nvx;
         private ShureP300Service _audio;
         private ShureMxaService _mxa;
@@ -86,20 +87,24 @@ namespace MCCCD_AA140
                 }
                 ErrorLog.Notice("TSW PRIMARY: {0} SmartObject slot(s) discovered", _tswPrimary.SmartObjects.Count);
 
-                // Contract bridge from the rebuilt .cce. Contract.AA140 (IMain) exposes
-                // panel inputs as XxxFb events (panel→SIMPL) and SIMPL drivers as
-                // Xxx(callback) methods (SIMPL→panel).
+                // Contract bridge from the rebuilt .cce. We keep Contract for the
+                // few signals where its generated wrappers happen to align with
+                // the .cse2j mapping (Display{1,2,3}SourceFb in NvxRoutingService).
+                // For everything else, PanelDispatcher talks to SmartObject 1
+                // directly using PanelJoins constants derived verbatim from the
+                // .cse2j — see PanelJoins.cs for the reason.
                 _contract = new Contract(new BasicTriListWithSmartObject[] { _tswPrimary, _tswSecondary });
+                _panel    = new PanelDispatcher(_tswPrimary, _tswSecondary);
 
                 // Construct services (Initialize() runs after CIPNet is ready)
                 _nvx        = new NvxRoutingService(_contract, this);
-                _audio      = new ShureP300Service(_contract, this);
+                _audio      = new ShureP300Service(_panel, this);
                 _mxa        = new ShureMxaService(_contract, this);
                 _airmedia   = new AirMediaService(_contract, this);
-                _cameras    = new CameraService(_contract, this);
+                _cameras    = new CameraService(_panel, this);
                 _projectors = new SonyVplService(_contract, this);
                 _newline    = new NewlineService(_contract, this);
-                _power      = new SystemPowerController(_contract, _nvx, this);
+                _power      = new SystemPowerController(_panel, _nvx, this);
             }
             catch (System.Exception e)
             {
@@ -111,6 +116,10 @@ namespace MCCCD_AA140
         {
             try
             {
+                // Start the dispatcher BEFORE services initialize so registered
+                // handlers are wired before the first panel publish lands.
+                _panel.Start();
+
                 _nvx.Initialize();
                 _audio.Initialize();
                 _mxa.Initialize();

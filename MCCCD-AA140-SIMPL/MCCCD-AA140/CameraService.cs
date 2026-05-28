@@ -1,91 +1,159 @@
+using System;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharpPro;
-using MCCCD_AA140;
 
 namespace MCCCD_AA140
 {
     /// <summary>
-    /// 1Beyond REST control for three cameras (Front i20, Back-L i12, Back-R
-    /// i12). Owns: camera selection, PTZ press-and-hold, shot presets,
-    /// Send-to-VTC, tracking modes (People / Group / VX AutoSwitch). The
-    /// touchpanel pulls RTSP directly from the cameras via ch5-video — the
-    /// processor is not in the video path.
+    /// 1Beyond REST control for two cameras (Front i20, Back). Owns:
+    /// camera selection, PTZ press-and-hold, shot presets, Send-to-VTC,
+    /// tracking modes (People / Group / VX AutoSwitch). The touchpanel pulls
+    /// RTSP directly from the cameras via ch5-video — the processor is not in
+    /// the video path.
+    ///
+    /// PTZ buttons are press-and-hold: the panel publishes true on press and
+    /// false on release, so we map true→StartMove and false→StopMove. Zoom
+    /// behaves the same. Single-tap action buttons (Send-to-VTC, preset
+    /// save/recall/delete) only act on the rising edge (bool true).
     /// </summary>
     public class CameraService
     {
-        private readonly Contract _c;
+        private readonly PanelDispatcher _panel;
         private readonly CrestronControlSystem _cs;
 
-        // Camera index 1..3 → IP. Index 0 unused.
-        private readonly string[] _camIps = { "192.168.1.172", "192.168.1.172", "192.168.1.172", "192.168.1.172" };
+        // Camera index 1..2 → IP. Index 0 unused.
+        // TODO field-config: replace stub IPs with the real camera IPs.
+        private readonly string[] _camIps = { "", "192.168.2.172", "192.168.2.173" };
 
-        // Currently-selected camera (1..3)
+        // Currently-selected camera (1..2)
         private int _active = 1;
+        private ushort _trackingMode = 1; // 1=People, 2=Group, 3=AutoSwitch
 
-        public CameraService(Contract c, CrestronControlSystem cs)
+        public CameraService(PanelDispatcher panel, CrestronControlSystem cs)
         {
-            _c = c;
+            _panel = panel;
             _cs = cs;
         }
 
         public void Initialize()
         {
-            // TODO refactor for new Contract Editor API. Camera panel wiring parked
-            // while NVX routing is verified. Public methods below remain callable.
+            // Camera selection
+            _panel.OnUShort(PanelJoins.UShortOut.CameraSelect, v => {
+                if (v < 1 || v > 2) {
+                    ErrorLog.Warn("Cameras: ignoring CameraSelect={0} (out of range)", v);
+                    return;
+                }
+                _active = v;
+                ErrorLog.Notice("Cameras: active = {0}", _active);
+            });
+
+            // PTZ press-and-hold
+            _panel.OnBool(PanelJoins.BoolOut.PtzUp,    v => { if (v) StartMove("up");    else StopMove(); });
+            _panel.OnBool(PanelJoins.BoolOut.PtzDown,  v => { if (v) StartMove("down");  else StopMove(); });
+            _panel.OnBool(PanelJoins.BoolOut.PtzLeft,  v => { if (v) StartMove("left");  else StopMove(); });
+            _panel.OnBool(PanelJoins.BoolOut.PtzRight, v => { if (v) StartMove("right"); else StopMove(); });
+
+            // Zoom press-and-hold
+            _panel.OnBool(PanelJoins.BoolOut.ZoomIn,  v => { if (v) StartZoom("in");  else StopZoom(); });
+            _panel.OnBool(PanelJoins.BoolOut.ZoomOut, v => { if (v) StartZoom("out"); else StopZoom(); });
+
+            // Single-tap actions (rising edge only)
+            _panel.OnBool(PanelJoins.BoolOut.CamSendToVtc, v => { if (v) SendActiveToVtc(); });
+
+            // Preset save/recall/delete — analog publish encodes preset number 1..3
+            _panel.OnUShort(PanelJoins.UShortOut.ShotPresetRecall, v => { if (v >= 1 && v <= 3) RecallPreset(v); });
+            _panel.OnUShort(PanelJoins.UShortOut.ShotPresetSave,   v => { if (v >= 1 && v <= 3) SavePreset(v);   });
+            _panel.OnUShort(PanelJoins.UShortOut.ShotPresetDelete, v => { if (v >= 1 && v <= 3) DeletePreset(v); });
+
+            // Tracking mode select
+            _panel.OnUShort(PanelJoins.UShortOut.CamTrackingMode, v => SetTrackingMode(v));
         }
 
-        private void StartZoom(string direction)
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/ptz?action=start&dir=zoom&direction={direction}&speed=50");
+        // ---------------------------------------------------------------------
+        // REST handlers
+        // ---------------------------------------------------------------------
+
+        private string ActiveIp() {
+            if (_active < 1 || _active >= _camIps.Length) return null;
+            var ip = _camIps[_active];
+            return string.IsNullOrEmpty(ip) ? null : ip;
         }
 
-        private void StopZoom()
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/ptz?action=stop&dir=zoom");
+        private void StartMove(string dir) {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/ptz?action=start&dir=" + dir + "&speed=50");
         }
 
-        // TODO field-config: confirm 1Beyond REST endpoints + auth against firmware docs.
-        // The device-api-specialist persona has the verbatim API. Speed param may
-        // be a separate slider read from panel state.
-
-        private void StartMove(string dir)
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/ptz?action=start&dir={dir}&speed=50");
+        private void StopMove() {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/ptz?action=stop");
         }
 
-        private void StopMove()
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/ptz?action=stop");
+        private void StartZoom(string direction) {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/ptz?action=start&dir=zoom&direction=" + direction + "&speed=50");
         }
 
-        private void RecallPreset(ushort idx)
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/preset?action=recall&id={idx}");
+        private void StopZoom() {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/ptz?action=stop&dir=zoom");
         }
 
-        private void SavePreset(ushort idx)
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/preset?action=save&id={idx}");
+        private void RecallPreset(ushort idx) {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/preset?action=recall&id=" + idx);
+            ErrorLog.Notice("Cameras: cam{0} preset recall {1}", _active, idx);
         }
 
-        private void DeletePreset(ushort idx)
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/preset?action=delete&id={idx}");
+        private void SavePreset(ushort idx) {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/preset?action=save&id=" + idx);
+            ErrorLog.Notice("Cameras: cam{0} preset save {1}", _active, idx);
         }
 
-        private void SendActiveToVtc()
-        {
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/vtc-ingest?cam={_active}");
+        private void DeletePreset(ushort idx) {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/preset?action=delete&id=" + idx);
+            ErrorLog.Notice("Cameras: cam{0} preset delete {1}", _active, idx);
         }
 
-        private void SetTrackingMode(ushort mode)
-        {
-            // 1=People, 2=Group, 3=VX AutoSwitch
+        private void SendActiveToVtc() {
+            var ip = ActiveIp(); if (ip == null) return;
+            HttpFireAndForget("http://" + ip + "/cgi-bin/vtc-ingest?cam=" + _active);
+            ErrorLog.Notice("Cameras: send cam{0} to VTC", _active);
+        }
+
+        private void SetTrackingMode(ushort mode) {
+            if (mode < 1 || mode > 3) return;
+            var ip = ActiveIp(); if (ip == null) return;
             string m = mode == 1 ? "people" : mode == 2 ? "group" : "autoswitch";
-            HttpFireAndForget($"http://{_camIps[_active]}/cgi-bin/tracking?mode={m}");
-            // TODO drive CamTrackingModeFb back to panel via _c.AA140.CamTrackingMode(callback)
+            HttpFireAndForget("http://" + ip + "/cgi-bin/tracking?mode=" + m);
+            _trackingMode = mode;
+            _panel.WriteUShort(PanelJoins.UShortIn.CamTrackingModeFb, mode);
+            ErrorLog.Notice("Cameras: cam{0} tracking={1}", _active, m);
         }
+
+        // ---------------------------------------------------------------------
+        // Public API for runtime IP changes (called by debug panel)
+        // ---------------------------------------------------------------------
+
+        public void SetCameraIp(int camIndex, string ip)
+        {
+            if (camIndex < 1 || camIndex >= _camIps.Length) return;
+            _camIps[camIndex] = ip ?? "";
+            ErrorLog.Notice("Cameras: cam{0} ip -> {1}", camIndex, ip);
+        }
+
+        public string GetCameraIp(int camIndex)
+        {
+            if (camIndex < 1 || camIndex >= _camIps.Length) return null;
+            return _camIps[camIndex];
+        }
+
+        // ---------------------------------------------------------------------
+        // HTTP fire-and-forget on a worker thread
+        // ---------------------------------------------------------------------
 
         private void HttpFireAndForget(string url)
         {
@@ -100,7 +168,7 @@ namespace MCCCD_AA140
                         if (resp.Code >= 400)
                             ErrorLog.Warn("CameraService HTTP {0}: {1}", resp.Code, url);
                     }
-                } catch (System.Exception ex) {
+                } catch (Exception ex) {
                     ErrorLog.Error("CameraService HTTP exception: {0}", ex.Message);
                 }
             });
