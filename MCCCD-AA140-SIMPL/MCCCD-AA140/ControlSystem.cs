@@ -36,6 +36,13 @@ namespace MCCCD_AA140
             {
                 Thread.MaxNumberOfUserThreads = 20;
 
+                // Without this, a crashing program lifetime leaves a stale
+                // socket entry in CwsRouter's per-firmware path table. The
+                // next PROGLOAD registers a new HttpCwsServer, but CwsRouter
+                // keeps forwarding to the dead socket -> "Connection refused"
+                // until full processor reboot. See lessons-learned doc.
+                CrestronEnvironment.ProgramStatusEventHandler += OnProgramStatus;
+
                 _tswPrimary   = new Tsw1070(0x03, this);
                 _tswSecondary = new Tsw1070(0x04, this);
 
@@ -116,6 +123,13 @@ namespace MCCCD_AA140
             {
                 ErrorLog.Error("ControlSystem ctor: {0}", e);
             }
+        }
+
+        private void OnProgramStatus(eProgramStatusEventType eventType)
+        {
+            if (eventType != eProgramStatusEventType.Stopping) return;
+            try { _debug?.Dispose(); }
+            catch (System.Exception ex) { ErrorLog.Warn("OnProgramStatus dispose: {0}", ex.Message); }
         }
 
         public override void InitializeSystem()
