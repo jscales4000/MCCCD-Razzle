@@ -1,5 +1,6 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -45,6 +46,7 @@ namespace MCCCD_AA140
         public void PowerUpSequence()
         {
             ErrorLog.Notice("AA140: PowerUpSequence");
+            DebugTrace.StateChange("system", "power", "on");
             _systemOn = true;
 
             _panel.WriteBool(PanelJoins.BoolIn.SystemPowerFb,   true);
@@ -66,6 +68,7 @@ namespace MCCCD_AA140
         public void PowerDownSequence()
         {
             ErrorLog.Notice("AA140: PowerDownSequence");
+            DebugTrace.StateChange("system", "power", "off");
             _systemOn = false;
 
             _panel.WriteBool(PanelJoins.BoolIn.SystemPowerFb,   false);

@@ -2,6 +2,7 @@ using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using MCCCD_AA140;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -319,6 +320,7 @@ namespace MCCCD_AA140
             try {
                 dec.Control.ServerUrl.StringValue = url;
                 ErrorLog.Notice("NVX route: D{0} <- {1}", displayNum, url);
+                DebugTrace.StateChange("nvx-d" + displayNum, "serverUrl", url);
             } catch (System.Exception ex) {
                 ErrorLog.Warn("NVX D{0}: route apply failed: {1}", displayNum, ex.Message);
             }

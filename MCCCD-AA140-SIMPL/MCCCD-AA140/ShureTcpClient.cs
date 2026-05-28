@@ -1,6 +1,7 @@
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -110,10 +111,12 @@ namespace MCCCD_AA140
         {
             if (!IsConnected) {
                 ErrorLog.Notice("Shure {0}: drop (not connected): {1}", _name, command);
+                DebugTrace.Error("shure-" + _name, "drop: " + command);
                 return;
             }
             var bytes = Encoding.ASCII.GetBytes(command);
             _client.SendDataAsync(bytes, bytes.Length, null);
+            DebugTrace.Command("shure-" + _name, "send", command);
         }
 
         private void Connect()

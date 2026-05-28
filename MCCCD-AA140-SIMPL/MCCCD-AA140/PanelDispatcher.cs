@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DeviceSupport;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -137,6 +138,7 @@ namespace MCCCD_AA140
                     } finally { _lock.Leave(); }
                     ErrorLog.Notice("PanelDispatcher: bool join={0} val={1} dispatched={2}",
                         args.Sig.Number, v, dispatched);
+                    DebugTrace.SigChange("panel", FriendlyBoolName(args.Sig.Number), "bool", v);
                     handler?.Invoke(v);
                 } else if (args.Sig.Type == eSigType.UShort) {
                     var v = args.Sig.UShortValue;
@@ -150,11 +152,65 @@ namespace MCCCD_AA140
                     } finally { _lock.Leave(); }
                     ErrorLog.Notice("PanelDispatcher: ushort join={0} val={1} dispatched={2}",
                         args.Sig.Number, v, dispatched);
+                    DebugTrace.SigChange("panel", FriendlyUShortName(args.Sig.Number), "ushort", (int)v);
                     handler?.Invoke(v);
                 }
             } catch (Exception ex) {
                 ErrorLog.Warn("PanelDispatcher: handler threw on join {0}: {1}",
                     args.Sig.Number, ex.Message);
+            }
+        }
+
+        // Friendly names for the debug-panel live log. Kept in sync with the
+        // cse2j states maps mirrored in PanelJoins.{BoolOut,UShortOut}.
+        private static string FriendlyBoolName(uint join)
+        {
+            switch (join) {
+                case PanelJoins.BoolOut.DisplayPower:    return "DisplayPower";
+                case PanelJoins.BoolOut.D1MirrorToD3:    return "D1MirrorToD3";
+                case PanelJoins.BoolOut.D2MirrorToD3:    return "D2MirrorToD3";
+                case PanelJoins.BoolOut.VolumeUp:        return "VolumeUp";
+                case PanelJoins.BoolOut.VolumeDown:      return "VolumeDown";
+                case PanelJoins.BoolOut.MuteAll:         return "MuteAll";
+                case PanelJoins.BoolOut.MicLavMute:      return "MicLavMute";
+                case PanelJoins.BoolOut.MicHandheldMute: return "MicHandheldMute";
+                case PanelJoins.BoolOut.PtzUp:           return "PtzUp";
+                case PanelJoins.BoolOut.PtzDown:         return "PtzDown";
+                case PanelJoins.BoolOut.PtzLeft:         return "PtzLeft";
+                case PanelJoins.BoolOut.PtzRight:        return "PtzRight";
+                case PanelJoins.BoolOut.CamSendToVtc:    return "CamSendToVtc";
+                case PanelJoins.BoolOut.ZoomIn:          return "ZoomIn";
+                case PanelJoins.BoolOut.ZoomOut:         return "ZoomOut";
+                case PanelJoins.BoolOut.MicCeiling1Mute: return "MicCeiling1Mute";
+                case PanelJoins.BoolOut.MicCeiling2Mute: return "MicCeiling2Mute";
+                case PanelJoins.BoolOut.MicCeiling3Mute: return "MicCeiling3Mute";
+                default: return "bool/" + join;
+            }
+        }
+
+        private static string FriendlyUShortName(uint join)
+        {
+            switch (join) {
+                case PanelJoins.UShortOut.Display1Source:    return "Display1Source";
+                case PanelJoins.UShortOut.Display2Source:    return "Display2Source";
+                case PanelJoins.UShortOut.Display3Source:    return "Display3Source";
+                case PanelJoins.UShortOut.AudioOutputSelect: return "AudioOutputSelect";
+                case PanelJoins.UShortOut.CameraSelect:      return "CameraSelect";
+                case PanelJoins.UShortOut.ShotPresetRecall:  return "ShotPresetRecall";
+                case PanelJoins.UShortOut.ShotPresetSave:    return "ShotPresetSave";
+                case PanelJoins.UShortOut.ShotPresetDelete:  return "ShotPresetDelete";
+                case PanelJoins.UShortOut.CamTrackingMode:   return "CamTrackingMode";
+                case PanelJoins.UShortOut.MicLavTrim:        return "MicLavTrim";
+                case PanelJoins.UShortOut.MicHandheldTrim:   return "MicHandheldTrim";
+                case PanelJoins.UShortOut.MicCeiling1Trim:   return "MicCeiling1Trim";
+                case PanelJoins.UShortOut.MicCeiling2Trim:   return "MicCeiling2Trim";
+                case PanelJoins.UShortOut.MicCeiling3Trim:   return "MicCeiling3Trim";
+                case PanelJoins.UShortOut.MicLavLineOut:     return "MicLavLineOut";
+                case PanelJoins.UShortOut.MicHandheldLineOut:return "MicHandheldLineOut";
+                case PanelJoins.UShortOut.MicCeiling1LineOut:return "MicCeiling1LineOut";
+                case PanelJoins.UShortOut.MicCeiling2LineOut:return "MicCeiling2LineOut";
+                case PanelJoins.UShortOut.MicCeiling3LineOut:return "MicCeiling3LineOut";
+                default: return "ushort/" + join;
             }
         }
     }
