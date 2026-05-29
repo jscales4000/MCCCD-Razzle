@@ -1,13 +1,16 @@
 <!--
   AppFooter — shared bottom bar used by Home and DisplayRouting.
 
-  Owns its own modal / popup state: the shutdown confirmation lives here
-  so any page that mounts the footer gets the same power-off flow.
-  Stores are consumed directly (no props needed) — that keeps the
-  surface minimal and the behavior identical across pages.
+  Layout (final, locked):
+   - Power: V2 "Inline Status Chip" — icon + "POWER" + small "ON"/"OFF" chip
+   - Mics: V4 "Live Waveform" — borderless, animated wave bars when live,
+     italic "Muted" label when muted; green/red color-coded icon
+   - Vol: F "Bold +/-" — big typographic minus + 65-level readout + big plus,
+     divider, then a mute icon on the right
 
-  On shutdown confirm we navigate the panel back to Home so the user
-  lands on the splash, regardless of which page they powered off from.
+  Owns its own modal / popup state so any page that mounts the footer
+  gets identical power-off + volume-flash behavior. confirmShutdown
+  navigates back to Home so users always land on the splash.
 -->
 
 <script lang="ts">
@@ -23,8 +26,6 @@
   } from '../lib/stores/signals';
   import ConfirmShutdownModal from './ConfirmShutdownModal.svelte';
   import VolumePopup from './VolumePopup.svelte';
-  import MicIcon from '../lib/ui/MicIcon.svelte';
-  import VolIcon from '../lib/ui/VolIcon.svelte';
 
   let systemOn = $derived($systemPowerFb || $userPoweredOn);
 
@@ -41,7 +42,6 @@
   }
   function toggleMaster() {
     pulseDigital(SIGNALS.muteAll);
-    // No popup for mute — matches Home's behavior.
   }
 
   function toggleLavMute() {
@@ -64,8 +64,6 @@
     showShutdownModal = false;
     userPoweredOn.set(false);
     pulseDigital(SIGNALS.displayPower);
-    // Send the user back to Home so they see the splash after powering
-    // off from any page (no-op when already on Home).
     goToPage('home');
   }
   function cancelShutdown() {
@@ -74,69 +72,94 @@
 </script>
 
 <footer class="app-footer">
+  <!-- ── Power (V2: Inline Status Chip) ─────────────────────────────── -->
   <button
-    class="pwr-btn"
-    class:primary={systemOn}
+    class="pwr"
+    class:on={systemOn}
     onclick={powerButtonTapped}
     aria-label={systemOn ? 'System on — tap to shut down' : 'System off — tap to power on'}
     type="button"
   >
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-      <path d="M12 3v9"/>
-      <path d="M6.5 7.5a8 8 0 1 0 11 0"/>
-    </svg>
-    Power
+    <span class="pwr-icon" aria-hidden="true">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M12 3v9"/>
+        <path d="M6.5 7.5a8 8 0 1 0 11 0"/>
+      </svg>
+    </span>
+    <span class="pwr-name">Power</span>
+    <span class="pwr-status">{systemOn ? 'On' : 'Off'}</span>
   </button>
 
+  <!-- ── Mics (V4: Live Waveform) ───────────────────────────────────── -->
   <div class="mics">
-    <span class="footer-label">Mics</span>
-    <button class="mbtn" class:live={!$micLavMuteFb} class:muted={$micLavMuteFb} onclick={toggleLavMute} type="button">
+    <span class="mics-label">Mics</span>
+
+    <button
+      class="mbtn"
+      class:live={!$micLavMuteFb}
+      class:muted={$micLavMuteFb}
+      onclick={toggleLavMute}
+      aria-pressed={$micLavMuteFb}
+      type="button"
+    >
       <span class="mbtn-icon" aria-hidden="true">
-        <MicIcon size={26} />
-        {#if !$micLavMuteFb}
-          <span class="mbtn-eq">
-            <span></span><span></span><span></span><span></span>
-          </span>
-        {/if}
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>
+        </svg>
       </span>
       <span class="mbtn-text">
         <span class="mbtn-name">Lav</span>
-        <span class="mbtn-status">
-          <span class="mbtn-dot"></span>{$micLavMuteFb ? 'Muted' : 'Live'}
-        </span>
-      </span>
-    </button>
-    <button class="mbtn" class:live={!$micHandheldMuteFb} class:muted={$micHandheldMuteFb} onclick={toggleHandheldMute} type="button">
-      <span class="mbtn-icon" aria-hidden="true">
-        <MicIcon size={26} />
-        {#if !$micHandheldMuteFb}
-          <span class="mbtn-eq">
-            <span></span><span></span><span></span><span></span>
+        {#if $micLavMuteFb}
+          <span class="mbtn-mute-label">Muted</span>
+        {:else}
+          <span class="mbtn-waveform" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
           </span>
         {/if}
       </span>
+    </button>
+
+    <button
+      class="mbtn"
+      class:live={!$micHandheldMuteFb}
+      class:muted={$micHandheldMuteFb}
+      onclick={toggleHandheldMute}
+      aria-pressed={$micHandheldMuteFb}
+      type="button"
+    >
+      <span class="mbtn-icon" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>
+        </svg>
+      </span>
       <span class="mbtn-text">
         <span class="mbtn-name">Handheld</span>
-        <span class="mbtn-status">
-          <span class="mbtn-dot"></span>{$micHandheldMuteFb ? 'Muted' : 'Live'}
-        </span>
+        {#if $micHandheldMuteFb}
+          <span class="mbtn-mute-label">Muted</span>
+        {:else}
+          <span class="mbtn-waveform" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </span>
+        {/if}
       </span>
     </button>
   </div>
 
-  <div class="vol-grp">
-    <span class="footer-label">Vol</span>
-    <button class="vbtn" onclick={volDown} aria-label="Volume down" type="button">
-      <VolIcon variant="down" size={28} />
-      −
-    </button>
-    <button class="vbtn" onclick={toggleMaster} aria-label="Mute toggle" type="button">
-      <VolIcon variant="mute" size={28} />
-      Mute
-    </button>
-    <button class="vbtn" onclick={volUp} aria-label="Volume up" type="button">
-      <VolIcon variant="up" size={28} />
-      +
+  <!-- ── Vol (F: Bold +/−) ──────────────────────────────────────────── -->
+  <div class="vol">
+    <span class="vol-label">Vol</span>
+    <button class="vbtn" onclick={volDown} aria-label="Volume down" type="button">−</button>
+    <span class="vol-readout">
+      {$progAudioLevelFb}<small>level</small>
+    </span>
+    <button class="vbtn" onclick={volUp} aria-label="Volume up" type="button">+</button>
+    <div class="vol-divider" aria-hidden="true"></div>
+    <button class="vbtn-mute" onclick={toggleMaster} aria-label="Mute toggle" type="button">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/>
+      </svg>
     </button>
   </div>
 </footer>
@@ -166,224 +189,259 @@
     align-items: center;
     padding: 0 22px;
     gap: 18px;
+    min-height: 112px;
   }
-  .pwr-btn {
+
+  /* ── Power: V2 Inline Status Chip ─────────────────────────────────── */
+  .pwr {
     appearance: none;
     -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
     gap: 14px;
-    min-height: 86px;
-    min-width: 170px;
-    padding: 0 28px;
-    border-radius: 14px;
-    background-color: rgba(245, 166, 35, 0.18);
-    background-image: linear-gradient(180deg, rgba(245, 166, 35, 0.22), rgba(245, 166, 35, 0.12));
-    border: none;
-    color: #f5a623;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    color: var(--color-accent, #f5a623);
     cursor: pointer;
-    transition: background-color 110ms ease, transform 110ms ease, box-shadow 110ms ease;
-    box-shadow: 0 8px 24px rgba(245, 166, 35, 0.16);
     font-family: inherit;
+    transition: transform 110ms ease;
   }
-  .pwr-btn:hover {
-    background-color: rgba(245, 166, 35, 0.28);
-    box-shadow: 0 12px 32px rgba(245, 166, 35, 0.24);
-  }
-  .pwr-btn:active { transform: scale(0.98); }
-  .pwr-btn.primary {
-    background-color: rgba(245, 166, 35, 0.28);
-    box-shadow:
-      0 8px 24px rgba(245, 166, 35, 0.22),
-      0 0 0 1px rgba(245, 166, 35, 0.35);
+  .pwr:active { transform: scale(0.97); }
+  .pwr:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 8px;
   }
 
+  .pwr-icon {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    color: var(--color-accent, #f5a623);
+  }
+
+  .pwr-name {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-copy, #e2e8f0);
+  }
+
+  .pwr-status {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: var(--color-accent-soft, rgba(245, 166, 35, 0.18));
+    color: var(--color-accent, #f5a623);
+  }
+  /* When the system is off, dim the chip to a neutral state */
+  .pwr:not(.on) .pwr-status {
+    background: rgba(100, 116, 139, 0.18);
+    color: var(--color-copy-soft, #94a3b8);
+  }
+  .pwr:not(.on) .pwr-icon {
+    color: var(--color-copy-soft, #94a3b8);
+  }
+
+  /* ── Mics: V4 Live Waveform ───────────────────────────────────────── */
   .mics {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 18px;
     justify-content: center;
   }
-  .footer-label {
+
+  .mics-label, .vol-label {
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--color-copy-muted, #64748b);
   }
+
   .mbtn {
     appearance: none;
     -webkit-appearance: none;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    min-height: 96px;
-    min-width: 180px;
-    padding: 0 24px;
-    border-radius: 14px;
+    background: transparent;
     border: none;
-    background-color: rgba(15, 23, 42, 0.7);
-    background-image: linear-gradient(180deg, rgba(30, 41, 59, 0.55), rgba(8, 14, 26, 0.55));
+    padding: 14px 16px;
     color: var(--color-copy-soft, #94a3b8);
     cursor: pointer;
-    transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 110ms ease;
-    box-shadow:
-      0 8px 22px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(148, 163, 184, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-family: inherit;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
+    transition: transform 110ms ease;
   }
-  .mbtn:active { transform: scale(0.98); }
+  .mbtn:active { transform: scale(0.97); }
+  .mbtn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
 
   .mbtn-icon {
-    position: relative;
-    display: grid;
-    place-items: center;
     width: 36px;
     height: 36px;
-    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    color: inherit;
+    position: relative;
+    transition: color 200ms ease;
   }
-  .mbtn-icon :global(svg) {
-    transition: opacity 200ms ease;
-  }
-
-  .mbtn-eq {
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    height: 8px;
-    pointer-events: none;
-  }
-  .mbtn-eq > span {
-    width: 3px;
-    background: currentColor;
-    border-radius: 1px;
-    box-shadow: 0 0 4px currentColor;
-    animation: af-eq-bar 900ms ease-in-out infinite;
-  }
-  .mbtn-eq > span:nth-child(1) { animation-delay: 0ms;   height: 4px; }
-  .mbtn-eq > span:nth-child(2) { animation-delay: 180ms; height: 8px; }
-  .mbtn-eq > span:nth-child(3) { animation-delay: 360ms; height: 6px; }
-  .mbtn-eq > span:nth-child(4) { animation-delay: 540ms; height: 5px; }
-  @keyframes af-eq-bar {
-    0%, 100% { transform: scaleY(0.4); }
-    50%      { transform: scaleY(1.0); }
-  }
-
-  .mbtn-text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: flex-start;
-    line-height: 1.1;
-  }
-  .mbtn-name {
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-  }
-  .mbtn-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    opacity: 0.95;
-  }
-  .mbtn-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 6px currentColor;
-  }
-
-  .mbtn.live {
-    color: #4ade80;
-    background-color: rgba(34, 197, 94, 0.16);
-    background-image: linear-gradient(180deg, rgba(34, 197, 94, 0.22), rgba(34, 197, 94, 0.06));
-    box-shadow:
-      0 0 24px rgba(34, 197, 94, 0.22),
-      0 8px 22px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(74, 222, 128, 0.22);
-  }
-  .mbtn.live .mbtn-dot {
-    animation: af-live-pulse 1.4s ease-in-out infinite;
-  }
-  @keyframes af-live-pulse {
-    0%, 100% { transform: scale(1);   opacity: 1; box-shadow: 0 0 6px currentColor; }
-    50%      { transform: scale(1.3); opacity: 0.7; box-shadow: 0 0 10px currentColor; }
-  }
-
-  .mbtn.muted {
-    color: #fca5a5;
-    background-color: rgba(239, 68, 68, 0.14);
-    background-image: linear-gradient(180deg, rgba(239, 68, 68, 0.18), rgba(239, 68, 68, 0.06));
-    box-shadow:
-      0 0 18px rgba(239, 68, 68, 0.14),
-      0 8px 22px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(252, 165, 165, 0.16);
-  }
-  .mbtn.muted .mbtn-icon :global(svg) {
-    opacity: 0.6;
-  }
+  .mbtn.live .mbtn-icon { color: #4ade80; }
+  .mbtn.muted .mbtn-icon { color: #fca5a5; }
   .mbtn.muted .mbtn-icon::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
+    width: 32px;
     height: 2px;
     background: currentColor;
     transform: rotate(-22deg);
     border-radius: 1px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .mbtn-eq > span { animation: none; transform: scaleY(0.7); }
-    .mbtn.live .mbtn-dot { animation: none; }
+  .mbtn-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-start;
   }
 
-  .vol-grp {
+  .mbtn-name {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--color-copy, #e2e8f0);
+  }
+
+  .mbtn-waveform {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 16px;
+  }
+  .mbtn-waveform > span {
+    width: 3px;
+    border-radius: 1px;
+    background: #4ade80;
+    box-shadow: 0 0 4px #4ade80;
+    animation: af-wave 1100ms ease-in-out infinite;
+  }
+  .mbtn-waveform > span:nth-child(1) { height: 40%; animation-delay: 0ms; }
+  .mbtn-waveform > span:nth-child(2) { height: 90%; animation-delay: 120ms; }
+  .mbtn-waveform > span:nth-child(3) { height: 55%; animation-delay: 240ms; }
+  .mbtn-waveform > span:nth-child(4) { height: 75%; animation-delay: 360ms; }
+  .mbtn-waveform > span:nth-child(5) { height: 35%; animation-delay: 480ms; }
+  .mbtn-waveform > span:nth-child(6) { height: 60%; animation-delay: 600ms; }
+  @keyframes af-wave {
+    0%, 100% { transform: scaleY(0.3); }
+    50%      { transform: scaleY(1.0); }
+  }
+
+  .mbtn-mute-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #fca5a5;
+  }
+
+  /* ── Vol: F Bold +/− ──────────────────────────────────────────────── */
+  .vol {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     justify-self: end;
   }
+
   .vbtn {
     appearance: none;
     -webkit-appearance: none;
-    display: flex;
+    background: transparent;
+    border: none;
+    width: 60px;
+    height: 70px;
+    display: grid;
+    place-items: center;
+    color: var(--color-copy-soft, #94a3b8);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 1;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .vbtn:hover { color: var(--color-accent, #f5a623); }
+  .vbtn:active { transform: scale(0.94); }
+  .vbtn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  .vol-readout {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--color-accent, #f5a623);
+    line-height: 0.95;
+    text-shadow: 0 0 12px rgba(245, 166, 35, 0.5);
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    min-height: 76px;
-    min-width: 90px;
-    padding: 0 12px;
-    background-color: transparent;
-    border: none;
-    color: var(--color-copy-soft, #94a3b8);
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 110ms ease, transform 110ms ease;
-    font-family: inherit;
+    min-width: 52px;
   }
-  .vbtn:hover { color: #f5a623; }
-  .vbtn:active { transform: scale(0.96); }
+  .vol-readout small {
+    font-size: 10px;
+    color: var(--color-copy-soft, #94a3b8);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: block;
+    margin-top: 3px;
+    text-shadow: none;
+  }
+
+  .vol-divider {
+    width: 1px;
+    height: 56px;
+    background: var(--color-border, rgba(148, 163, 184, 0.22));
+    margin: 0 4px;
+  }
+
+  .vbtn-mute {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    color: var(--color-copy-soft, #94a3b8);
+    cursor: pointer;
+    border-radius: 8px;
+    font-family: inherit;
+    transition: color 110ms ease, background 110ms ease, transform 110ms ease;
+  }
+  .vbtn-mute:hover {
+    color: var(--color-accent, #f5a623);
+    background: rgba(245, 166, 35, 0.08);
+  }
+  .vbtn-mute:active { transform: scale(0.94); }
+  .vbtn-mute:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mbtn-waveform > span { animation: none; transform: scaleY(0.7); }
+    .pwr, .mbtn, .vbtn, .vbtn-mute { transition: none; }
+  }
 </style>

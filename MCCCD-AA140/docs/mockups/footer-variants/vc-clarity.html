@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MCCCD AA140 · Footer — VC up/down clarity, round 3</title>
+<style>
+  :root {
+    --bg: #06101e;
+    --panel: rgba(13, 27, 46, 0.92);
+    --border: rgba(196, 122, 30, 0.28);
+    --border-soft: rgba(148, 163, 184, 0.22);
+    --copy: #e2e8f0;
+    --soft: #94a3b8;
+    --muted: #64748b;
+    --accent: #f5a623;
+    --accent-soft: rgba(245, 166, 35, 0.18);
+    --success: #4ade80;
+    --danger: #fca5a5;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--copy);
+    font-family: "Segoe UI", Arial, sans-serif; min-height: 100vh; }
+  body { padding: 40px 24px 80px; }
+
+  header.page-h { max-width: 1280px; margin: 0 auto 28px; }
+  .page-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 32px; font-weight: 900; letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  h1 b { color: var(--accent); }
+  .lede {
+    font-size: 14px; line-height: 1.6;
+    color: var(--soft);
+    max-width: 800px;
+  }
+  .pill {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent);
+    padding: 3px 9px; border-radius: 5px;
+    background: var(--accent-soft);
+    margin-right: 8px;
+  }
+  .stage-list {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 36px;
+  }
+  .variant {
+    background: linear-gradient(180deg, #14213a, #08101e);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px 26px;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.4);
+  }
+  .v-head {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 0.5px solid var(--border-soft);
+  }
+  .v-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px; border-radius: 5px;
+  }
+  .v-title { font-size: 18px; font-weight: 800; color: var(--copy); }
+  .v-desc {
+    margin-left: auto;
+    font-size: 12px; color: var(--soft);
+    max-width: 620px; text-align: right;
+  }
+  .v-stage {
+    background: var(--bg); border-radius: 10px; padding: 12px;
+  }
+
+  /* ── Footer skeleton ─────────────────────────────────────────────── */
+  .ftr {
+    background: rgba(12, 20, 36, 0.97);
+    border: 0.5px solid var(--border-soft);
+    border-radius: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 22px;
+    gap: 18px;
+    min-height: 112px;
+  }
+  .mics-label, .vol-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .mics {
+    display: flex; align-items: center; gap: 18px;
+    justify-content: center;
+  }
+  .vol {
+    display: flex; align-items: center; gap: 14px;
+    justify-self: end;
+  }
+
+  /* ── Locked: V2 power + V4 mics ──────────────────────────────────── */
+  .ico-mic, .ico-power, .ico-vol {
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .pwr {
+    background: transparent; border: none;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 14px;
+    color: var(--accent); cursor: pointer;
+    font-family: inherit;
+  }
+  .pwr-name {
+    font-size: 18px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .pwr-status {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 3px 10px; border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .pwr-icon { width: 34px; height: 34px; color: var(--accent); }
+
+  .mbtn {
+    background: transparent; border: none;
+    padding: 14px 16px;
+    color: var(--soft); cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    font-family: inherit;
+  }
+  .mbtn-icon {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    color: inherit; position: relative;
+  }
+  .mbtn.live .mbtn-icon { color: var(--success); }
+  .mbtn.muted .mbtn-icon { color: var(--danger); }
+  .mbtn.muted .mbtn-icon::after {
+    content: ''; position: absolute;
+    width: 32px; height: 2px;
+    background: currentColor; transform: rotate(-22deg);
+    border-radius: 1px;
+  }
+  .mbtn-text {
+    display: flex; flex-direction: column; gap: 3px;
+    align-items: flex-start;
+  }
+  .mbtn-name {
+    font-size: 17px; font-weight: 800; letter-spacing: -0.01em;
+    color: var(--copy);
+  }
+  .mbtn-waveform { display: flex; align-items: flex-end; gap: 3px; height: 16px; }
+  .mbtn-waveform span {
+    width: 3px; border-radius: 1px;
+    background: var(--success);
+    box-shadow: 0 0 4px var(--success);
+    animation: wave 1100ms ease-in-out infinite;
+  }
+  .mbtn-waveform span:nth-child(1) { height: 40%; animation-delay: 0ms; }
+  .mbtn-waveform span:nth-child(2) { height: 90%; animation-delay: 120ms; }
+  .mbtn-waveform span:nth-child(3) { height: 55%; animation-delay: 240ms; }
+  .mbtn-waveform span:nth-child(4) { height: 75%; animation-delay: 360ms; }
+  .mbtn-waveform span:nth-child(5) { height: 35%; animation-delay: 480ms; }
+  .mbtn-waveform span:nth-child(6) { height: 60%; animation-delay: 600ms; }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.3); }
+    50%      { transform: scaleY(1.0); }
+  }
+  .mbtn-mute-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--danger);
+  }
+
+  /* ── Shared big-readout ──────────────────────────────────────────── */
+  .vol-readout {
+    font-size: 28px; font-weight: 900; color: var(--accent);
+    line-height: 0.95;
+    text-shadow: 0 0 12px rgba(245, 166, 35, 0.5);
+    display: inline-flex; flex-direction: column;
+    align-items: center;
+  }
+  .vol-readout small {
+    font-size: 10px; color: var(--soft);
+    letter-spacing: 0.28em; text-transform: uppercase;
+    font-weight: 700;
+    display: block; margin-top: 3px;
+    text-shadow: none;
+  }
+
+  /* ── Shared mute (right, after divider) ──────────────────────────── */
+  .vol-divider {
+    width: 1px; height: 56px;
+    background: var(--border-soft);
+    margin: 0 4px;
+  }
+  .vbtn-mute {
+    background: transparent; border: none;
+    width: 56px; height: 56px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    border-radius: 8px;
+    transition: color 110ms ease, background 110ms ease;
+    font-family: inherit;
+  }
+  .vbtn-mute:hover { color: var(--accent); background: rgba(245, 166, 35, 0.08); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT F — Bold +/− symbols
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-f .vbtn {
+    background: transparent; border: none;
+    width: 60px; height: 70px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    font-size: 44px; font-weight: 900; line-height: 1;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .vc-f .vbtn:hover { color: var(--accent); }
+  .vc-f .vbtn:active { transform: scale(0.94); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT G — Speaker glyph with arrow
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-g .vbtn {
+    background: transparent; border: none;
+    width: 64px; height: 64px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .vc-g .vbtn:hover { color: var(--accent); }
+  .vc-g .vbtn:active { transform: scale(0.94); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT H — Three-tier speaker (low / off / high)
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-h .vbtn {
+    background: transparent; border: none;
+    width: 64px; height: 64px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .vc-h .vbtn:hover { color: var(--accent); }
+  .vc-h .vbtn:active { transform: scale(0.94); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT I — Labeled button (icon + DOWN / UP text)
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-i .vbtn {
+    background: transparent; border: none;
+    padding: 8px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    transition: color 110ms ease, transform 110ms ease;
+    min-width: 64px;
+  }
+  .vc-i .vbtn:hover { color: var(--accent); }
+  .vc-i .vbtn:active { transform: scale(0.94); }
+  .vc-i .vbtn-glyph {
+    width: 42px; height: 42px;
+    display: grid; place-items: center;
+    font-size: 32px; font-weight: 900; line-height: 1;
+  }
+  .vc-i .vbtn-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT J — Circular outlined +/−
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-j .vbtn {
+    background: transparent;
+    border: 1.5px solid rgba(148, 163, 184, 0.4);
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    font-size: 28px; font-weight: 900; line-height: 1;
+    transition: color 110ms ease, border-color 110ms ease, background 110ms ease, transform 110ms ease;
+  }
+  .vc-j .vbtn:hover {
+    color: var(--accent);
+    border-color: rgba(245, 166, 35, 0.55);
+    background: rgba(245, 166, 35, 0.06);
+  }
+  .vc-j .vbtn:active { transform: scale(0.93); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT K — Stacked +/− tower (bonus)
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-k .vol-tower {
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .vc-k .vbtn {
+    background: transparent; border: none;
+    width: 64px; height: 44px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    font-size: 24px; font-weight: 900; line-height: 1;
+    transition: color 110ms ease, background 110ms ease;
+  }
+  .vc-k .vbtn.up { border-bottom: 1px solid var(--border-soft); }
+  .vc-k .vbtn:hover { color: var(--accent); background: rgba(245, 166, 35, 0.08); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT L — Labeled side pads
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-l .vbtn {
+    background: transparent; border: none;
+    padding: 0 14px;
+    height: 70px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .vc-l .vbtn:hover { color: var(--accent); }
+  .vc-l .vbtn:active { transform: scale(0.96); }
+  .vc-l .vbtn-glyph {
+    font-size: 36px; font-weight: 900; line-height: 1;
+    width: 32px; text-align: center;
+  }
+  .vc-l .vbtn-stack {
+    display: flex; flex-direction: column; align-items: flex-start;
+    line-height: 1;
+  }
+  .vc-l .vbtn-dir {
+    font-size: 12px; font-weight: 900; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .vc-l .vbtn-sub {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.20em;
+    text-transform: uppercase; color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT M — Speaker tier + colored arrow
+     ════════════════════════════════════════════════════════════════════ */
+  .vc-m .vbtn {
+    background: transparent; border: none;
+    width: 64px; height: 64px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    position: relative;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .vc-m .vbtn:hover { color: var(--accent); }
+  .vc-m .vbtn:active { transform: scale(0.94); }
+  .vc-m .vbtn .arrow {
+    position: absolute;
+    bottom: 4px; right: 6px;
+    width: 18px; height: 18px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 14px; font-weight: 900; line-height: 1;
+  }
+  .vc-m .vbtn.down .arrow { background: rgba(239, 68, 68, 0.55); }
+  .vc-m .vbtn.up   .arrow { background: rgba(34, 197, 94, 0.55); }
+
+</style>
+</head>
+<body>
+
+<header class="page-h">
+  <div class="page-eyebrow">MCCCD · AA140 · Footer Mockups · Round 3</div>
+  <h1>VC: Make <b>Up / Down</b> Unmistakable</h1>
+  <p class="lede">
+    <span class="pill">Locked</span> V4 waveform mics + V2 chip power. Mute stays right-side after a divider (the A pattern).
+    Seven new VC variants — all working harder to make up vs. down telegraphic at a glance.
+  </p>
+</header>
+
+<div class="stage-list">
+
+  <!-- ═══════════════ VARIANT F — Bold +/− ═══════════════ -->
+  <div class="variant vc-f">
+    <div class="v-head">
+      <span class="v-num">F</span>
+      <span class="v-title">Bold "+" / "−" Symbols</span>
+      <span class="v-desc">Big typographic plus/minus, no chevron ambiguity. Universal sign for vol. Readout center, mute right after divider.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn" aria-label="Vol down">−</button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn" aria-label="Vol up">+</button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT G — Speaker + arrow ═══════════════ -->
+  <div class="variant vc-g">
+    <div class="v-head">
+      <span class="v-num">G</span>
+      <span class="v-title">Speaker + Arrow</span>
+      <span class="v-desc">Speaker glyph stays the constant — direction comes from a small ▽ / △ next to it. Reads as one icon-unit. Familiar from car HUDs.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn" aria-label="Vol down">
+            <svg viewBox="0 0 36 24" style="width:48px;height:32px" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9v6h4l5 4V5L7 9z"/>
+              <path d="M21 16l-3-4 3-4" />
+            </svg>
+          </button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn" aria-label="Vol up">
+            <svg viewBox="0 0 36 24" style="width:48px;height:32px" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9v6h4l5 4V5L7 9z"/>
+              <path d="M17 4l4 8-4 8" />
+              <path d="M22 7a5 5 0 0 1 0 10"/>
+            </svg>
+          </button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT H — Three-tier speaker ═══════════════ -->
+  <div class="variant vc-h">
+    <div class="v-head">
+      <span class="v-num">H</span>
+      <span class="v-title">Three-Tier Speaker (low / mute / high)</span>
+      <span class="v-desc">Down button = speaker with one small wave (visually quieter). Up button = speaker with three large waves (visually louder). Volume-as-radiating-sound metaphor.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn" aria-label="Vol down">
+            <svg viewBox="0 0 28 24" style="width:44px;height:36px" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9v6h4l5 4V5L7 9z"/>
+              <path d="M16 10a3 3 0 0 1 0 4"/>
+            </svg>
+          </button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn" aria-label="Vol up">
+            <svg viewBox="0 0 28 24" style="width:44px;height:36px" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9v6h4l5 4V5L7 9z"/>
+              <path d="M16 9a5 5 0 0 1 0 6"/>
+              <path d="M20 6a9 9 0 0 1 0 12"/>
+              <path d="M24 3a13 13 0 0 1 0 18"/>
+            </svg>
+          </button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT I — Labeled glyph (UP / DOWN text) ═══════════════ -->
+  <div class="variant vc-i">
+    <div class="v-head">
+      <span class="v-num">I</span>
+      <span class="v-title">Glyph + "UP" / "DOWN" Label</span>
+      <span class="v-desc">Belt + suspenders: big +/− glyph above, explicit "DOWN" / "UP" text below. Zero ambiguity. Slightly more vertical real estate.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">
+            <span class="vbtn-glyph">−</span>
+            <span class="vbtn-label">Down</span>
+          </button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn">
+            <span class="vbtn-glyph">+</span>
+            <span class="vbtn-label">Up</span>
+          </button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT J — Circular outlined ═══════════════ -->
+  <div class="variant vc-j">
+    <div class="v-head">
+      <span class="v-num">J</span>
+      <span class="v-title">Circular Outlined ⊖ / ⊕</span>
+      <span class="v-desc">Soft circular outline around the +/− makes each button read as a discrete tap target without the rest of the footer getting a background. Hybrid borderless.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn" aria-label="Vol down">−</button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn" aria-label="Vol up">+</button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT K — Stacked tower ═══════════════ -->
+  <div class="variant vc-k">
+    <div class="v-head">
+      <span class="v-num">K</span>
+      <span class="v-title">Stacked Tower (+ over −)</span>
+      <span class="v-desc">Up + Down stacked in a single compact tower (like a remote control). Spatial orientation reinforces direction — top = up, bottom = down. Saves horizontal space.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <span class="vol-readout">65<small>level</small></span>
+          <div class="vol-tower">
+            <button class="vbtn up">+</button>
+            <button class="vbtn">−</button>
+          </div>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT L — Labeled side pads ═══════════════ -->
+  <div class="variant vc-l">
+    <div class="v-head">
+      <span class="v-num">L</span>
+      <span class="v-title">Side Pads — Glyph + Word Stack</span>
+      <span class="v-desc">Big "−" or "+" beside an UP/DOWN label and a subline ("LOUDER" / "QUIETER"). Maximum clarity. Most footprint of any variant — works if you want the VC area to feel substantial.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">
+            <span class="vbtn-glyph">−</span>
+            <span class="vbtn-stack">
+              <span class="vbtn-dir">Down</span>
+              <span class="vbtn-sub">Quieter</span>
+            </span>
+          </button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn">
+            <span class="vbtn-glyph">+</span>
+            <span class="vbtn-stack">
+              <span class="vbtn-dir">Up</span>
+              <span class="vbtn-sub">Louder</span>
+            </span>
+          </button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT M — Speaker + color-coded arrow chip ═══════════════ -->
+  <div class="variant vc-m">
+    <div class="v-head">
+      <span class="v-num">M</span>
+      <span class="v-title">Speaker + Color-Coded Arrow Chip</span>
+      <span class="v-desc">Speaker glyph with a small colored badge in the corner: red ▼ chip = down, green ▲ chip = up. Quick color tells direction before you even read the icon.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power pwr-icon" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Lav</span><span class="mbtn-waveform"><span></span><span></span><span></span><span></span><span></span><span></span></span></span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon"><svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></span>
+            <span class="mbtn-text"><span class="mbtn-name">Handheld</span><span class="mbtn-mute-label">Muted</span></span>
+          </button>
+        </div>
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn down" aria-label="Vol down">
+            <svg class="ico-vol" viewBox="0 0 24 24" style="width:32px;height:32px"><path d="M3 9v6h4l5 4V5L7 9z"/></svg>
+            <span class="arrow">▼</span>
+          </button>
+          <span class="vol-readout">65<small>level</small></span>
+          <button class="vbtn up" aria-label="Vol up">
+            <svg class="ico-vol" viewBox="0 0 24 24" style="width:32px;height:32px"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+            <span class="arrow">▲</span>
+          </button>
+          <div class="vol-divider"></div>
+          <button class="vbtn-mute" aria-label="Mute">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
