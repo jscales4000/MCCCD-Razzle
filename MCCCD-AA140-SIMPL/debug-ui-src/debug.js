@@ -707,6 +707,30 @@
     btn.addEventListener("click", function () { post("./power/" + btn.getAttribute("data-power")); });
   });
 
+  // ─── Sony VPL / Newline / AirMedia ─────────────────────────────────
+  document.querySelectorAll("[data-sony]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var id = btn.getAttribute("data-sony"), act = btn.getAttribute("data-act");
+      post("./sony/" + id + "/" + act);
+    });
+  });
+  document.querySelectorAll("[data-newline]").forEach(function (btn) {
+    btn.addEventListener("click", function () { post("./newline/" + btn.getAttribute("data-newline")); });
+  });
+  document.querySelectorAll("[data-airmedia]").forEach(function (btn) {
+    btn.addEventListener("click", function () { post("./airmedia/" + btn.getAttribute("data-airmedia")); });
+  });
+
+  // ─── Section collapse: click a card's h2 to toggle ─────────────────
+  document.querySelectorAll(".card > h2, #log-card .log-titlebar h2").forEach(function (h2) {
+    h2.addEventListener("click", function (e) {
+      // Don't fire when clicking nested buttons inside the title (badges).
+      if (e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") return;
+      var card = h2.closest(".card");
+      if (card) card.classList.toggle("collapsed");
+    });
+  });
+
   // ─── NVX manual route override ─────────────────────────────────────
   document.querySelectorAll("#nvx-card td.nvx-override button").forEach(function (btn) {
     btn.addEventListener("click", function () {

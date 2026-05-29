@@ -228,3 +228,30 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); fon
   line-height: 1.5;
   white-space: pre-wrap;
 }
+
+/* Display blocks (used by Sony VPL card) */
+.display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.display-block { background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 6px; padding: 10px; }
+.display-block h3 { margin: 0 0 8px; font-size: 12px; }
+
+/* Section collapse: click h2 to toggle. Hide everything inside the card except the h2 itself when collapsed. */
+.card h2 { cursor: pointer; user-select: none; }
+.card h2::before { content: "▾ "; display: inline-block; color: var(--muted); font-size: 11px; transition: transform 120ms; vertical-align: middle; margin-right: 2px; }
+.card.collapsed h2::before { transform: rotate(-90deg); }
+.card.collapsed > *:not(h2):not(.log-hdr) { display: none; }
+/* Log card uses .log-hdr containing h2; collapse hides everything below the header. */
+#log-card.collapsed .log-hdr > *:not(.log-titlebar) { display: none; }
+#log-card.collapsed .log-body { display: none; }
+/* Header itself stays clickable. */
+#log-card h2 { cursor: pointer; user-select: none; }
+#log-card h2::before { content: "▾ "; display: inline-block; color: var(--muted); font-size: 11px; transition: transform 120ms; vertical-align: middle; margin-right: 2px; }
+#log-card.collapsed h2::before { transform: rotate(-90deg); }
+
+/* Responsive — collapse the 2-column grid below ~700px */
+@media (max-width: 700px) {
+  .grid { grid-template-columns: 1fr; padding: 12px; gap: 14px; }
+  .cam-grid { grid-template-columns: 1fr; }
+  .display-grid { grid-template-columns: 1fr; }
+  .log-controls { flex-wrap: wrap; }
+  #nvx-card td.nvx-override { flex-direction: column; }
+}

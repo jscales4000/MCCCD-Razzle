@@ -114,8 +114,11 @@ namespace MCCCD_AA140.Debug
                     else if (sub.StartsWith("/mic/",     StringComparison.OrdinalIgnoreCase)) HandleMicPost(args, sub);
                     else if (sub.StartsWith("/audio/",   StringComparison.OrdinalIgnoreCase)) HandleAudioPost(args, sub.Substring("/audio/".Length));
                     else if (sub.StartsWith("/power/",   StringComparison.OrdinalIgnoreCase)) HandlePowerPost(args, sub.Substring("/power/".Length));
-                    else if (sub.StartsWith("/nvx/",     StringComparison.OrdinalIgnoreCase)) HandleNvxPost(args, sub.Substring("/nvx/".Length));
-                    else if (Eq(sub, "/signal"))                                              HandleSignalPost(args);
+                    else if (sub.StartsWith("/nvx/",      StringComparison.OrdinalIgnoreCase)) HandleNvxPost(args, sub.Substring("/nvx/".Length));
+                    else if (Eq(sub, "/signal"))                                               HandleSignalPost(args);
+                    else if (sub.StartsWith("/sony/",     StringComparison.OrdinalIgnoreCase)) HandleSonyPost(args, sub.Substring("/sony/".Length));
+                    else if (sub.StartsWith("/newline/",  StringComparison.OrdinalIgnoreCase)) HandleNewlinePost(args, sub.Substring("/newline/".Length));
+                    else if (sub.StartsWith("/airmedia/", StringComparison.OrdinalIgnoreCase)) HandleAirMediaPost(args, sub.Substring("/airmedia/".Length));
                     else                                         Serve404(args, "POST " + sub);
                 } else {
                     Serve404(args, method + " " + sub);
@@ -458,6 +461,64 @@ namespace MCCCD_AA140.Debug
                 ErrorLog.Warn("HandleSignalPost join={0}: {1}", join, ex.Message);
                 ServeJson(args, 500, "{\"error\":\"" + ex.Message.Replace("\"", "'") + "\"}");
             }
+        }
+
+        // ─── /sony/<id>/<action> ────────────────────────────────────────
+
+        private void HandleSonyPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_projectors == null) { ServeJson(args, 503, "{\"error\":\"no sony\"}"); return; }
+            var parts = sub.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length < 2) { Serve404(args, "sony/" + sub); return; }
+            if (!int.TryParse(parts[0], out int id) || id < 1 || id > 2) {
+                ServeJson(args, 400, "{\"error\":\"id must be 1..2\"}"); return;
+            }
+            var action = parts[1].ToLowerInvariant();
+            switch (action) {
+                case "power-on":  if (id == 1) _projectors.PowerOn(1);     else _projectors.PowerOn(2);     break;
+                case "power-off": if (id == 1) _projectors.PowerOff(1);    else _projectors.PowerOff(2);    break;
+                case "hdmi1":     if (id == 1) _projectors.SelectHdmi1(1); else _projectors.SelectHdmi1(2); break;
+                case "hdmi2":     if (id == 1) _projectors.SelectHdmi2(1); else _projectors.SelectHdmi2(2); break;
+                default:          Serve404(args, "sony/" + sub); return;
+            }
+            DebugTrace.Command("sony-" + id, action);
+            ServeOk(args);
+        }
+
+        // ─── /newline/<action> ──────────────────────────────────────────
+
+        private void HandleNewlinePost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_newline == null) { ServeJson(args, 503, "{\"error\":\"no newline\"}"); return; }
+            var action = sub.Trim('/').ToLowerInvariant();
+            switch (action) {
+                case "power-on":  _newline.PowerOn();    break;
+                case "power-off": _newline.PowerOff();   break;
+                case "hdmi1":     _newline.SelectHdmi1(); break;
+                case "hdmi2":     _newline.SelectHdmi2(); break;
+                case "hdmi3":     _newline.SelectHdmi3(); break;
+                case "vol-up":    _newline.VolumeUp();   break;
+                case "vol-down":  _newline.VolumeDown(); break;
+                case "mute":      _newline.ToggleMute(); break;
+                default:          Serve404(args, "newline/" + action); return;
+            }
+            DebugTrace.Command("newline", action);
+            ServeOk(args);
+        }
+
+        // ─── /airmedia/<action> ─────────────────────────────────────────
+
+        private void HandleAirMediaPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_airmedia == null) { ServeJson(args, 503, "{\"error\":\"no airmedia\"}"); return; }
+            var action = sub.Trim('/').ToLowerInvariant();
+            switch (action) {
+                case "start": _airmedia.StartPresentation(); break;
+                case "stop":  _airmedia.StopPresentation();  break;
+                default:      Serve404(args, "airmedia/" + action); return;
+            }
+            DebugTrace.Command("airmedia", action);
+            ServeOk(args);
         }
 
         // ─── helpers ─────────────────────────────────────────────────────
