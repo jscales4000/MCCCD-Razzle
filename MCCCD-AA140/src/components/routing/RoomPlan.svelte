@@ -42,7 +42,7 @@
     d1: 'bottom: 2%; left: 14%; width: 22%; height: 44px;',
     d2: 'bottom: 2%; left: 64%; width: 22%; height: 44px;',
     d3: 'top: 2%; left: 8%; width: 22%; height: 44px;',
-    d4: 'top: 44%; left: 39%; width: 22%; height: 38px;',
+    d4: 'bottom: 32%; left: 39%; width: 22%; height: 38px;',
   };
 
   let micLive = $state(true); // visual hint — could be driven by mic-mute stores later
@@ -59,19 +59,14 @@
     <span class="wall-tag rear">Rear Wall</span>
     <span class="wall-tag front">Front Wall</span>
 
-    <!-- Wall speakers (rear at top, front at bottom) -->
+    <!-- Wall speakers — rear-left aligns with D3, front split by Cam1 -->
     <div class="speaker rl" aria-hidden="true"></div>
-    <div class="speaker rr" aria-hidden="true"></div>
     <div class="speaker fl" aria-hidden="true"></div>
     <div class="speaker fr" aria-hidden="true"></div>
 
     <!-- Cameras: Cam2 at rear (top-center), Cam1 at front (bottom-center) -->
     <div class="cam cam-2" aria-hidden="true">2</div>
     <div class="cam cam-1" aria-hidden="true">1</div>
-
-    <!-- Projectors (ceiling-mounted near the front-of-room projection surfaces) -->
-    <div class="proj p1" aria-hidden="true"><span class="proj-inner">▽</span></div>
-    <div class="proj p2" aria-hidden="true"><span class="proj-inner">▽</span></div>
 
     <!-- Ceiling mic arrays -->
     <div class="mic mxa-a" class:live={micLive} aria-hidden="true">MXA</div>
@@ -194,13 +189,13 @@
     border: 1px solid rgba(56, 189, 248, 0.55);
     border-radius: 2px;
   }
-  /* Rear (top) wall — D3 lives at top-left, so left rear speaker is shorter
-     and offset to make room. Right rear speaker spans most of the top wall. */
-  .speaker.rl { top: 2px;    left: 31%; width: 14%; }
-  .speaker.rr { top: 2px;    right: 8%; width: 36%; }
-  /* Front (bottom) wall — split bar with Cam1 in the middle. */
-  .speaker.fl { bottom: 2px; left: 8%;  width: 30%; }
-  .speaker.fr { bottom: 2px; right: 8%; width: 30%; }
+  /* Rear (top) wall — single rear-left bar that visually aligns with the
+     D3 marker (same left/width). */
+  .speaker.rl { top: 2px;    left: 8%;  width: 22%; }
+  /* Front (bottom) wall — each bar aligns horizontally with its display
+     marker so D1/D2 + their speaker pairs read as a unit. */
+  .speaker.fl { bottom: 2px; left: 14%; width: 22%; }
+  .speaker.fr { bottom: 2px; left: 64%; width: 22%; }
 
   /* Cameras — green pill matching the user's reference image */
   .cam {
@@ -226,26 +221,6 @@
     font-weight: 800;
     margin-right: 2px;
   }
-
-  .proj {
-    position: absolute;
-    width: 26px;
-    height: 26px;
-    background: rgba(56, 189, 248, 0.10);
-    border: 1.5px solid rgba(56, 189, 248, 0.6);
-    transform: rotate(45deg);
-    display: grid;
-    place-items: center;
-  }
-  .proj-inner {
-    transform: rotate(-45deg);
-    font-size: 9px;
-    font-weight: 800;
-    color: rgba(56, 189, 248, 0.95);
-  }
-  /* Projectors mounted near the front-of-room projection surfaces (bottom). */
-  .proj.p1 { bottom: 18%; left: 22%; }
-  .proj.p2 { bottom: 18%; right: 22%; }
 
   .mic {
     position: absolute;
@@ -281,12 +256,11 @@
   .mic.mxa-a { top: 30%; left: 23%; }
   .mic.mxa-b { top: 30%; right: 23%; }
 
-  /* Podium frame — small rounded-rect sitting below the D4 marker. Matches
-     the visual style the user requested (same frame as the old conference
-     table, smaller, centered). */
+  /* Podium frame — rounded rect sitting just below the D4 confidence
+     monitor and close to the front wall (matching the reference image). */
   .podium {
     position: absolute;
-    top: 55%;
+    bottom: 16%;
     left: 41%;
     width: 18%;
     height: 14%;

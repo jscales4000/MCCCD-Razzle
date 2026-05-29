@@ -12,7 +12,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
-  import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
+  import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
   import {
     SOURCES,
@@ -35,6 +35,7 @@
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
   import DisplayStatusCard from '../components/routing/DisplayStatusCard.svelte';
+  import AppFooter from '../components/AppFooter.svelte';
 
   // ── Source-value (1..4) ↔ SourceId map ─────────────────────────────────
   const VALUE_TO_SOURCE: Record<number, SourceId> = {
@@ -150,18 +151,6 @@
     closePopover();
   }
 
-  // ── Footer quick routes ────────────────────────────────────────────────
-  function routeAllTo(value: 1 | 2 | 3 | 4 | 0) {
-    publishAnalog(SIGNALS.display1Source, value);
-    publishAnalog(SIGNALS.display2Source, value);
-    publishAnalog(SIGNALS.display3Source, value);
-    publishAnalog(SIGNALS.display4Source, value);
-  }
-  function routeRoomPcAll() { routeAllTo(1); }
-  function routeAirMediaAll() { routeAllTo(3); }
-  function mirrorAll() { pulseDigital(SIGNALS.mirrorAllSame); }
-  function clearAll() { routeAllTo(0); }
-
   onMount(() => {
     document.addEventListener('pointerdown', onDocPointerDown);
     return () => document.removeEventListener('pointerdown', onDocPointerDown);
@@ -273,37 +262,7 @@
     </aside>
   </div>
 
-  <!-- FOOTER ──────────────────────────────────────────────────────────── -->
-  <footer class="routing-footer">
-    <span class="f-label">Quick Routes</span>
-    <button class="route-all" onclick={routeRoomPcAll} type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <rect x="2" y="3" width="20" height="14" rx="2"/>
-        <path d="M8 21h8M12 17v4"/>
-      </svg>
-      Room PC → All
-    </button>
-    <button class="route-all" onclick={routeAirMediaAll} type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
-      </svg>
-      AirMedia → All
-    </button>
-    <button class="route-all" onclick={mirrorAll} type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 3v18"/>
-      </svg>
-      Mirror All
-    </button>
-    <div class="fsp"></div>
-    <button class="clear-btn" onclick={clearAll} type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14H6L5 6"/>
-      </svg>
-      Clear All Routes
-    </button>
-  </footer>
+  <AppFooter />
 </div>
 
 <style>
@@ -311,7 +270,8 @@
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-rows: 60px 1fr 76px;
+    /* Footer row sized for AppFooter (mics min-height 96px + chrome). */
+    grid-template-rows: 60px 1fr 124px;
     gap: 10px;
     padding: 10px;
     box-sizing: border-box;
@@ -502,63 +462,8 @@
     line-height: 1.4;
   }
 
-  /* ── Footer ──────────────────────────────────────────────────────────── */
-  .routing-footer {
-    background: var(--color-panel);
-    border: 0.5px solid var(--color-border);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 12px;
-  }
-
-  .f-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-copy-muted);
-  }
-
-  .route-all {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 16px;
-    border-radius: 9px;
-    background: rgba(245, 166, 35, 0.10);
-    border: 0.5px solid rgba(245, 166, 35, 0.28);
-    color: var(--color-accent);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 120ms ease;
-    font-family: inherit;
-  }
-  .route-all:hover { background: rgba(245, 166, 35, 0.20); }
-
-  .fsp { flex: 1; }
-
-  .clear-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 16px;
-    border-radius: 9px;
-    background: rgba(239, 68, 68, 0.10);
-    border: 0.5px solid rgba(239, 68, 68, 0.25);
-    color: #fca5a5;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 120ms ease;
-    font-family: inherit;
-  }
-  .clear-btn:hover { background: rgba(239, 68, 68, 0.18); }
-
   @media (prefers-reduced-motion: reduce) {
     .auto-dot.on { animation: none; }
-    .back-btn, .mode-btn, .auto-chip, .route-all, .clear-btn { transition: none; }
+    .back-btn, .mode-btn, .auto-chip { transition: none; }
   }
 </style>
