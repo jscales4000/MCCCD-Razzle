@@ -179,10 +179,33 @@
 
     <!-- Live log -->
     <section class="card wide" id="log-card">
-      <h2>Live Log
-        <button id="log-clear" class="btn small">clear</button>
-        <label class="muted small"><input id="log-pause" type="checkbox"/> pause</label>
-      </h2>
+      <div class="log-hdr">
+        <div class="log-titlebar">
+          <h2>Live Log</h2>
+          <div class="log-meta">
+            <span id="log-count-total">0</span> events · <span id="log-count-visible">0</span> visible
+            <button id="log-clear" class="btn small">clear</button>
+            <button id="log-copy"  class="btn small">copy</button>
+          </div>
+        </div>
+
+        <div class="log-chips">
+          <span class="chip-group-label">type</span>
+          <div id="log-chips-type" class="chips"></div>
+        </div>
+
+        <div class="log-chips">
+          <span class="chip-group-label">device</span>
+          <div id="log-chips-device" class="chips"></div>
+        </div>
+
+        <div class="log-controls">
+          <input id="log-search" type="text" placeholder="search…" autocomplete="off" spellcheck="false"/>
+          <button id="log-scroll-lock" class="btn small">▶ live</button>
+          <button id="log-jump" class="btn small" hidden>↓ jump to bottom</button>
+        </div>
+      </div>
+
       <div id="log-body" class="log-body"></div>
     </section>
 
