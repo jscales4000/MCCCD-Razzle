@@ -48,8 +48,33 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); fon
 .btn.warn  { background: rgba(248, 113, 113, 0.10); border-color: rgba(248, 113, 113, 0.30); }
 .btn.warn:hover { background: rgba(248, 113, 113, 0.25); }
 
+/* STATUS BADGES + DEV DETAIL */
+.dev-badge { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: rgba(148, 163, 184, 0.40); margin-left: 8px; vertical-align: middle; transition: background 200ms, box-shadow 200ms; }
+.dev-badge.online  { background: var(--good); box-shadow: 0 0 6px rgba(52, 211, 153, 0.55); }
+.dev-badge.offline { background: var(--bad); }
+.dev-badge.warn    { background: var(--warn); }
+
+.dev-detail { font-size: 11px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, monospace; margin-top: 6px; word-break: break-all; line-height: 1.5; }
+.dev-detail:empty { display: none; }
+.dev-detail .k { color: var(--fg); }
+.dev-detail .sep { color: rgba(148, 163, 184, 0.4); margin: 0 4px; }
+.dev-detail .err { color: var(--bad); }
+
+/* NVX ROUTING CARD */
+#nvx-card table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+#nvx-card th { text-align: left; font-weight: 600; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+#nvx-card td { padding: 6px 8px; border-bottom: 1px solid rgba(148, 163, 184, 0.08); font-family: ui-monospace, SFMono-Regular, monospace; }
+#nvx-card td.state { font-weight: 600; }
+#nvx-card td.state.online  { color: var(--good); }
+#nvx-card td.state.offline { color: var(--bad); }
+#nvx-card td.state.unknown { color: var(--muted); }
+#nvx-card td.url  { color: var(--accent); word-break: break-all; max-width: 320px; }
+#nvx-card td.src  { color: var(--fg); }
+#nvx-card td.ip, #nvx-card td.mcast { color: var(--muted); }
+#nvx-card h3 { margin: 18px 0 6px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+
 /* DEVICES */
-.devices-body { display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px 14px; align-items: center; }
+.devices-body { display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 8px 14px; align-items: center; }
 .devices-body .dev-name  { font-weight: 600; }
 .devices-body .dev-ip    { background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; width: 100%; min-width: 140px; }
 .devices-body .dev-ip:focus { outline: none; border-color: var(--accent); }

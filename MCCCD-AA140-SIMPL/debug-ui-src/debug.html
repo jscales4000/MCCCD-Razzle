@@ -35,9 +35,33 @@
       </div>
     </section>
 
+    <!-- NVX routing -->
+    <section class="card wide" id="nvx-card">
+      <h2>NVX Routing</h2>
+      <table class="nvx-route-table">
+        <thead><tr><th>Decoder</th><th>State</th><th>Source</th><th>URL</th></tr></thead>
+        <tbody>
+          <tr data-dec="nvx-d1"><td>D1</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td></tr>
+          <tr data-dec="nvx-d2"><td>D2</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td></tr>
+          <tr data-dec="nvx-d3"><td>D3</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td></tr>
+        </tbody>
+      </table>
+      <h3 class="muted">Encoders</h3>
+      <table class="nvx-encoder-table">
+        <thead><tr><th>Encoder</th><th>State</th><th>IP</th><th>Multicast</th></tr></thead>
+        <tbody>
+          <tr data-enc="nvx-roompc"><td>RoomPC</td><td class="state unknown">—</td><td class="ip">—</td><td class="mcast">—</td></tr>
+          <tr data-enc="nvx-extpc"><td>ExtPC</td><td class="state unknown">—</td><td class="ip">—</td><td class="mcast">—</td></tr>
+          <tr data-enc="nvx-airmedia"><td>AirMedia</td><td class="state unknown">—</td><td class="ip">—</td><td class="mcast">—</td></tr>
+          <tr data-enc="nvx-nvx-384"><td>NVX-384</td><td class="state unknown">—</td><td class="ip">—</td><td class="mcast">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
     <!-- Audio master + mic mutes/trims -->
     <section class="card wide" id="audio-card">
-      <h2>Audio (Shure P300)</h2>
+      <h2>Audio (Shure P300)<span class="dev-badge" data-key="p300"></span></h2>
+      <div class="dev-detail" id="audio-detail"></div>
 
       <div class="row">
         <button class="btn" data-audio="vol-down">Vol −</button>
@@ -87,7 +111,8 @@
       <div class="cam-grid">
 
         <div class="cam-panel" data-cam="1">
-          <h3>Camera 1 <span class="muted small" data-cam-ip>—</span></h3>
+          <h3>Camera 1 <span class="muted small" data-cam-ip>—</span><span class="dev-badge" data-key="cam-1"></span></h3>
+          <div class="dev-detail" data-cam-detail="1"></div>
           <div class="ptz">
             <div></div>
             <button data-act="ptz" data-dir="up">▲</button>
@@ -131,7 +156,8 @@
         </div>
 
         <div class="cam-panel" data-cam="2">
-          <h3>Camera 2 <span class="muted small" data-cam-ip>—</span></h3>
+          <h3>Camera 2 <span class="muted small" data-cam-ip>—</span><span class="dev-badge" data-key="cam-2"></span></h3>
+          <div class="dev-detail" data-cam-detail="2"></div>
           <div class="ptz">
             <div></div>
             <button data-act="ptz" data-dir="up">▲</button>

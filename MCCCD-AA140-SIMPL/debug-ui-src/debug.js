@@ -24,6 +24,26 @@
 
   var TYPE_LIST = ["sig_change", "command", "response", "error", "lifecycle", "state_change"];
 
+  // Phase 3 — observability state derived from /events stream.
+  // online: null=unknown, true=connected, false=disconnected/error.
+  var deviceStatus = Object.create(null);
+  var deviceCmds   = Object.create(null);   // {device: {lastCommand, lastResponse}}
+  var encoderIps   = Object.create(null);   // {ip: sourceIndex}
+  var SRC_LABELS   = { 0: "—", 1: "RoomPC", 2: "ExtPC", 3: "AirMedia", 4: "NVX-384" };
+  var MCAST_TO_SRC = {
+    "239.8.0.0":  1,
+    "239.8.0.4":  2,
+    "239.8.0.8":  3,
+    "239.8.0.12": 4,
+  };
+  // device key prefix → which encoder label maps to which source index
+  var ENC_LABEL_TO_SRC = {
+    "nvx-roompc":   1,
+    "nvx-extpc":    2,
+    "nvx-airmedia": 3,
+    "nvx-nvx-384":  4,
+  };
+
   // ─── DOM ───────────────────────────────────────────────────────────
   var $pollStatus    = document.getElementById("poll-status");
   var $pollCur       = document.getElementById("poll-cur");
@@ -100,11 +120,176 @@
         deviceFilters.add(d);  // default: ON for any newly-seen device
         newDevices = true;
       }
+      updateDeviceStatus(ev);
       eventsAll.push(ev);
     }
     while (eventsAll.length > MAX_EVENTS) eventsAll.shift();
     renderChips(newDevices);
+    renderStatus();
     $logCountTotal.textContent = eventsAll.length;
+  }
+
+  // ─── Phase 3 — observability state + render ────────────────────────
+  function ensureStatus(key) {
+    var s = deviceStatus[key];
+    if (!s) { s = { online: null }; deviceStatus[key] = s; }
+    return s;
+  }
+
+  function updateDeviceStatus(ev) {
+    var t = ev.eventType;
+    var dat = ev.data || {};
+    var devKey = dat.device || ev.device;   // most lifecycle events tuck device into data
+    var ts = ev.timestamp;
+
+    if (t === "system") {
+      var msg = dat.message;
+      if (!msg) return;
+      if (msg === "device_connected") {
+        var s = ensureStatus(devKey);
+        s.online = true; s.host = dat.host; s.lastEventTs = ts; s.lastEventType = msg;
+        s.lastError = null;
+      } else if (msg === "device_connect_failed") {
+        var s = ensureStatus(devKey);
+        s.online = false; s.host = dat.host; s.lastEventTs = ts; s.lastEventType = msg;
+        s.lastError = "connect failed: " + dat.status + " (attempt " + dat.attempt + ")";
+      } else if (msg === "device_socket_change") {
+        var s = ensureStatus(devKey);
+        s.online = false; s.lastEventTs = ts; s.lastEventType = msg;
+        s.lastError = "socket: " + dat.status;
+      } else if (msg === "nvx_encoder_online_change") {
+        var s = ensureStatus(devKey);
+        s.online = !!dat.online; s.mcast = dat.mcast; s.lastEventTs = ts;
+      } else if (msg === "nvx_decoder_online_change") {
+        var s = ensureStatus(devKey);
+        s.online = !!dat.online; s.lastEventTs = ts;
+      } else if (msg === "nvx_route_change") {
+        var s = ensureStatus(devKey);
+        s.routeUrl = dat.url;
+        s.routeSrc = urlToSourceIndex(dat.url);
+        s.lastEventTs = ts;
+      } else if (msg === "nvx_ip_resolved") {
+        var s = ensureStatus(devKey);
+        s.ip = dat.ip; s.lastEventTs = ts;
+        var srcIdx = ENC_LABEL_TO_SRC[devKey];
+        if (srcIdx && dat.ip) encoderIps[dat.ip] = srcIdx;
+        // Re-resolve any existing decoder route URLs that may have been pre-resolution
+        for (var k in deviceStatus) {
+          if (k.indexOf("nvx-d") === 0 && deviceStatus[k].routeUrl) {
+            deviceStatus[k].routeSrc = urlToSourceIndex(deviceStatus[k].routeUrl);
+          }
+        }
+      }
+    } else if (t === "command") {
+      if (!devKey) return;
+      if (!deviceCmds[devKey]) deviceCmds[devKey] = {};
+      deviceCmds[devKey].lastCommand = { method: dat.method, ts: ts, corrId: ev.correlationId };
+    } else if (t === "response") {
+      if (!devKey) return;
+      if (!deviceCmds[devKey]) deviceCmds[devKey] = {};
+      deviceCmds[devKey].lastResponse = { raw: dat.raw, ts: ts, corrId: ev.correlationId };
+    } else if (t === "error") {
+      if (!devKey) return;
+      var s = ensureStatus(devKey);
+      s.lastError = dat.message;
+      s.lastErrorTs = ts;
+    }
+  }
+
+  function urlToSourceIndex(url) {
+    if (!url) return 0;
+    for (var mc in MCAST_TO_SRC) {
+      if (url.indexOf(mc + ":") >= 0) return MCAST_TO_SRC[mc];
+    }
+    for (var ip in encoderIps) {
+      if (url.indexOf(ip + ":") >= 0) return encoderIps[ip];
+    }
+    return 0;
+  }
+
+  function renderStatus() {
+    // Badges
+    var badges = document.querySelectorAll(".dev-badge[data-key]");
+    for (var i = 0; i < badges.length; i++) {
+      var key = badges[i].getAttribute("data-key");
+      badges[i].className = "dev-badge " + badgeStateClass(key);
+      badges[i].title = badgeTitle(key);
+    }
+
+    // NVX decoder rows
+    ["nvx-d1","nvx-d2","nvx-d3"].forEach(function (k) {
+      var row = document.querySelector('[data-dec="' + k + '"]');
+      if (!row) return;
+      var s = deviceStatus[k] || {};
+      var stateCell = row.querySelector(".state");
+      var srcCell   = row.querySelector(".src");
+      var urlCell   = row.querySelector(".url");
+      stateCell.className = "state " + (s.online === true ? "online" : s.online === false ? "offline" : "unknown");
+      stateCell.textContent = s.online === true ? "online" : s.online === false ? "offline" : "—";
+      srcCell.textContent = s.routeSrc ? (s.routeSrc + " · " + SRC_LABELS[s.routeSrc]) : "—";
+      urlCell.textContent = s.routeUrl || "—";
+    });
+
+    // NVX encoder rows
+    Object.keys(ENC_LABEL_TO_SRC).forEach(function (k) {
+      var row = document.querySelector('[data-enc="' + k + '"]');
+      if (!row) return;
+      var s = deviceStatus[k] || {};
+      var stateCell = row.querySelector(".state");
+      var ipCell    = row.querySelector(".ip");
+      var mcCell    = row.querySelector(".mcast");
+      stateCell.className = "state " + (s.online === true ? "online" : s.online === false ? "offline" : "unknown");
+      stateCell.textContent = s.online === true ? "online" : s.online === false ? "offline" : "—";
+      ipCell.textContent = s.ip || "—";
+      mcCell.textContent = s.mcast || "—";
+    });
+
+    // Audio (P300) detail line: last cmd / last resp / last error
+    var $audio = document.getElementById("audio-detail");
+    if ($audio) {
+      $audio.innerHTML = renderDevDetail("p300");
+    }
+
+    // Camera detail lines
+    [1, 2].forEach(function (n) {
+      var el = document.querySelector('[data-cam-detail="' + n + '"]');
+      if (!el) return;
+      el.innerHTML = renderDevDetail("cam-" + n);
+    });
+  }
+
+  function renderDevDetail(devKey) {
+    var s = deviceStatus[devKey] || {};
+    var cmds = deviceCmds[devKey] || {};
+    var parts = [];
+    if (cmds.lastCommand) {
+      parts.push('<span class="k">last cmd:</span> ' + escapeHtml(cmds.lastCommand.method || "?") +
+        (cmds.lastCommand.corrId ? " (" + escapeHtml(cmds.lastCommand.corrId) + ")" : ""));
+    }
+    if (cmds.lastResponse) {
+      parts.push('<span class="k">last resp:</span> ' + escapeHtml(String(cmds.lastResponse.raw || "")));
+    }
+    if (s.lastError) {
+      parts.push('<span class="err">err: ' + escapeHtml(s.lastError) + '</span>');
+    }
+    return parts.length ? parts.join('<span class="sep">·</span>') : "";
+  }
+
+  function badgeStateClass(key) {
+    var s = deviceStatus[key];
+    if (!s || s.online == null) return "";
+    return s.online ? "online" : "offline";
+  }
+
+  function badgeTitle(key) {
+    var s = deviceStatus[key];
+    if (!s) return key + ": unknown";
+    var parts = [key];
+    if (s.online === true)  parts.push("online");
+    if (s.online === false) parts.push("offline");
+    if (s.host)             parts.push("host=" + s.host);
+    if (s.lastError)        parts.push("err=" + s.lastError);
+    return parts.join(" · ");
   }
 
   // ─── Chip rows ─────────────────────────────────────────────────────
@@ -417,10 +602,16 @@
       statusEl.className = "dev-status " + (d.enabled ? "ok" : "off");
       statusEl.textContent = d.enabled ? "enabled" : "disabled";
 
+      var badgeEl = document.createElement("span");
+      badgeEl.className = "dev-badge";
+      badgeEl.setAttribute("data-key", key);
+      badgeEl.style.marginLeft = "0";   // grid cell handles spacing
+
       $devicesBody.appendChild(nameEl);
       $devicesBody.appendChild(ipEl);
       $devicesBody.appendChild(togEl);
       $devicesBody.appendChild(statusEl);
+      $devicesBody.appendChild(badgeEl);
 
       // For cameras, also update the camera-panel header IP label.
       if (key === "cam-1" || key === "cam-2") {
@@ -429,6 +620,7 @@
         if (ipLabel) ipLabel.textContent = d.host || "—";
       }
     });
+    renderStatus();
   }
 
   function postDeviceUpdate(key, fields) {
