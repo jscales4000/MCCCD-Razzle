@@ -23,6 +23,7 @@ namespace MCCCD_AA140
         private const uint IPID_D30_DISP1     = 0x21;
         private const uint IPID_D30_DISP2     = 0x22;
         private const uint IPID_D30_DISP3     = 0x23;
+        private const uint IPID_D30_DISP4     = 0x24;  // podium confidence monitor
 
         // Video multicast block: 239.8.0.x, EVEN addresses spaced by 4 per NVX rules.
         // AES67 NAX audio rides the adjacent ODD address (configured via Q-SYS / Core).
@@ -41,19 +42,20 @@ namespace MCCCD_AA140
         private DmNvxD30 _decDisp1;
         private DmNvxD30 _decDisp2;
         private DmNvxD30 _decDisp3;
+        private DmNvxD30 _decDisp4;
 
         // Source index 1..4 -> encoder stream URL. Pre-populated from the fixed
         // multicast block at Initialize() so routing doesn't depend on online timing.
         private string[] _sourceStreamUrls = new string[5];
 
         // Per-display pending URL — cached so we can re-apply the requested route
-        // once a decoder transitions from OFFLINE to ONLINE. Indices 1..3.
-        private string[] _pendingUrl = new string[4];
+        // once a decoder transitions from OFFLINE to ONLINE. Indices 1..4.
+        private string[] _pendingUrl = new string[5];
 
         // Tracks whether the receiver-side config (SessionInitiation / EnableAuto /
         // initial ServerUrl write) has succeeded for each decoder. Used by the
         // BaseEvent-driven retry so we stop attempting once it works.
-        private bool[] _rxConfigured = new bool[4];
+        private bool[] _rxConfigured = new bool[5];
 
         public NvxRoutingService(Contract c, CrestronControlSystem cs)
         {
@@ -91,14 +93,17 @@ namespace MCCCD_AA140
             _decDisp1 = new DmNvxD30(IPID_D30_DISP1, _cs);
             _decDisp2 = new DmNvxD30(IPID_D30_DISP2, _cs);
             _decDisp3 = new DmNvxD30(IPID_D30_DISP3, _cs);
+            _decDisp4 = new DmNvxD30(IPID_D30_DISP4, _cs);
 
             _decDisp1.Register();
             _decDisp2.Register();
             _decDisp3.Register();
+            _decDisp4.Register();
 
             WireDecoderOnline(_decDisp1, 1);
             WireDecoderOnline(_decDisp2, 2);
             WireDecoderOnline(_decDisp3, 3);
+            WireDecoderOnline(_decDisp4, 4);
 
             // TODO Stage B: wire HDMI sink-connected feedback to drive DisplayNPowerFb.
             // _decDispN.HdmiOut.SinkConnectedFeedback.OutputChange += ...
@@ -114,6 +119,9 @@ namespace MCCCD_AA140
                 RouteSourceToDisplay((ushort)args.SigArgs.Sig.UShortValue, 2);
             _c.AA140.Display3SourceFb += (sender, args) =>
                 RouteSourceToDisplay((ushort)args.SigArgs.Sig.UShortValue, 3);
+            // D4 has no Contract Editor wrapper — Main.g.cs was last regenerated
+            // before the Display4 signals were added, and the SystemPowerController
+            // OnUShort handler is the active path for D4 anyway.
 
             // Mirror buttons: the rebuilt .cce has D1MirrorToD3/D2MirrorToD3 only on
             // the INPUT (SIMPL→panel) direction — there's no matching OUTPUT-direction
@@ -243,7 +251,7 @@ namespace MCCCD_AA140
         private void ReapplyRoutesForSource(string oldUrl, string newUrl)
         {
             if (oldUrl == newUrl) return;
-            for (int d = 1; d <= 3; d++) {
+            for (int d = 1; d <= 4; d++) {
                 if (_pendingUrl[d] != oldUrl) continue;
                 _pendingUrl[d] = newUrl;
                 var dec = GetDecoder(d);
@@ -317,6 +325,8 @@ namespace MCCCD_AA140
 
             // Drive the SIMPL→panel "active source" feedback. In the new Contract
             // Editor API, the SIMPL drive is exposed as a method taking a callback.
+            // (D4 omitted — SystemPowerController writes Display4SourceFb via
+            // PanelDispatcher; Main.g.cs hasn't been regenerated to expose D4.)
             switch (displayNum) {
                 case 1: _c.AA140.Display1Source((sig, m) => sig.UShortValue = srcIndex); break;
                 case 2: _c.AA140.Display2Source((sig, m) => sig.UShortValue = srcIndex); break;
@@ -384,6 +394,7 @@ namespace MCCCD_AA140
                 case 1: return _decDisp1;
                 case 2: return _decDisp2;
                 case 3: return _decDisp3;
+                case 4: return _decDisp4;
                 default: return null;
             }
         }

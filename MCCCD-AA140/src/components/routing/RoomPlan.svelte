@@ -33,12 +33,16 @@
 
   let { displays, openDisplay, onMarkerTap }: Props = $props();
 
-  // Position metadata per display, keyed by id. Tuned to read as ceiling-mounted
-  // surfaces in the same orientation as the user's reference image.
+  // Position metadata per display, keyed by id. Layout matches the user's
+  // reference image (2026-05-29): front of room at the BOTTOM of the diagram
+  // (D1/D2 projection surfaces on the bottom wall), rear at the TOP (D3
+  // Newline at top-left), D4 podium confidence monitor centered just above
+  // the podium frame.
   const MARKER_POS: Record<DisplayId, string> = {
-    d1: 'top: 2%; left: 14%; width: 22%; height: 44px;',
-    d2: 'top: 2%; left: 64%; width: 22%; height: 44px;',
-    d3: 'bottom: 2%; left: 38%; width: 24%; height: 48px;',
+    d1: 'bottom: 2%; left: 14%; width: 22%; height: 44px;',
+    d2: 'bottom: 2%; left: 64%; width: 22%; height: 44px;',
+    d3: 'top: 2%; left: 8%; width: 22%; height: 44px;',
+    d4: 'top: 44%; left: 39%; width: 22%; height: 38px;',
   };
 
   let micLive = $state(true); // visual hint — could be driven by mic-mute stores later
@@ -52,20 +56,20 @@
   </span>
 
   <div class="plan">
-    <span class="wall-tag front">Front Wall</span>
     <span class="wall-tag rear">Rear Wall</span>
+    <span class="wall-tag front">Front Wall</span>
 
-    <!-- Wall speakers -->
-    <div class="speaker fl" aria-hidden="true"></div>
-    <div class="speaker fr" aria-hidden="true"></div>
+    <!-- Wall speakers (rear at top, front at bottom) -->
     <div class="speaker rl" aria-hidden="true"></div>
     <div class="speaker rr" aria-hidden="true"></div>
+    <div class="speaker fl" aria-hidden="true"></div>
+    <div class="speaker fr" aria-hidden="true"></div>
 
-    <!-- Cameras -->
-    <div class="cam cam-a" aria-hidden="true">A</div>
-    <div class="cam cam-b" aria-hidden="true">B</div>
+    <!-- Cameras: Cam2 at rear (top-center), Cam1 at front (bottom-center) -->
+    <div class="cam cam-2" aria-hidden="true">2</div>
+    <div class="cam cam-1" aria-hidden="true">1</div>
 
-    <!-- Projectors -->
+    <!-- Projectors (ceiling-mounted near the front-of-room projection surfaces) -->
     <div class="proj p1" aria-hidden="true"><span class="proj-inner">▽</span></div>
     <div class="proj p2" aria-hidden="true"><span class="proj-inner">▽</span></div>
 
@@ -73,8 +77,8 @@
     <div class="mic mxa-a" class:live={micLive} aria-hidden="true">MXA</div>
     <div class="mic mxa-b" class:live={micLive} aria-hidden="true">MXA</div>
 
-    <!-- Conference table -->
-    <div class="table" aria-hidden="true">Conference Table</div>
+    <!-- Podium frame (where D4 confidence monitor lives) -->
+    <div class="podium" aria-hidden="true">Podium</div>
 
     <!-- Displays -->
     {#each displays as d (d.id)}
@@ -170,12 +174,14 @@
     color: var(--color-copy-muted);
     pointer-events: none;
   }
-  .wall-tag.front {
+  /* In the new orientation, front-of-room is at the BOTTOM of the diagram,
+     rear at the TOP. */
+  .wall-tag.rear {
     top: -22px;
     left: 50%;
     transform: translateX(-50%);
   }
-  .wall-tag.rear {
+  .wall-tag.front {
     bottom: -22px;
     left: 50%;
     transform: translateX(-50%);
@@ -188,26 +194,38 @@
     border: 1px solid rgba(56, 189, 248, 0.55);
     border-radius: 2px;
   }
-  .speaker.fl { top: 2px;    left: 8%;  width: 25%; }
-  .speaker.fr { top: 2px;    right: 8%; width: 25%; }
-  .speaker.rl { bottom: 2px; left: 8%;  width: 25%; }
-  .speaker.rr { bottom: 2px; right: 8%; width: 25%; }
+  /* Rear (top) wall — D3 lives at top-left, so left rear speaker is shorter
+     and offset to make room. Right rear speaker spans most of the top wall. */
+  .speaker.rl { top: 2px;    left: 31%; width: 14%; }
+  .speaker.rr { top: 2px;    right: 8%; width: 36%; }
+  /* Front (bottom) wall — split bar with Cam1 in the middle. */
+  .speaker.fl { bottom: 2px; left: 8%;  width: 30%; }
+  .speaker.fr { bottom: 2px; right: 8%; width: 30%; }
 
+  /* Cameras — green pill matching the user's reference image */
   .cam {
     position: absolute;
-    width: 22px;
-    height: 22px;
-    background: rgba(168, 85, 247, 0.18);
-    border: 1.2px solid rgba(168, 85, 247, 0.55);
-    border-radius: 50%;
+    width: 38px;
+    height: 30px;
+    background: rgba(120, 200, 130, 0.20);
+    border: 1.5px solid rgba(120, 200, 130, 0.7);
+    border-radius: 6px;
     display: grid;
     place-items: center;
-    color: rgba(216, 180, 254, 0.95);
-    font-size: 8px;
+    color: rgba(190, 240, 200, 0.95);
+    font-size: 10px;
     font-weight: 800;
   }
-  .cam.cam-a { top: 11%; left: 38%; }
-  .cam.cam-b { top: 11%; right: 38%; }
+  /* Cam1 at the front (bottom-center, straddling the front wall) */
+  .cam.cam-1 { bottom: -10px; left: 50%; transform: translateX(-50%); }
+  /* Cam2 at the rear (top-center, just inside the rear wall) */
+  .cam.cam-2 { top: 5%; left: 50%; transform: translateX(-50%); }
+  .cam::before {
+    content: 'Cam';
+    font-size: 9px;
+    font-weight: 800;
+    margin-right: 2px;
+  }
 
   .proj {
     position: absolute;
@@ -225,8 +243,9 @@
     font-weight: 800;
     color: rgba(56, 189, 248, 0.95);
   }
-  .proj.p1 { top: 20%; left: 30%; }
-  .proj.p2 { top: 20%; left: 64%; }
+  /* Projectors mounted near the front-of-room projection surfaces (bottom). */
+  .proj.p1 { bottom: 18%; left: 22%; }
+  .proj.p2 { bottom: 18%; right: 22%; }
 
   .mic {
     position: absolute;
@@ -262,21 +281,24 @@
   .mic.mxa-a { top: 30%; left: 23%; }
   .mic.mxa-b { top: 30%; right: 23%; }
 
-  .table {
+  /* Podium frame — small rounded-rect sitting below the D4 marker. Matches
+     the visual style the user requested (same frame as the old conference
+     table, smaller, centered). */
+  .podium {
     position: absolute;
-    top: 40%;
-    left: 28%;
-    width: 44%;
-    height: 22%;
-    border: 1px dashed rgba(148, 163, 184, 0.4);
-    border-radius: 80px;
+    top: 55%;
+    left: 41%;
+    width: 18%;
+    height: 14%;
+    border: 1.5px solid rgba(148, 163, 184, 0.55);
+    border-radius: 14px;
     display: grid;
     place-items: center;
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--color-copy-muted);
+    color: rgba(245, 166, 35, 0.7);
     pointer-events: none;
   }
 </style>

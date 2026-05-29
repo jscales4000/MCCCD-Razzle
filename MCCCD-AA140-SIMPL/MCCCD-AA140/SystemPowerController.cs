@@ -17,9 +17,12 @@ namespace MCCCD_AA140
 
         private bool _systemOn;
 
-        // Last-known sources before shutdown — restored on power-on
+        // Last-known sources before shutdown — restored on power-on.
+        // D3 tracks the user's runtime selection so D4 (podium confidence monitor)
+        // can default to D3's source on PowerUp.
         private ushort _lastD1 = 1;
         private ushort _lastD2 = 1;
+        private ushort _lastD3 = 1;
 
         public SystemPowerController(PanelDispatcher panel, NvxRoutingService nvx, CrestronControlSystem cs)
         {
@@ -60,8 +63,16 @@ namespace MCCCD_AA140
                 _panel.WriteUShort(PanelJoins.UShortIn.Display2SourceFb, v);
             });
             _panel.OnUShort(PanelJoins.UShortOut.Display3Source, v => {
+                _lastD3 = v;
                 _nvx.RouteSourceToDisplay(v, 3);
                 _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, v);
+            });
+            // D4 (podium confidence monitor) — independently routable. PowerUp
+            // seeds it to D3's source so the presenter sees the rear-of-room
+            // display by default.
+            _panel.OnUShort(PanelJoins.UShortOut.Display4Source, v => {
+                _nvx.RouteSourceToDisplay(v, 4);
+                _panel.WriteUShort(PanelJoins.UShortIn.Display4SourceFb, v);
             });
         }
 
@@ -74,13 +85,20 @@ namespace MCCCD_AA140
             _panel.WriteBool(PanelJoins.BoolIn.Display1PowerFb, true);
             _panel.WriteBool(PanelJoins.BoolIn.Display2PowerFb, true);
             _panel.WriteBool(PanelJoins.BoolIn.Display3PowerFb, true);
+            _panel.WriteBool(PanelJoins.BoolIn.Display4PowerFb, true);
 
             // Restore last-active sources to D1, D2
             _nvx.RouteSourceToDisplay(_lastD1, 1);
             _nvx.RouteSourceToDisplay(_lastD2, 2);
 
-            // D3 boot init: one-shot copy from D2 (per design spec section 6 / 9)
-            _nvx.RouteSourceToDisplay(_lastD2, 3);
+            // D3 boot init: one-shot copy from D2 (per design spec section 6 / 9).
+            // Update _lastD3 so D4's default-to-D3 logic below sees the right value.
+            _lastD3 = _lastD2;
+            _nvx.RouteSourceToDisplay(_lastD3, 3);
+
+            // D4 (podium confidence monitor): default to D3's source on PowerUp
+            // so the presenter sees what the rear-of-room display shows.
+            _nvx.RouteSourceToDisplay(_lastD3, 4);
 
             // Drive source feedbacks via PanelDispatcher so the panel markers
             // reflect the restored state on power-on. The Contract Editor write
@@ -88,7 +106,8 @@ namespace MCCCD_AA140
             // PanelJoins docstring.
             _panel.WriteUShort(PanelJoins.UShortIn.Display1SourceFb, _lastD1);
             _panel.WriteUShort(PanelJoins.UShortIn.Display2SourceFb, _lastD2);
-            _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, _lastD2);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, _lastD3);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display4SourceFb, _lastD3);
 
             // Audio defaults to D1.
             _panel.WriteUShort(PanelJoins.UShortIn.AudioOutputSelectFb, 1);
@@ -103,16 +122,19 @@ namespace MCCCD_AA140
             _panel.WriteBool(PanelJoins.BoolIn.Display1PowerFb, false);
             _panel.WriteBool(PanelJoins.BoolIn.Display2PowerFb, false);
             _panel.WriteBool(PanelJoins.BoolIn.Display3PowerFb, false);
+            _panel.WriteBool(PanelJoins.BoolIn.Display4PowerFb, false);
 
             // Clear all decoder routes
             _nvx.RouteSourceToDisplay(0, 1);
             _nvx.RouteSourceToDisplay(0, 2);
             _nvx.RouteSourceToDisplay(0, 3);
+            _nvx.RouteSourceToDisplay(0, 4);
 
             // Clear source feedbacks via PanelDispatcher so the markers go gray.
             _panel.WriteUShort(PanelJoins.UShortIn.Display1SourceFb, 0);
             _panel.WriteUShort(PanelJoins.UShortIn.Display2SourceFb, 0);
             _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, 0);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display4SourceFb, 0);
         }
     }
 }

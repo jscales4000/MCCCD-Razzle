@@ -25,9 +25,11 @@
     display1PowerFb,
     display2PowerFb,
     display3PowerFb,
+    display4PowerFb,
     display1SourceFb,
     display2SourceFb,
     display3SourceFb,
+    display4SourceFb,
     routingModeFb,
   } from '../lib/stores/signals';
   import RoomPlan from '../components/routing/RoomPlan.svelte';
@@ -50,6 +52,7 @@
     { id: 'd1' as DisplayId, label: 'Front Left',  spec: 'Sony VPL · 100" Projection' },
     { id: 'd2' as DisplayId, label: 'Front Right', spec: 'Sony VPL · 100" Projection' },
     { id: 'd3' as DisplayId, label: 'Rear Newline', spec: 'Newline 86" · Interactive' },
+    { id: 'd4' as DisplayId, label: 'Podium',      spec: 'Confidence · Defaults to D3' },
   ];
 
   // ── Reactive merged view: meta + live source/power feedback ───────────
@@ -57,11 +60,13 @@
     ...m,
     activeSource: srcFromFb(
       m.id === 'd1' ? $display1SourceFb :
-      m.id === 'd2' ? $display2SourceFb : $display3SourceFb
+      m.id === 'd2' ? $display2SourceFb :
+      m.id === 'd3' ? $display3SourceFb : $display4SourceFb
     ),
     powerOn:
       m.id === 'd1' ? $display1PowerFb :
-      m.id === 'd2' ? $display2PowerFb : $display3PowerFb,
+      m.id === 'd2' ? $display2PowerFb :
+      m.id === 'd3' ? $display3PowerFb : $display4PowerFb,
   })));
 
   // ── Popover state ──────────────────────────────────────────────────────
@@ -130,7 +135,8 @@
     if (!openDisplay) return;
     const sig =
       openDisplay === 'd1' ? SIGNALS.display1Source :
-      openDisplay === 'd2' ? SIGNALS.display2Source : SIGNALS.display3Source;
+      openDisplay === 'd2' ? SIGNALS.display2Source :
+      openDisplay === 'd3' ? SIGNALS.display3Source : SIGNALS.display4Source;
     publishAnalog(sig, 0);
     closePopover();
   }
@@ -149,6 +155,7 @@
     publishAnalog(SIGNALS.display1Source, value);
     publishAnalog(SIGNALS.display2Source, value);
     publishAnalog(SIGNALS.display3Source, value);
+    publishAnalog(SIGNALS.display4Source, value);
   }
   function routeRoomPcAll() { routeAllTo(1); }
   function routeAirMediaAll() { routeAllTo(3); }
