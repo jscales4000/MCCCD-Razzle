@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MCCCD AA140 · Reflected Ceiling Routing — Mockup Index</title>
+<style>
+  :root {
+    --bg: #06101e;
+    --panel: #0d1b2e;
+    --border: rgba(196, 122, 30, 0.28);
+    --border-soft: rgba(148, 163, 184, 0.22);
+    --copy: #e2e8f0;
+    --soft: #94a3b8;
+    --muted: #64748b;
+    --accent: #f5a623;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--copy);
+    font-family: "Segoe UI", Arial, sans-serif; min-height: 100vh; }
+  body { padding: 56px 40px 60px; }
+
+  header.page-h {
+    max-width: 1180px; margin: 0 auto 36px;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 36px; font-weight: 900; letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  h1 b { color: var(--accent); }
+  .lede {
+    font-size: 15px; line-height: 1.6;
+    color: var(--soft);
+    max-width: 720px;
+  }
+
+  .grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .card {
+    background: linear-gradient(180deg, #14213a, var(--panel));
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex; flex-direction: column;
+    transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(245, 166, 35, 0.5);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,166,35,0.18);
+  }
+
+  .thumb {
+    height: 220px;
+    background: var(--panel);
+    border-bottom: 0.5px solid var(--border-soft);
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  /* Mini schematic preview thumbnails — each one a stripped-down hint */
+  .thumb svg { width: 100%; height: 100%; }
+
+  .card-body { padding: 18px 20px 20px; }
+  .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .title {
+    font-size: 19px; font-weight: 800; letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .desc {
+    font-size: 13px; line-height: 1.5; color: var(--soft);
+  }
+  .tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 14px;
+  }
+  .tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--soft);
+    padding: 4px 9px; border-radius: 6px;
+    background: rgba(148, 163, 184, 0.08);
+    border: 0.5px solid var(--border-soft);
+  }
+  .tag.accent {
+    background: rgba(245, 166, 35, 0.10);
+    border-color: rgba(245, 166, 35, 0.28);
+    color: var(--accent);
+  }
+
+  footer.page-f {
+    max-width: 1180px; margin: 40px auto 0;
+    color: var(--muted); font-size: 12px;
+    line-height: 1.6;
+  }
+  footer.page-f b { color: var(--soft); }
+</style>
+</head>
+<body>
+
+<header class="page-h">
+  <div class="eyebrow">MCCCD · AA140 · Mockups</div>
+  <h1>Reflected Ceiling <b>Routing</b></h1>
+  <p class="lede">
+    Three takes on the reflected-ceiling-plan routing concept. Each mockup is rendered
+    at the panel's native <b style="color:var(--accent)">1280×800</b>, in the active MCCCD orange theme.
+    Tap a display in the room layout to choose its source — the three mockups differ in
+    how that picker appears.
+  </p>
+</header>
+
+<section class="grid">
+
+  <!-- Mockup A -->
+  <a class="card" href="01-schematic-modal.html">
+    <div class="thumb">
+      <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="368" height="188" rx="6" fill="#0d1b2e" stroke="rgba(196,122,30,0.4)" />
+        <!-- Room outline -->
+        <rect x="40" y="34" width="300" height="132" rx="4" fill="none" stroke="rgba(196,122,30,0.35)" stroke-width="1.4" />
+        <!-- Displays -->
+        <rect x="76" y="38" width="62" height="14" rx="2" fill="rgba(245,166,35,0.35)" stroke="#f5a623" />
+        <rect x="242" y="38" width="62" height="14" rx="2" fill="rgba(245,166,35,0.6)" stroke="#f5a623" stroke-width="1.5" />
+        <rect x="148" y="148" width="84" height="14" rx="2" fill="rgba(245,166,35,0.35)" stroke="#f5a623" />
+        <!-- Mics -->
+        <circle cx="120" cy="84" r="14" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" />
+        <circle cx="260" cy="84" r="14" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" />
+        <!-- Projectors -->
+        <rect x="105" y="65" width="12" height="12" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" transform="rotate(45 111 71)" />
+        <rect x="245" y="65" width="12" height="12" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" transform="rotate(45 251 71)" />
+        <!-- Modal overlay hint -->
+        <rect x="120" y="80" width="140" height="80" rx="8" fill="rgba(20,33,58,0.95)" stroke="rgba(196,122,30,0.4)" />
+        <rect x="132" y="100" width="50" height="20" rx="3" fill="rgba(245,166,35,0.25)" stroke="rgba(245,166,35,0.6)" />
+        <rect x="198" y="100" width="50" height="20" rx="3" fill="rgba(30,41,59,0.6)" stroke="rgba(148,163,184,0.22)" />
+        <rect x="132" y="128" width="50" height="20" rx="3" fill="rgba(30,41,59,0.6)" stroke="rgba(148,163,184,0.22)" />
+        <rect x="198" y="128" width="50" height="20" rx="3" fill="rgba(30,41,59,0.6)" stroke="rgba(148,163,184,0.22)" />
+      </svg>
+    </div>
+    <div class="card-body">
+      <div class="label">Mockup A</div>
+      <div class="title">Schematic + Modal</div>
+      <p class="desc">Clean ceiling plan as the canvas. Tap a display, centered source picker drops over the layout. Most explicit — the picker stays out of the way until needed.</p>
+      <div class="tags">
+        <span class="tag accent">Centered Modal</span>
+        <span class="tag">Plan View</span>
+        <span class="tag">Quick Routes</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- Mockup B -->
+  <a class="card" href="02-inline-popover.html">
+    <div class="thumb">
+      <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="368" height="188" rx="6" fill="#0d1b2e" stroke="rgba(196,122,30,0.4)" />
+        <!-- Room outline (smaller — sidebar on right) -->
+        <rect x="34" y="34" width="220" height="132" rx="4" fill="none" stroke="rgba(196,122,30,0.35)" stroke-width="1.4" />
+        <!-- Sidebar -->
+        <rect x="266" y="34" width="80" height="132" rx="6" fill="rgba(13,27,46,0.85)" stroke="rgba(196,122,30,0.28)" />
+        <!-- Sidebar rows -->
+        <rect x="274" y="44" width="64" height="28" rx="4" fill="rgba(245,166,35,0.18)" stroke="rgba(245,166,35,0.5)" />
+        <rect x="274" y="78" width="64" height="28" rx="4" fill="rgba(245,166,35,0.18)" stroke="rgba(245,166,35,0.5)" />
+        <rect x="274" y="112" width="64" height="28" rx="4" fill="rgba(30,41,59,0.7)" stroke="rgba(148,163,184,0.25)" />
+        <!-- Displays w/ source readout -->
+        <rect x="56" y="38" width="62" height="20" rx="3" fill="rgba(245,166,35,0.35)" stroke="#f5a623" />
+        <rect x="170" y="38" width="62" height="20" rx="3" fill="rgba(245,166,35,0.55)" stroke="#f5a623" stroke-width="1.5" />
+        <rect x="106" y="146" width="72" height="20" rx="3" fill="rgba(100,116,139,0.2)" stroke="rgba(148,163,184,0.4)" />
+        <!-- Mics -->
+        <circle cx="90" cy="100" r="13" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.5)" />
+        <circle cx="195" cy="100" r="13" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.5)" />
+        <!-- Popover -->
+        <rect x="178" y="68" width="72" height="62" rx="6" fill="rgba(20,33,58,0.97)" stroke="rgba(245,166,35,0.5)" />
+        <rect x="184" y="78" width="60" height="9" rx="2" fill="rgba(30,41,59,0.6)" />
+        <rect x="184" y="91" width="60" height="9" rx="2" fill="rgba(245,166,35,0.25)" />
+        <rect x="184" y="104" width="60" height="9" rx="2" fill="rgba(30,41,59,0.6)" />
+        <rect x="184" y="117" width="60" height="9" rx="2" fill="rgba(30,41,59,0.6)" />
+      </svg>
+    </div>
+    <div class="card-body">
+      <div class="label">Mockup B</div>
+      <div class="title">Live Map + Inline Popover</div>
+      <p class="desc">Displays show current source inline as a live badge. Sidebar mirrors status. Popover anchors to the tapped display — keeps focus on context, faster to glance.</p>
+      <div class="tags">
+        <span class="tag accent">Inline Popover</span>
+        <span class="tag">Status Sidebar</span>
+        <span class="tag">Live Readout</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- Mockup C -->
+  <a class="card" href="03-isometric-sheet.html">
+    <div class="thumb">
+      <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="368" height="188" rx="6" fill="#0d1b2e" stroke="rgba(196,122,30,0.4)" />
+        <!-- Iso floor -->
+        <polygon points="60,80 320,80 360,150 20,150" fill="rgba(20,33,58,0.65)" stroke="rgba(196,122,30,0.35)" stroke-width="1.4" />
+        <!-- Front wall -->
+        <polygon points="60,40 320,40 320,80 60,80" fill="rgba(20,33,58,0.95)" stroke="rgba(196,122,30,0.4)" stroke-width="1.4" />
+        <!-- Screens on front wall -->
+        <rect x="78" y="48" width="80" height="26" fill="rgba(245,166,35,0.25)" stroke="rgba(245,166,35,0.55)" />
+        <rect x="222" y="48" width="80" height="26" fill="rgba(245,166,35,0.55)" stroke="#f5a623" stroke-width="1.5" />
+        <!-- Projector diamonds -->
+        <rect x="110" y="100" width="14" height="14" fill="rgba(8,14,26,0.7)" stroke="#38bdf8" transform="rotate(45 117 107)" />
+        <rect x="256" y="100" width="14" height="14" fill="rgba(8,14,26,0.7)" stroke="#38bdf8" transform="rotate(45 263 107)" />
+        <!-- Mics -->
+        <ellipse cx="115" cy="120" rx="14" ry="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.5)" />
+        <ellipse cx="265" cy="120" rx="14" ry="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.5)" />
+        <!-- Bottom sheet -->
+        <rect x="20" y="160" width="340" height="36" rx="6" fill="rgba(20,33,58,0.97)" stroke="rgba(245,166,35,0.4)" />
+        <rect x="40" y="172" width="60" height="14" rx="3" fill="rgba(30,41,59,0.7)" />
+        <rect x="115" y="172" width="60" height="14" rx="3" fill="rgba(30,41,59,0.7)" />
+        <rect x="190" y="172" width="60" height="14" rx="3" fill="rgba(245,166,35,0.25)" stroke="rgba(245,166,35,0.55)" />
+        <rect x="265" y="172" width="60" height="14" rx="3" fill="rgba(30,41,59,0.7)" />
+      </svg>
+    </div>
+    <div class="card-body">
+      <div class="label">Mockup C</div>
+      <div class="title">Isometric + Bottom Sheet</div>
+      <p class="desc">3D-ish room view with perspective floor. Projection screens stand on the front wall, beams visualize the projector → screen path. Picker slides up from bottom as a sheet.</p>
+      <div class="tags">
+        <span class="tag accent">Bottom Sheet</span>
+        <span class="tag">Isometric View</span>
+        <span class="tag">Beam Visuals</span>
+      </div>
+    </div>
+  </a>
+
+</section>
+
+<footer class="page-f">
+  <p><b>Built from:</b> existing MCCCD orange theme (global.css), 4-source / 3-display equipment list from Proposal 10297, debug-panel six-phase build-out handoff (2026-05-28). <br/>
+  <b>Next:</b> pick a direction (or mix the parts you like) and we'll spec it for real implementation. None of these touch <code>src/</code> yet.</p>
+</footer>
+
+</body>
+</html>

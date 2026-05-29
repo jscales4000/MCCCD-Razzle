@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MCCCD AA140 · RCP Routing — Mockup A · Schematic + Modal</title>
+<meta name="viewport" content="width=1280" />
+<style>
+  /* ── MCCCD orange theme tokens (mirrors global.css) ────────────────── */
+  :root {
+    --color-bg: #0d1b2e;
+    --color-panel: rgba(13, 27, 46, 0.92);
+    --color-panel-strong: rgba(15, 30, 53, 0.97);
+    --color-border: rgba(196, 122, 30, 0.28);
+    --color-border-soft: rgba(148, 163, 184, 0.22);
+    --color-copy: #e2e8f0;
+    --color-copy-soft: #94a3b8;
+    --color-copy-muted: #64748b;
+    --color-accent: #f5a623;
+    --color-accent-soft: rgba(245, 166, 35, 0.18);
+    --color-accent-dim: rgba(245, 166, 35, 0.10);
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --radius-panel: 16px;
+    --radius-button: 8px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #06101e; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--color-copy);
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .stage {
+    width: 1280px;
+    height: 800px;
+    background: var(--color-bg);
+    border: 0.5px solid var(--color-border);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    display: grid;
+    grid-template-rows: 60px 1fr 80px;
+    gap: 10px;
+    padding: 10px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  }
+
+  /* ── HEADER ───────────────────────────────────────────────────────── */
+  .hdr {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border-radius: 8px;
+    border: 0.5px solid var(--color-border-soft);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .room { font-size: 18px; font-weight: 900; color: var(--color-copy); }
+  .sep { width: 1px; height: 20px; background: var(--color-border-soft); }
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .spacer { flex: 1; }
+  .legend { display: inline-flex; gap: 14px; }
+  .legend-item {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--color-copy-soft);
+  }
+  .lg-swatch { width: 14px; height: 14px; border-radius: 3px; }
+  .lg-display { background: rgba(245, 166, 35, 0.85); border: 1px solid #f5a623; }
+  .lg-projector { background: transparent; border: 1.5px solid #38bdf8; transform: rotate(45deg); border-radius: 0; }
+  .lg-mic { background: rgba(245, 166, 35, 0.25); border: 1px solid rgba(245, 166, 35, 0.6); border-radius: 50%; }
+  .lg-speaker { background: rgba(56, 189, 248, 0.25); border: 1px solid rgba(56, 189, 248, 0.6); }
+  .lg-camera { background: rgba(168, 85, 247, 0.30); border: 1px solid rgba(168, 85, 247, 0.7); border-radius: 50%; }
+
+  /* ── BODY ─────────────────────────────────────────────────────────── */
+  .body {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .body::before {
+    content: '';
+    position: absolute; inset: 20px;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    border-radius: 8px;
+  }
+  .body-title {
+    position: absolute; top: 18px; left: 24px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+    z-index: 2;
+  }
+  .body-hint {
+    position: absolute; top: 18px; right: 24px;
+    font-size: 11px; color: var(--color-copy-soft);
+    z-index: 2;
+  }
+
+  /* ── ROOM PLAN ────────────────────────────────────────────────────── */
+  .plan {
+    position: absolute;
+    top: 60px; left: 60px; right: 60px; bottom: 60px;
+    border: 1.5px solid rgba(196, 122, 30, 0.4);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(8, 14, 26, 0.4), rgba(13, 27, 46, 0.2));
+  }
+  .wall-tag {
+    position: absolute;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .wall-tag.front { top: -22px; left: 50%; transform: translateX(-50%); }
+  .wall-tag.rear { bottom: -22px; left: 50%; transform: translateX(-50%); }
+  .wall-tag.left { top: 50%; left: -68px; transform: translateY(-50%) rotate(-90deg); }
+  .wall-tag.right { top: 50%; right: -68px; transform: translateY(-50%) rotate(90deg); }
+
+  /* ── Conference table ─────────────────────────────────────────────── */
+  .table {
+    position: absolute;
+    top: 38%; left: 28%; width: 44%; height: 22%;
+    border: 1px dashed rgba(148, 163, 184, 0.4);
+    border-radius: 80px;
+    display: grid; place-items: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+
+  /* ── Speaker bars ─────────────────────────────────────────────────── */
+  .speaker {
+    position: absolute;
+    height: 9px;
+    background: rgba(56, 189, 248, 0.22);
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    border-radius: 2px;
+  }
+  .speaker::after {
+    content: attr(data-label);
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 8px; font-weight: 700; letter-spacing: 0.2em;
+    text-transform: uppercase; color: rgba(56, 189, 248, 0.75);
+  }
+  .speaker.front-l { top: 2px; left: 8%; width: 25%; }
+  .speaker.front-l::after { bottom: -16px; }
+  .speaker.front-r { top: 2px; right: 8%; width: 25%; }
+  .speaker.front-r::after { bottom: -16px; }
+  .speaker.rear-l  { bottom: 2px; left: 8%; width: 25%; }
+  .speaker.rear-l::after  { top: -16px; }
+  .speaker.rear-r  { bottom: 2px; right: 8%; width: 25%; }
+  .speaker.rear-r::after  { top: -16px; }
+
+  /* ── Ceiling mic arrays ───────────────────────────────────────────── */
+  .mic {
+    position: absolute;
+    width: 56px; height: 56px;
+    background: rgba(245, 166, 35, 0.12);
+    border: 1.2px solid rgba(245, 166, 35, 0.55);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: rgba(245, 166, 35, 0.95);
+    font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+  }
+  .mic::before {
+    content: '';
+    position: absolute; inset: -8px;
+    border: 1px dashed rgba(245, 166, 35, 0.18);
+    border-radius: 50%;
+  }
+  .mic .mic-label {
+    position: absolute; top: 100%; margin-top: 6px;
+    font-size: 8px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(245, 166, 35, 0.7);
+    white-space: nowrap;
+  }
+  .mic.mxa-a { top: 28%; left: 22%; }
+  .mic.mxa-b { top: 28%; right: 22%; }
+
+  /* ── Cameras ──────────────────────────────────────────────────────── */
+  .cam {
+    position: absolute;
+    width: 26px; height: 26px;
+    background: rgba(168, 85, 247, 0.18);
+    border: 1.2px solid rgba(168, 85, 247, 0.55);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: rgba(216, 180, 254, 0.95);
+    font-size: 8px; font-weight: 800;
+  }
+  .cam::after {
+    content: attr(data-label);
+    position: absolute; top: 110%; left: 50%; transform: translateX(-50%);
+    font-size: 8px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: rgba(168, 85, 247, 0.7);
+    white-space: nowrap;
+  }
+  .cam.cam-a { top: 10%; left: 36%; }
+  .cam.cam-b { top: 10%; right: 36%; }
+
+  /* ── Projector markers (diamonds) ─────────────────────────────────── */
+  .proj {
+    position: absolute;
+    width: 30px; height: 30px;
+    background: rgba(56, 189, 248, 0.10);
+    border: 1.5px solid rgba(56, 189, 248, 0.6);
+    transform: rotate(45deg);
+    display: grid; place-items: center;
+  }
+  .proj-inner {
+    transform: rotate(-45deg);
+    font-size: 10px; font-weight: 800;
+    color: rgba(56, 189, 248, 0.95);
+  }
+  .proj-label {
+    position: absolute; top: 130%; left: 50%;
+    transform: translate(-50%, 0) rotate(-45deg);
+    font-size: 8px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: rgba(56, 189, 248, 0.65);
+    white-space: nowrap;
+  }
+  .proj.p1 { top: 18%; left: 30%; }
+  .proj.p2 { top: 18%; left: 64%; }
+
+  /* Beam paths */
+  .beam {
+    position: absolute;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.18), transparent);
+    pointer-events: none;
+  }
+  .beam.b1 {
+    top: 18%; left: 30%;
+    width: 70px; height: 18%;
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+    transform: translate(-50%, -10px);
+  }
+  .beam.b2 {
+    top: 18%; left: 64%;
+    width: 70px; height: 18%;
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+    transform: translate(-50%, -10px);
+  }
+
+  /* ── Display surfaces (the tap targets) ───────────────────────────── */
+  .display {
+    position: absolute;
+    background-image: linear-gradient(180deg, rgba(245, 166, 35, 0.20), rgba(245, 166, 35, 0.08));
+    border: 1.5px solid rgba(245, 166, 35, 0.55);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: filter 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 6px 8px; gap: 4px;
+    color: var(--color-accent);
+  }
+  .display:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px rgba(245, 166, 35, 0.4);
+  }
+  .display.selected {
+    box-shadow: 0 0 0 2px var(--color-accent), 0 0 32px rgba(245, 166, 35, 0.5);
+    background-image: linear-gradient(180deg, rgba(245, 166, 35, 0.35), rgba(245, 166, 35, 0.15));
+    color: #fff;
+  }
+  .d-label {
+    font-size: 11px; font-weight: 900; letter-spacing: 0.06em;
+  }
+  .d-source {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; opacity: 0.8;
+  }
+  .d-spec {
+    font-size: 8px; font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase; opacity: 0.5;
+  }
+
+  /* Position: D1 + D2 are projection surfaces on front wall, D3 is rear */
+  .display.d1 { top: 1.5%; left: 14%; width: 22%; height: 7%; }
+  .display.d2 { top: 1.5%; left: 64%; width: 22%; height: 7%; }
+  .display.d3 { bottom: 1.5%; left: 38%; width: 24%; height: 9%; }
+
+  /* ── FOOTER ───────────────────────────────────────────────────────── */
+  .ftr {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    gap: 18px;
+  }
+  .f-status {
+    display: flex; gap: 22px;
+    font-size: 11px;
+  }
+  .status-block {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .sb-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .sb-val {
+    font-size: 13px; font-weight: 800; color: var(--color-accent);
+  }
+
+  .quick {
+    margin-left: auto;
+    display: inline-flex; gap: 10px;
+  }
+  .qbtn {
+    padding: 9px 16px; border-radius: 9px;
+    background: rgba(245, 166, 35, 0.10);
+    border: 0.5px solid rgba(245, 166, 35, 0.28);
+    color: var(--color-accent);
+    font-size: 12px; font-weight: 700;
+    cursor: pointer;
+  }
+  .qbtn.danger {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+  }
+
+  /* ── MODAL ─────────────────────────────────────────────────────────── */
+  .modal-back {
+    position: absolute; inset: 0;
+    background: rgba(2, 6, 18, 0.72);
+    display: grid; place-items: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+  }
+  .modal {
+    width: 560px;
+    background-image: linear-gradient(180deg, #14213a, #08101e);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 24px 28px 22px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+  .m-eyebrow {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+    margin-bottom: 6px;
+  }
+  .m-title {
+    font-size: 22px; font-weight: 900; letter-spacing: -0.01em;
+    margin: 0 0 4px; color: var(--color-copy);
+  }
+  .m-sub {
+    font-size: 12px; color: var(--color-copy-soft);
+    margin-bottom: 18px;
+  }
+  .m-sub b { color: var(--color-accent); font-weight: 800; }
+  .src-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .src-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 14px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.55);
+    border: 0.5px solid var(--color-border-soft);
+    color: var(--color-copy);
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease;
+  }
+  .src-card:hover { background: rgba(30, 41, 59, 0.75); border-color: rgba(245, 166, 35, 0.4); }
+  .src-card.active {
+    background: rgba(245, 166, 35, 0.16);
+    border-color: rgba(245, 166, 35, 0.5);
+  }
+  .sc-ico {
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    border-radius: 8px;
+    background: rgba(245, 166, 35, 0.10);
+    border: 0.5px solid rgba(245, 166, 35, 0.30);
+    color: var(--color-accent);
+  }
+  .sc-text { display: flex; flex-direction: column; gap: 2px; }
+  .sc-name { font-size: 14px; font-weight: 800; }
+  .sc-sub {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .src-card.active .sc-sub { color: var(--color-accent); }
+  .m-foot {
+    margin-top: 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .m-foot-clear {
+    padding: 9px 14px; border-radius: 8px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 0.5px solid rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer;
+  }
+  .m-foot-mirror {
+    padding: 9px 14px; border-radius: 8px;
+    background: rgba(56, 189, 248, 0.10);
+    border: 0.5px solid rgba(56, 189, 248, 0.28);
+    color: #7dd3fc;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer;
+  }
+  .m-foot-spacer { flex: 1; }
+  .m-foot-close {
+    padding: 9px 18px; border-radius: 8px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid var(--color-border-soft);
+    color: var(--color-copy-soft);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer;
+  }
+
+  /* Caption */
+  .caption {
+    color: #94a3b8;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 16px;
+  }
+  .caption b { color: #f5a623; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <!-- HEADER -->
+  <header class="hdr">
+    <button class="back-btn">◂ Home</button>
+    <div class="sep"></div>
+    <span class="room">AA140</span>
+    <div class="sep"></div>
+    <span class="eyebrow">Display Routing · Reflected Ceiling</span>
+    <div class="spacer"></div>
+    <div class="legend">
+      <span class="legend-item"><span class="lg-swatch lg-display"></span>Display</span>
+      <span class="legend-item"><span class="lg-swatch lg-projector"></span>Projector</span>
+      <span class="legend-item"><span class="lg-swatch lg-mic"></span>Mic Array</span>
+      <span class="legend-item"><span class="lg-swatch lg-camera"></span>Camera</span>
+      <span class="legend-item"><span class="lg-swatch lg-speaker"></span>Speaker</span>
+    </div>
+  </header>
+
+  <!-- BODY: ROOM PLAN -->
+  <section class="body">
+    <span class="body-title">Tap any display to change its source</span>
+    <span class="body-hint">Looking up at ceiling · North = Front of room</span>
+
+    <div class="plan">
+      <span class="wall-tag front">Front Wall</span>
+      <span class="wall-tag rear">Rear Wall</span>
+      <span class="wall-tag left">Entry</span>
+      <span class="wall-tag right">Window</span>
+
+      <!-- Speakers on walls -->
+      <div class="speaker front-l" data-label="L Front"></div>
+      <div class="speaker front-r" data-label="R Front"></div>
+      <div class="speaker rear-l"  data-label="L Rear"></div>
+      <div class="speaker rear-r"  data-label="R Rear"></div>
+
+      <!-- Cameras (front wall corners) -->
+      <div class="cam cam-a" data-label="Cam · 12x">A</div>
+      <div class="cam cam-b" data-label="Cam · 20x">B</div>
+
+      <!-- Projectors (ceiling-mount, diamond) -->
+      <div class="proj p1">
+        <span class="proj-inner">▽</span>
+        <span class="proj-label">PJ-1 Sony</span>
+      </div>
+      <div class="beam b1"></div>
+      <div class="proj p2">
+        <span class="proj-inner">▽</span>
+        <span class="proj-label">PJ-2 Sony</span>
+      </div>
+      <div class="beam b2"></div>
+
+      <!-- Ceiling mic arrays -->
+      <div class="mic mxa-a">
+        MXA
+        <span class="mic-label">Mic-A · MXA920W</span>
+      </div>
+      <div class="mic mxa-b">
+        MXA
+        <span class="mic-label">Mic-B · MXA920W</span>
+      </div>
+
+      <!-- Conference table -->
+      <div class="table">Conference Table · 12 seats</div>
+
+      <!-- Displays -->
+      <div class="display d1">
+        <span class="d-label">D1 · Front Left</span>
+        <span class="d-source">▸ Room PC</span>
+        <span class="d-spec">100" Projection</span>
+      </div>
+      <div class="display d2 selected">
+        <span class="d-label">D2 · Front Right</span>
+        <span class="d-source">Tap to route</span>
+        <span class="d-spec">100" Projection</span>
+      </div>
+      <div class="display d3">
+        <span class="d-label">D3 · Rear Newline</span>
+        <span class="d-source">▸ Room PC</span>
+        <span class="d-spec">86" Interactive</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="ftr">
+    <div class="f-status">
+      <div class="status-block">
+        <span class="sb-label">Mode</span>
+        <span class="sb-val">Manual</span>
+      </div>
+      <div class="status-block">
+        <span class="sb-label">Routed</span>
+        <span class="sb-val">2 / 3</span>
+      </div>
+      <div class="status-block">
+        <span class="sb-label">Audio Follow</span>
+        <span class="sb-val">D1</span>
+      </div>
+    </div>
+
+    <div class="quick">
+      <button class="qbtn">⤓ Room PC → All</button>
+      <button class="qbtn">⤓ AirMedia → All</button>
+      <button class="qbtn">⤓ Mirror All</button>
+      <button class="qbtn danger">⊘ Clear Routes</button>
+    </div>
+  </footer>
+
+  <!-- MODAL (popup for D2 source selection) -->
+  <div class="modal-back">
+    <div class="modal">
+      <div class="m-eyebrow">Source Picker</div>
+      <h2 class="m-title">D2 · Front Right Projection</h2>
+      <p class="m-sub">Currently <b>no source</b> · 100" projection surface · Sony VPL projector overhead</p>
+
+      <div class="src-grid">
+        <button class="src-card active">
+          <span class="sc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+          <span class="sc-text"><span class="sc-name">Room PC</span><span class="sc-sub">Input 1 · HDMI</span></span>
+        </button>
+        <button class="src-card">
+          <span class="sc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 10h18M8 20h8M12 16v4"/></svg></span>
+          <span class="sc-text"><span class="sc-name">Ext PC</span><span class="sc-sub">Input 2 · HDMI 2</span></span>
+        </button>
+        <button class="src-card">
+          <span class="sc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></span>
+          <span class="sc-text"><span class="sc-name">AirMedia</span><span class="sc-sub">Input 3 · Wireless</span></span>
+        </button>
+        <button class="src-card">
+          <span class="sc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M2 20h20"/></svg></span>
+          <span class="sc-text"><span class="sc-name">Laptop</span><span class="sc-sub">Input 4 · HDMI 3</span></span>
+        </button>
+      </div>
+
+      <div class="m-foot">
+        <button class="m-foot-clear">⊘ Clear</button>
+        <button class="m-foot-mirror">⧉ Mirror D1</button>
+        <div class="m-foot-spacer"></div>
+        <button class="m-foot-close">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="caption">Mockup A · <b>Schematic + Modal</b> · Reflected ceiling plan, tap display to open centered source picker</div>
+
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MCCCD AA140 · RCP Routing — Mockup C · Isometric + Bottom Sheet</title>
+<meta name="viewport" content="width=1280" />
+<style>
+  :root {
+    --color-bg: #0d1b2e;
+    --color-panel: rgba(13, 27, 46, 0.92);
+    --color-border: rgba(196, 122, 30, 0.28);
+    --color-border-soft: rgba(148, 163, 184, 0.22);
+    --color-copy: #e2e8f0;
+    --color-copy-soft: #94a3b8;
+    --color-copy-muted: #64748b;
+    --color-accent: #f5a623;
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #06101e; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--color-copy);
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .stage {
+    width: 1280px; height: 800px;
+    background: var(--color-bg);
+    border: 0.5px solid var(--color-border);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    display: grid;
+    grid-template-rows: 60px 1fr;
+    gap: 10px;
+    padding: 10px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────────────── */
+  .hdr {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 14px;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border-radius: 8px;
+    border: 0.5px solid var(--color-border-soft);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .room { font-size: 18px; font-weight: 900; }
+  .sep { width: 1px; height: 20px; background: var(--color-border-soft); }
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .spacer { flex: 1; }
+  .view-toggle {
+    display: flex; border-radius: 9px; overflow: hidden;
+    border: 0.5px solid var(--color-border-soft);
+  }
+  .vt-btn {
+    padding: 8px 14px;
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; border: none;
+    border-right: 0.5px solid var(--color-border-soft);
+  }
+  .vt-btn:last-child { border-right: none; }
+  .vt-btn.active {
+    background: rgba(245, 166, 35, 0.14);
+    color: var(--color-accent);
+  }
+
+  /* ── STAGE BODY (the iso scene) ──────────────────────────────────── */
+  .scene {
+    background:
+      radial-gradient(ellipse 600px 300px at 50% 30%, rgba(245, 166, 35, 0.05), transparent 70%),
+      linear-gradient(180deg, rgba(13, 27, 46, 0.5), rgba(8, 14, 26, 0.6));
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    padding: 30px;
+  }
+
+  /* Subtle grid floor */
+  .scene::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(900px) rotateX(48deg);
+    transform-origin: center 70%;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .scene-title {
+    position: absolute; top: 20px; left: 28px; z-index: 5;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .scene-hint {
+    position: absolute; top: 20px; right: 28px; z-index: 5;
+    font-size: 11px; color: var(--color-copy-soft);
+  }
+
+  /* ── ISO ROOM (perspective applied via parent transform) ──────────── */
+  .room-iso {
+    position: absolute;
+    top: 80px; left: 50%;
+    width: 760px; height: 440px;
+    transform: translateX(-50%) perspective(1200px) rotateX(32deg);
+    transform-origin: center top;
+  }
+
+  /* Floor */
+  .floor {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(20, 33, 58, 0.65), rgba(8, 14, 26, 0.85));
+    border: 1.5px solid rgba(196, 122, 30, 0.35);
+    border-radius: 6px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .floor-grid {
+    position: absolute; inset: 10px;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    background-size: 50px 50px;
+    border-radius: 4px;
+  }
+
+  /* Front wall (top edge) — where the projection surfaces live */
+  .front-wall {
+    position: absolute;
+    top: -90px; left: 0; right: 0; height: 100px;
+    transform-origin: bottom;
+    transform: rotateX(-90deg);
+    background: linear-gradient(180deg, rgba(20, 33, 58, 0.85), rgba(13, 27, 46, 0.95));
+    border: 1.5px solid rgba(196, 122, 30, 0.4);
+    border-radius: 6px 6px 0 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 100px;
+    padding: 12px;
+  }
+
+  /* Projection surfaces on the front wall — these are the displays */
+  .screen {
+    flex: 1; max-width: 240px;
+    height: 80%;
+    background: linear-gradient(180deg, rgba(245, 166, 35, 0.25), rgba(245, 166, 35, 0.08));
+    border: 1.5px solid rgba(245, 166, 35, 0.55);
+    border-radius: 4px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; padding: 8px;
+    color: var(--color-accent);
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(245, 166, 35, 0.20), inset 0 0 30px rgba(245, 166, 35, 0.06);
+  }
+  .screen.selected {
+    box-shadow: 0 0 0 2px var(--color-accent), 0 0 40px rgba(245, 166, 35, 0.5), inset 0 0 30px rgba(245, 166, 35, 0.12);
+    background: linear-gradient(180deg, rgba(245, 166, 35, 0.42), rgba(245, 166, 35, 0.20));
+  }
+  .scr-id {
+    font-size: 13px; font-weight: 900;
+    color: #fff;
+    background: rgba(0,0,0,0.4);
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .scr-name {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .scr-src {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; opacity: 0.85;
+  }
+
+  /* Rear Newline display — sits flat on rear "wall" — simulated as floor item */
+  .rear-display {
+    position: absolute;
+    bottom: 24px; left: 50%; width: 200px; height: 36px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(245, 166, 35, 0.25), rgba(245, 166, 35, 0.08));
+    border: 1.5px solid rgba(245, 166, 35, 0.55);
+    border-radius: 4px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px;
+    color: var(--color-accent);
+    cursor: pointer;
+    box-shadow: 0 0 16px rgba(245, 166, 35, 0.16);
+  }
+  .rear-display .rd-id {
+    font-size: 13px; font-weight: 900;
+    color: #fff;
+    background: rgba(0,0,0,0.4);
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .rear-display .rd-name {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  }
+  .rear-display .rd-src {
+    margin-left: auto;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; opacity: 0.85;
+  }
+
+  /* Conference table — central iso shape */
+  .iso-table {
+    position: absolute;
+    top: 45%; left: 50%; width: 50%; height: 25%;
+    transform: translate(-50%, -50%);
+    border: 1px dashed rgba(148, 163, 184, 0.45);
+    border-radius: 60px;
+    background: rgba(8, 14, 26, 0.3);
+    display: grid; place-items: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+
+  /* Speakers on side walls */
+  .iso-speaker {
+    position: absolute;
+    width: 90px; height: 10px;
+    background: rgba(56, 189, 248, 0.22);
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    border-radius: 2px;
+  }
+  .iso-speaker.fl { top: 6px; left: 8%; }
+  .iso-speaker.fr { top: 6px; right: 8%; }
+  .iso-speaker.rl { bottom: 6px; left: 8%; }
+  .iso-speaker.rr { bottom: 6px; right: 8%; }
+
+  /* Ceiling-mounted projectors (drawn floating on floor with shadow indicating ceiling position) */
+  .iso-proj {
+    position: absolute;
+    width: 36px; height: 36px;
+    background: rgba(8, 14, 26, 0.7);
+    border: 1.5px solid rgba(56, 189, 248, 0.6);
+    transform: rotate(45deg);
+    display: grid; place-items: center;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
+  }
+  .iso-proj .ip-inner {
+    transform: rotate(-45deg);
+    font-size: 11px; font-weight: 800;
+    color: rgba(125, 211, 252, 1);
+  }
+  .iso-proj.p1 { top: 22%; left: 28%; }
+  .iso-proj.p2 { top: 22%; left: 64%; }
+  /* Beam from projector to screen */
+  .iso-beam {
+    position: absolute;
+    width: 60px; height: 90px;
+    background: linear-gradient(to top, transparent, rgba(56, 189, 248, 0.10) 40%, rgba(56, 189, 248, 0.04));
+    clip-path: polygon(38% 100%, 62% 100%, 100% 0, 0 0);
+    pointer-events: none;
+  }
+  .iso-beam.b1 { top: -50px; left: calc(28% + 6px); }
+  .iso-beam.b2 { top: -50px; left: calc(64% + 6px); }
+
+  /* Mic arrays — circles, slightly elevated on iso */
+  .iso-mic {
+    position: absolute;
+    width: 64px; height: 64px;
+    background: rgba(245, 166, 35, 0.10);
+    border: 1.5px solid rgba(245, 166, 35, 0.5);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: rgba(245, 166, 35, 0.95);
+    font-size: 10px; font-weight: 800;
+    box-shadow: 0 0 24px rgba(245, 166, 35, 0.16);
+  }
+  .iso-mic::before {
+    content: '';
+    position: absolute; inset: -10px;
+    border: 1px dashed rgba(245, 166, 35, 0.22);
+    border-radius: 50%;
+  }
+  .iso-mic.mxa-a { top: 30%; left: 21%; }
+  .iso-mic.mxa-b { top: 30%; right: 21%; }
+
+  /* Cameras */
+  .iso-cam {
+    position: absolute;
+    width: 28px; height: 28px;
+    background: rgba(168, 85, 247, 0.2);
+    border: 1.5px solid rgba(168, 85, 247, 0.6);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: rgba(216, 180, 254, 1);
+    font-size: 9px; font-weight: 800;
+  }
+  .iso-cam.cam-a { top: 4%; left: 36%; }
+  .iso-cam.cam-b { top: 4%; right: 36%; }
+
+  /* Side equipment labels (unrotated, anchored outside the iso plane) */
+  .iso-label {
+    position: absolute;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+    pointer-events: none;
+  }
+
+  /* ── LEGEND (outside iso plane, in scene) ────────────────────────── */
+  .legend-bar {
+    position: absolute;
+    bottom: 18px; left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex; gap: 18px;
+    padding: 10px 18px;
+    background: rgba(8, 14, 26, 0.75);
+    border: 0.5px solid var(--color-border-soft);
+    border-radius: 10px;
+    z-index: 4;
+  }
+  .lb-item {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--color-copy-soft);
+  }
+  .lb-swatch { width: 12px; height: 12px; border-radius: 3px; }
+  .lb-d { background: rgba(245, 166, 35, 0.7); border: 1px solid #f5a623; }
+  .lb-p { background: transparent; border: 1.4px solid #38bdf8; transform: rotate(45deg); border-radius: 0; }
+  .lb-m { background: rgba(245, 166, 35, 0.25); border: 1px solid rgba(245, 166, 35, 0.6); border-radius: 50%; }
+  .lb-s { background: rgba(56, 189, 248, 0.25); border: 1px solid rgba(56, 189, 248, 0.6); }
+  .lb-c { background: rgba(168, 85, 247, 0.30); border: 1px solid rgba(168, 85, 247, 0.7); border-radius: 50%; }
+
+  /* ── BOTTOM SHEET (modal sliding up from the bottom) ─────────────── */
+  .sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 320px;
+    background-image: linear-gradient(180deg, #14213a, #0a1428);
+    border-top: 1px solid rgba(245, 166, 35, 0.4);
+    border-radius: 18px 18px 0 0;
+    padding: 22px 28px;
+    box-shadow: 0 -16px 60px rgba(0,0,0,0.6), 0 -1px 0 0 rgba(245,166,35,0.18);
+    z-index: 8;
+  }
+  .sheet-grip {
+    width: 48px; height: 4px;
+    background: var(--color-copy-muted);
+    border-radius: 2px;
+    margin: 0 auto 14px;
+    opacity: 0.5;
+  }
+  .sheet-head {
+    display: flex; align-items: flex-end; gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 0.5px solid var(--color-border-soft);
+  }
+  .sh-id {
+    font-size: 28px; font-weight: 900;
+    color: var(--color-accent);
+    background: rgba(0,0,0,0.35);
+    padding: 4px 14px; border-radius: 8px;
+    line-height: 1;
+  }
+  .sh-text { display: flex; flex-direction: column; gap: 2px; }
+  .sh-eyebrow {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .sh-title {
+    font-size: 22px; font-weight: 900; color: var(--color-copy);
+    letter-spacing: -0.01em;
+  }
+  .sh-spec {
+    font-size: 11px; color: var(--color-copy-soft);
+    margin-top: 4px;
+  }
+  .sh-current {
+    margin-left: auto;
+    display: flex; flex-direction: column; gap: 3px;
+    align-items: flex-end;
+  }
+  .sh-curr-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .sh-curr-val {
+    font-size: 16px; font-weight: 800;
+    color: var(--color-accent);
+  }
+  .sh-x {
+    background: transparent; border: none;
+    color: var(--color-copy-soft);
+    font-size: 22px; cursor: pointer;
+    padding: 0 6px;
+    margin-left: 10px;
+  }
+
+  /* Source grid in the sheet */
+  .sh-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .sh-src {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px;
+    padding: 22px 14px;
+    border-radius: 12px;
+    background-image: linear-gradient(180deg, #14213a, #08101e);
+    border: 0.5px solid var(--color-border-soft);
+    color: var(--color-copy);
+    cursor: pointer;
+    transition: border-color 140ms ease, transform 140ms ease;
+  }
+  .sh-src:hover {
+    border-color: rgba(245, 166, 35, 0.4);
+    transform: translateY(-2px);
+  }
+  .sh-src.active {
+    border-color: rgba(245, 166, 35, 0.6);
+    background-image: linear-gradient(180deg, rgba(245, 166, 35, 0.20), rgba(245, 166, 35, 0.05));
+    box-shadow: 0 0 24px rgba(245, 166, 35, 0.20);
+  }
+  .sh-src.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--color-accent) 20%, var(--color-accent) 80%, transparent);
+    border-radius: 12px 12px 0 0;
+  }
+  .sh-src { position: relative; overflow: hidden; }
+  .shs-ico {
+    color: var(--color-copy-soft);
+    transition: color 140ms ease;
+  }
+  .sh-src.active .shs-ico { color: var(--color-accent); }
+  .shs-name {
+    font-size: 16px; font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .sh-src.active .shs-name { color: var(--color-accent); }
+  .shs-sub {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+
+  /* Sheet footer */
+  .sh-foot {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 18px;
+  }
+  .sh-fbtn {
+    padding: 10px 14px; border-radius: 8px;
+    border: 0.5px solid var(--color-border-soft);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.10em;
+    text-transform: uppercase; cursor: pointer;
+  }
+  .sh-fbtn.mirror {
+    background: rgba(56, 189, 248, 0.10);
+    border-color: rgba(56, 189, 248, 0.28);
+    color: #7dd3fc;
+  }
+  .sh-fbtn.clear {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+  }
+  .sh-foot-spacer { flex: 1; }
+  .sh-fbtn.apply {
+    padding: 10px 22px;
+    background: linear-gradient(180deg, #f9b94a, #ec9415);
+    border: 1px solid rgba(245, 166, 35, 0.6);
+    color: #1a1208;
+    font-weight: 900;
+  }
+
+  /* Caption */
+  .caption {
+    color: #94a3b8; font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; text-align: center; margin-top: 16px;
+  }
+  .caption b { color: #f5a623; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <!-- HEADER -->
+  <header class="hdr">
+    <button class="back-btn">◂ Home</button>
+    <div class="sep"></div>
+    <span class="room">AA140</span>
+    <div class="sep"></div>
+    <span class="eyebrow">Display Routing · Room View</span>
+    <div class="spacer"></div>
+    <div class="view-toggle">
+      <button class="vt-btn">Plan</button>
+      <button class="vt-btn active">Room</button>
+      <button class="vt-btn">List</button>
+    </div>
+  </header>
+
+  <!-- SCENE -->
+  <section class="scene">
+    <span class="scene-title">Looking into room · Front wall ahead</span>
+    <span class="scene-hint">Tap a screen or display to route</span>
+
+    <!-- ISO ROOM -->
+    <div class="room-iso">
+      <!-- Floor -->
+      <div class="floor">
+        <div class="floor-grid"></div>
+
+        <!-- Front wall projection screens -->
+        <div class="front-wall">
+          <div class="screen">
+            <span class="scr-id">D1</span>
+            <span class="scr-name">Front Left</span>
+            <span class="scr-src">▸ Room PC</span>
+          </div>
+          <div class="screen selected">
+            <span class="scr-id">D2</span>
+            <span class="scr-name">Front Right</span>
+            <span class="scr-src">Tap to route</span>
+          </div>
+        </div>
+
+        <!-- Speakers -->
+        <div class="iso-speaker fl"></div>
+        <div class="iso-speaker fr"></div>
+        <div class="iso-speaker rl"></div>
+        <div class="iso-speaker rr"></div>
+
+        <!-- Cameras -->
+        <div class="iso-cam cam-a">A</div>
+        <div class="iso-cam cam-b">B</div>
+
+        <!-- Projectors with beams -->
+        <div class="iso-beam b1"></div>
+        <div class="iso-beam b2"></div>
+        <div class="iso-proj p1"><span class="ip-inner">▽</span></div>
+        <div class="iso-proj p2"><span class="ip-inner">▽</span></div>
+
+        <!-- Mic arrays -->
+        <div class="iso-mic mxa-a">MXA</div>
+        <div class="iso-mic mxa-b">MXA</div>
+
+        <!-- Table -->
+        <div class="iso-table">Conference Table · 12 seats</div>
+
+        <!-- Rear Newline display -->
+        <div class="rear-display">
+          <span class="rd-id">D3</span>
+          <span class="rd-name">Rear Newline</span>
+          <span class="rd-src">▸ Room PC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-bar">
+      <span class="lb-item"><span class="lb-swatch lb-d"></span>Display</span>
+      <span class="lb-item"><span class="lb-swatch lb-p"></span>Projector</span>
+      <span class="lb-item"><span class="lb-swatch lb-m"></span>Mic Array</span>
+      <span class="lb-item"><span class="lb-swatch lb-c"></span>Camera</span>
+      <span class="lb-item"><span class="lb-swatch lb-s"></span>Speaker</span>
+    </div>
+
+    <!-- BOTTOM SHEET -->
+    <div class="sheet">
+      <div class="sheet-grip"></div>
+
+      <div class="sheet-head">
+        <span class="sh-id">D2</span>
+        <div class="sh-text">
+          <span class="sh-eyebrow">Source Picker · Front Right Projector</span>
+          <span class="sh-title">Choose a Source</span>
+          <span class="sh-spec">Sony VPL · 100" projection surface · HDCP 2.2</span>
+        </div>
+        <div class="sh-current">
+          <span class="sh-curr-label">Currently</span>
+          <span class="sh-curr-val">— None —</span>
+        </div>
+        <button class="sh-x">×</button>
+      </div>
+
+      <div class="sh-grid">
+        <button class="sh-src">
+          <svg class="shs-ico" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <span class="shs-name">Room PC</span>
+          <span class="shs-sub">Input 1 · HDMI</span>
+        </button>
+        <button class="sh-src">
+          <svg class="shs-ico" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 10h18M8 20h8M12 16v4"/></svg>
+          <span class="shs-name">Ext PC</span>
+          <span class="shs-sub">Input 2 · HDMI 2</span>
+        </button>
+        <button class="sh-src active">
+          <svg class="shs-ico" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+          <span class="shs-name">AirMedia</span>
+          <span class="shs-sub">Input 3 · Wireless</span>
+        </button>
+        <button class="sh-src">
+          <svg class="shs-ico" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M2 20h20"/></svg>
+          <span class="shs-name">Laptop</span>
+          <span class="shs-sub">Input 4 · HDMI 3</span>
+        </button>
+      </div>
+
+      <div class="sh-foot">
+        <button class="sh-fbtn mirror">⧉ Mirror D1</button>
+        <button class="sh-fbtn clear">⊘ Clear D2</button>
+        <div class="sh-foot-spacer"></div>
+        <button class="sh-fbtn">Cancel</button>
+        <button class="sh-fbtn apply">Apply Route</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="caption">Mockup C · <b>Isometric Room + Bottom Sheet</b> · 3D-style room view, source picker slides up from bottom</div>
+
+</body>
+</html>

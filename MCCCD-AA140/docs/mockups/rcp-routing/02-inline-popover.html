@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MCCCD AA140 · RCP Routing — Mockup B · Live Map + Inline Popover</title>
+<meta name="viewport" content="width=1280" />
+<style>
+  :root {
+    --color-bg: #0d1b2e;
+    --color-panel: rgba(13, 27, 46, 0.92);
+    --color-border: rgba(196, 122, 30, 0.28);
+    --color-border-soft: rgba(148, 163, 184, 0.22);
+    --color-copy: #e2e8f0;
+    --color-copy-soft: #94a3b8;
+    --color-copy-muted: #64748b;
+    --color-accent: #f5a623;
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #06101e; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--color-copy);
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .stage {
+    width: 1280px;
+    height: 800px;
+    background: var(--color-bg);
+    border: 0.5px solid var(--color-border);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    display: grid;
+    grid-template-rows: 60px 1fr 76px;
+    gap: 10px;
+    padding: 10px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────────────── */
+  .hdr {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border-radius: 8px;
+    border: 0.5px solid var(--color-border-soft);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .room { font-size: 18px; font-weight: 900; color: var(--color-copy); }
+  .sep { width: 1px; height: 20px; background: var(--color-border-soft); }
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .spacer { flex: 1; }
+  .mode-seg {
+    display: flex; border-radius: 9px; overflow: hidden;
+    border: 0.5px solid var(--color-border-soft);
+  }
+  .mode-btn {
+    padding: 8px 16px;
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    border-right: 0.5px solid var(--color-border-soft);
+  }
+  .mode-btn:last-child { border-right: none; }
+  .mode-btn.active {
+    background: rgba(245, 166, 35, 0.14);
+    color: var(--color-accent);
+  }
+  .auto-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border-radius: 9px;
+    background: rgba(34, 197, 94, 0.10);
+    border: 0.5px solid rgba(34, 197, 94, 0.28);
+    color: #86efac;
+    font-size: 12px; font-weight: 700;
+  }
+  .auto-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; box-shadow: 0 0 6px currentColor;
+  }
+
+  /* ── MAIN GRID: plan on left, status sidebar on right ────────────── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 10px;
+    min-height: 0;
+  }
+  .body {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .body::before {
+    content: '';
+    position: absolute; inset: 20px;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    border-radius: 8px;
+  }
+
+  .body-title {
+    position: absolute; top: 18px; left: 24px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+    z-index: 2;
+  }
+  .body-hint {
+    position: absolute; top: 18px; right: 24px;
+    font-size: 11px; color: var(--color-copy-soft);
+    z-index: 2;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .body-hint .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+
+  /* ── ROOM PLAN ───────────────────────────────────────────────────── */
+  .plan {
+    position: absolute;
+    top: 60px; left: 60px; right: 60px; bottom: 50px;
+    border: 1.5px solid rgba(196, 122, 30, 0.4);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(8, 14, 26, 0.4), rgba(13, 27, 46, 0.2));
+  }
+  .wall-tag {
+    position: absolute;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .wall-tag.front { top: -22px; left: 50%; transform: translateX(-50%); }
+  .wall-tag.rear { bottom: -22px; left: 50%; transform: translateX(-50%); }
+
+  .table {
+    position: absolute;
+    top: 40%; left: 28%; width: 44%; height: 22%;
+    border: 1px dashed rgba(148, 163, 184, 0.4);
+    border-radius: 80px;
+    display: grid; place-items: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+
+  .speaker {
+    position: absolute; height: 9px;
+    background: rgba(56, 189, 248, 0.22);
+    border: 1px solid rgba(56, 189, 248, 0.55);
+    border-radius: 2px;
+  }
+  .speaker.fl { top: 2px; left: 8%; width: 25%; }
+  .speaker.fr { top: 2px; right: 8%; width: 25%; }
+  .speaker.rl { bottom: 2px; left: 8%; width: 25%; }
+  .speaker.rr { bottom: 2px; right: 8%; width: 25%; }
+
+  .mic {
+    position: absolute;
+    width: 50px; height: 50px;
+    background: rgba(245, 166, 35, 0.12);
+    border: 1.2px solid rgba(245, 166, 35, 0.45);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: rgba(245, 166, 35, 0.95);
+    font-size: 8px; font-weight: 800;
+  }
+  .mic::before {
+    content: '';
+    position: absolute; inset: -8px;
+    border: 1px dashed rgba(245, 166, 35, 0.18);
+    border-radius: 50%;
+  }
+  .mic.live::after {
+    content: '';
+    position: absolute; top: -8px; right: -8px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--color-success);
+    box-shadow: 0 0 8px var(--color-success);
+  }
+  .mic.mxa-a { top: 30%; left: 23%; }
+  .mic.mxa-b { top: 30%; right: 23%; }
+
+  .cam {
+    position: absolute;
+    width: 22px; height: 22px;
+    background: rgba(168, 85, 247, 0.18);
+    border: 1.2px solid rgba(168, 85, 247, 0.55);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: rgba(216, 180, 254, 0.95);
+    font-size: 8px; font-weight: 800;
+  }
+  .cam.cam-a { top: 11%; left: 38%; }
+  .cam.cam-b { top: 11%; right: 38%; }
+
+  .proj {
+    position: absolute;
+    width: 26px; height: 26px;
+    background: rgba(56, 189, 248, 0.10);
+    border: 1.5px solid rgba(56, 189, 248, 0.6);
+    transform: rotate(45deg);
+    display: grid; place-items: center;
+  }
+  .proj-inner {
+    transform: rotate(-45deg);
+    font-size: 9px; font-weight: 800;
+    color: rgba(56, 189, 248, 0.95);
+  }
+  .proj.p1 { top: 20%; left: 30%; }
+  .proj.p2 { top: 20%; left: 64%; }
+
+  /* ── DISPLAYS as wider tiles with live source readout ────────────── */
+  .display {
+    position: absolute;
+    background-image: linear-gradient(180deg, rgba(245, 166, 35, 0.18), rgba(245, 166, 35, 0.06));
+    border: 1.5px solid rgba(245, 166, 35, 0.5);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex; align-items: center;
+    padding: 0 10px; gap: 10px;
+    color: var(--color-accent);
+    transition: transform 140ms ease, box-shadow 140ms ease;
+  }
+  .display:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(245, 166, 35, 0.35);
+  }
+  .display.live {
+    background-image: linear-gradient(180deg, rgba(245, 166, 35, 0.35), rgba(245, 166, 35, 0.18));
+    box-shadow: 0 0 24px rgba(245, 166, 35, 0.35);
+  }
+  .display.off {
+    background-image: linear-gradient(180deg, rgba(100, 116, 139, 0.18), rgba(100, 116, 139, 0.06));
+    border-color: rgba(148, 163, 184, 0.3);
+    color: var(--color-copy-muted);
+  }
+  .d-id {
+    font-size: 14px; font-weight: 900;
+    background: rgba(0,0,0,0.3);
+    padding: 3px 7px; border-radius: 4px;
+    color: #fff;
+    min-width: 30px; text-align: center;
+  }
+  .d-info {
+    display: flex; flex-direction: column; gap: 2px;
+    line-height: 1.1;
+  }
+  .d-name {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .d-srcline {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; opacity: 0.95;
+  }
+  .d-srcline svg { flex-shrink: 0; }
+  .display.d1 { top: 2%; left: 14%; width: 22%; height: 38px; }
+  .display.d2 { top: 2%; left: 64%; width: 22%; height: 38px; }
+  .display.d3 { bottom: 2%; left: 38%; width: 24%; height: 44px; }
+
+  /* ── INLINE POPOVER ─────────────────────────────────────────────── */
+  .popover {
+    position: absolute;
+    width: 220px;
+    background-image: linear-gradient(180deg, #14213a, #08101e);
+    border: 1px solid rgba(245, 166, 35, 0.4);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 5;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,166,35,0.18);
+  }
+  .popover.from-d2 {
+    top: calc(2% + 50px);
+    left: 60%;
+  }
+  .popover::before {
+    content: '';
+    position: absolute;
+    top: -7px; left: 24px;
+    width: 12px; height: 12px;
+    background: #14213a;
+    border-top: 1px solid rgba(245, 166, 35, 0.4);
+    border-left: 1px solid rgba(245, 166, 35, 0.4);
+    transform: rotate(45deg);
+  }
+  .po-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 0.5px solid var(--color-border-soft);
+  }
+  .po-title {
+    font-size: 11px; font-weight: 900; color: #fff;
+  }
+  .po-x {
+    background: transparent; border: none; color: var(--color-copy-muted);
+    font-size: 14px; cursor: pointer; padding: 0 4px;
+  }
+  .po-list {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .po-row {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 8px; border-radius: 7px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 0.5px solid transparent;
+    color: var(--color-copy);
+    cursor: pointer;
+    font-size: 12px; font-weight: 700;
+  }
+  .po-row:hover { background: rgba(30, 41, 59, 0.75); }
+  .po-row.active {
+    background: rgba(245, 166, 35, 0.16);
+    border-color: rgba(245, 166, 35, 0.45);
+    color: var(--color-accent);
+  }
+  .po-ico {
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    color: var(--color-accent);
+  }
+  .po-sub {
+    margin-left: auto;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-copy-muted);
+    font-weight: 700;
+  }
+  .po-foot {
+    margin-top: 10px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .po-fbtn {
+    padding: 7px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase; cursor: pointer;
+    border: 0.5px solid var(--color-border-soft);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+  }
+  .po-fbtn.danger {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────────────────────────── */
+  .side {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    overflow: hidden;
+  }
+  .side-h {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+  .side-disp {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .sd-row {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.55), rgba(8, 14, 26, 0.55));
+    border: 0.5px solid var(--color-border-soft);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .sd-row.active {
+    border-color: rgba(245, 166, 35, 0.5);
+    background: linear-gradient(180deg, rgba(245, 166, 35, 0.18), rgba(245, 166, 35, 0.05));
+  }
+  .sd-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .sd-id {
+    font-size: 12px; font-weight: 900;
+    color: var(--color-accent);
+    background: rgba(0,0,0,0.3);
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .sd-name {
+    font-size: 12px; font-weight: 700;
+    color: var(--color-copy);
+  }
+  .sd-spacer { flex: 1; }
+  .sd-pwr {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--color-success);
+  }
+  .sd-pwr .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; box-shadow: 0 0 6px currentColor;
+  }
+  .sd-pwr.off { color: var(--color-copy-muted); }
+  .sd-src {
+    font-size: 14px; font-weight: 800;
+    color: var(--color-copy);
+    margin-bottom: 3px;
+  }
+  .sd-row.off .sd-src { color: var(--color-copy-muted); }
+  .sd-meta {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+
+  .side-aud {
+    border-top: 0.5px solid var(--color-border-soft);
+    padding-top: 14px;
+  }
+  .aud-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 8px;
+  }
+  .aud-row .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--color-copy-soft);
+    width: 60px;
+  }
+  .aud-bar {
+    flex: 1; height: 4px;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 2px; overflow: hidden;
+  }
+  .aud-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-success), var(--color-accent));
+    border-radius: 2px;
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────────────────── */
+  .ftr {
+    grid-column: 1 / -1;
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    gap: 18px;
+  }
+  .quick { margin-left: auto; display: inline-flex; gap: 10px; }
+  .qbtn {
+    padding: 9px 16px; border-radius: 9px;
+    background: rgba(245, 166, 35, 0.10);
+    border: 0.5px solid rgba(245, 166, 35, 0.28);
+    color: var(--color-accent);
+    font-size: 12px; font-weight: 700;
+    cursor: pointer;
+  }
+  .qbtn.danger {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+  }
+  .f-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--color-copy-muted);
+  }
+
+  .caption {
+    color: #94a3b8; font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; text-align: center; margin-top: 16px;
+  }
+  .caption b { color: #f5a623; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <!-- HEADER -->
+  <header class="hdr">
+    <button class="back-btn">◂ Home</button>
+    <div class="sep"></div>
+    <span class="room">AA140</span>
+    <div class="sep"></div>
+    <span class="eyebrow">Display Routing · Live Map</span>
+    <div class="spacer"></div>
+    <div class="mode-seg">
+      <button class="mode-btn active">Manual</button>
+      <button class="mode-btn">Mirror</button>
+      <button class="mode-btn">Extend</button>
+    </div>
+    <div class="auto-chip">
+      <span class="auto-dot"></span>Auto-Route On
+    </div>
+  </header>
+
+  <!-- MAIN: plan + sidebar -->
+  <div class="main">
+    <!-- PLAN -->
+    <section class="body">
+      <span class="body-title">Live ceiling view · Tap any display to route</span>
+      <span class="body-hint"><span class="pulse-dot"></span>Live · 2 displays active</span>
+
+      <div class="plan">
+        <span class="wall-tag front">Front</span>
+        <span class="wall-tag rear">Rear</span>
+
+        <div class="speaker fl"></div>
+        <div class="speaker fr"></div>
+        <div class="speaker rl"></div>
+        <div class="speaker rr"></div>
+
+        <div class="cam cam-a">A</div>
+        <div class="cam cam-b">B</div>
+
+        <div class="proj p1"><span class="proj-inner">▽</span></div>
+        <div class="proj p2"><span class="proj-inner">▽</span></div>
+
+        <div class="mic mxa-a live">MXA</div>
+        <div class="mic mxa-b live">MXA</div>
+
+        <div class="table">Conference Table</div>
+
+        <!-- Displays with live source readout -->
+        <div class="display d1 live">
+          <span class="d-id">D1</span>
+          <div class="d-info">
+            <span class="d-name">Front Left</span>
+            <span class="d-srcline">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              Room PC
+            </span>
+          </div>
+        </div>
+
+        <div class="display d2 live" id="d2">
+          <span class="d-id">D2</span>
+          <div class="d-info">
+            <span class="d-name">Front Right</span>
+            <span class="d-srcline">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+              AirMedia
+            </span>
+          </div>
+        </div>
+
+        <div class="display d3 off">
+          <span class="d-id">D3</span>
+          <div class="d-info">
+            <span class="d-name">Rear Newline</span>
+            <span class="d-srcline">— No Source</span>
+          </div>
+        </div>
+
+        <!-- INLINE POPOVER for D2 -->
+        <div class="popover from-d2">
+          <div class="po-head">
+            <span class="po-title">D2 · ROUTE SOURCE</span>
+            <button class="po-x">×</button>
+          </div>
+          <div class="po-list">
+            <button class="po-row">
+              <span class="po-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+              Room PC <span class="po-sub">HDMI 1</span>
+            </button>
+            <button class="po-row">
+              <span class="po-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 10h18M8 20h8M12 16v4"/></svg></span>
+              Ext PC <span class="po-sub">HDMI 2</span>
+            </button>
+            <button class="po-row active">
+              <span class="po-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></span>
+              AirMedia <span class="po-sub">WiFi</span>
+            </button>
+            <button class="po-row">
+              <span class="po-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M2 20h20"/></svg></span>
+              Laptop <span class="po-sub">HDMI 3</span>
+            </button>
+          </div>
+          <div class="po-foot">
+            <button class="po-fbtn">⧉ Match D1</button>
+            <button class="po-fbtn danger">⊘ Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIDEBAR -->
+    <aside class="side">
+      <span class="side-h">Display Status</span>
+      <div class="side-disp">
+        <div class="sd-row active">
+          <div class="sd-head">
+            <span class="sd-id">D1</span>
+            <span class="sd-name">Front Left</span>
+            <span class="sd-spacer"></span>
+            <span class="sd-pwr"><span class="dot"></span>On</span>
+          </div>
+          <div class="sd-src">▸ Room PC</div>
+          <div class="sd-meta">Sony VPL · 100" · HDMI 1</div>
+        </div>
+
+        <div class="sd-row active">
+          <div class="sd-head">
+            <span class="sd-id">D2</span>
+            <span class="sd-name">Front Right</span>
+            <span class="sd-spacer"></span>
+            <span class="sd-pwr"><span class="dot"></span>On</span>
+          </div>
+          <div class="sd-src">▸ AirMedia</div>
+          <div class="sd-meta">Sony VPL · 100" · Wireless</div>
+        </div>
+
+        <div class="sd-row off">
+          <div class="sd-head">
+            <span class="sd-id">D3</span>
+            <span class="sd-name">Rear Newline</span>
+            <span class="sd-spacer"></span>
+            <span class="sd-pwr off"><span class="dot"></span>Off</span>
+          </div>
+          <div class="sd-src">— No Source</div>
+          <div class="sd-meta">Newline 86" · Interactive</div>
+        </div>
+      </div>
+
+      <div class="side-aud">
+        <span class="side-h">Audio Source</span>
+        <div class="aud-row">
+          <span class="label">Follows</span>
+          <span class="sd-src" style="margin: 0; font-size: 13px;">D1 · Room PC</span>
+        </div>
+        <div class="aud-row">
+          <span class="label">Program</span>
+          <div class="aud-bar"><div class="aud-fill" style="width: 65%"></div></div>
+        </div>
+        <div class="aud-row">
+          <span class="label">Mics</span>
+          <div class="aud-bar"><div class="aud-fill" style="width: 42%"></div></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="ftr">
+    <span class="f-label">Quick Routes</span>
+    <div class="quick">
+      <button class="qbtn">⤓ Room PC → All</button>
+      <button class="qbtn">⤓ AirMedia → All</button>
+      <button class="qbtn">⧉ Mirror All</button>
+      <button class="qbtn danger">⊘ Clear All</button>
+    </div>
+  </footer>
+</div>
+
+<div class="caption">Mockup B · <b>Live Map + Inline Popover</b> · Sidebar status, popover anchored to tapped display</div>
+
+</body>
+</html>

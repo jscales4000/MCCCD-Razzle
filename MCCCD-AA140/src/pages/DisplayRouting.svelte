@@ -1,27 +1,27 @@
 <!--
-  DisplayRouting — Mockup #14 source-to-display matrix routing page.
+  DisplayRouting v2 — Reflected Ceiling Plan with inline source popover.
 
-  Reached via tile-tap on Home (`goToPage('routing')`). Reuses the existing
-  drag-drop store at lib/stores/router.ts unmodified — class names `chip`,
-  `tile`, and `tile-slot` are mandated by that store.
+  Replaces the source-list + matrix layout with a top-down room schematic.
+  Tap any DisplayMarker in the RoomPlan (or any DisplayStatusCard in the
+  sidebar) to open a SourcePopover anchored to that display. Selection
+  routes via publishAnalog and the popover dismisses.
+
+  Spec: docs/superpowers/specs/2026-05-29-rcp-routing-design.md
 -->
 
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
   import {
-    armChip,
-    armedSource,
-    chipPointerDown,
-    shouldSuppressClick,
     SOURCES,
+    routeSource,
     type DisplayId,
     type SourceId,
   } from '../lib/stores/router';
   import {
     autoRouteEnableFb,
-    audioOutputSelectFb,
     display1PowerFb,
     display2PowerFb,
     display3PowerFb,
@@ -30,110 +30,141 @@
     display3SourceFb,
     routingModeFb,
   } from '../lib/stores/signals';
-  import SourceListItem from '../components/routing/SourceListItem.svelte';
-  import DisplayCell from '../components/routing/DisplayCell.svelte';
+  import RoomPlan from '../components/routing/RoomPlan.svelte';
+  import SourcePopover from '../components/routing/SourcePopover.svelte';
+  import DisplayStatusCard from '../components/routing/DisplayStatusCard.svelte';
 
-  // ── Source-list metadata (4 sources, matching SOURCES in router.ts) ────
-  // Sub-labels match the mockup: connector type per input.
-  const SOURCE_ROWS: Array<{ id: SourceId; sub: string }> = [
-    { id: 'roomPc',   sub: 'Input 1 · HDMI' },
-    { id: 'extPc',    sub: 'Input 2 · HDMI 2' },
-    { id: 'airMedia', sub: 'Input 3 · Wireless' },
-    { id: 'laptop',   sub: 'Input 4 · HDMI 3' },
-  ];
-
-  // ── Display metadata ───────────────────────────────────────────────────
-  const DISPLAY_ROWS: Array<{
-    id: DisplayId;
-    label: string;
-    spec: string;
-    hasMirror: boolean;
-  }> = [
-    { id: 'd1', label: 'Front Left',  spec: '65" 4K · NEC',     hasMirror: true  },
-    { id: 'd2', label: 'Front Right', spec: '65" 4K · NEC',     hasMirror: true  },
-    { id: 'd3', label: 'Rear Center', spec: '55" · Samsung',    hasMirror: false },
-  ];
-
-  // ── Reactive routing map: { roomPc: ['d1','d2'], airMedia: ['d3'], ... }
-  let routing = $derived<Record<SourceId, DisplayId[]>>({
-    roomPc:   collectFor('roomPc'),
-    extPc:    collectFor('extPc'),
-    airMedia: collectFor('airMedia'),
-    laptop:   collectFor('laptop'),
-  });
-
-  // Track all three feedback stores so $derived reruns when any change.
-  function collectFor(srcId: SourceId): DisplayId[] {
-    const ds: DisplayId[] = [];
-    // Reads via $-prefixed stores keep $derived dependent on them.
-    if (sourceForFb($display1SourceFb) === srcId) ds.push('d1');
-    if (sourceForFb($display2SourceFb) === srcId) ds.push('d2');
-    if (sourceForFb($display3SourceFb) === srcId) ds.push('d3');
-    return ds;
+  // ── Source-value (1..4) ↔ SourceId map ─────────────────────────────────
+  const VALUE_TO_SOURCE: Record<number, SourceId> = {
+    1: 'roomPc',
+    2: 'extPc',
+    3: 'airMedia',
+    4: 'laptop',
+  };
+  function srcFromFb(v: number): SourceId | null {
+    return VALUE_TO_SOURCE[v] ?? null;
   }
 
-  function sourceForFb(v: number): SourceId | null {
-    switch (v) {
-      case 1: return 'roomPc';
-      case 2: return 'extPc';
-      case 3: return 'airMedia';
-      case 4: return 'laptop';
-      default: return null;
-    }
-  }
+  // ── Static display metadata ────────────────────────────────────────────
+  const DISPLAY_META = [
+    { id: 'd1' as DisplayId, label: 'Front Left',  spec: 'Sony VPL · 100" Projection' },
+    { id: 'd2' as DisplayId, label: 'Front Right', spec: 'Sony VPL · 100" Projection' },
+    { id: 'd3' as DisplayId, label: 'Rear Newline', spec: 'Newline 86" · Interactive' },
+  ];
 
-  // ── Header — mode segmented + auto-route ──────────────────────────────
+  // ── Reactive merged view: meta + live source/power feedback ───────────
+  let displays = $derived(DISPLAY_META.map(m => ({
+    ...m,
+    activeSource: srcFromFb(
+      m.id === 'd1' ? $display1SourceFb :
+      m.id === 'd2' ? $display2SourceFb : $display3SourceFb
+    ),
+    powerOn:
+      m.id === 'd1' ? $display1PowerFb :
+      m.id === 'd2' ? $display2PowerFb : $display3PowerFb,
+  })));
+
+  // ── Popover state ──────────────────────────────────────────────────────
+  let openDisplay = $state<DisplayId | null>(null);
+  let anchor = $state<{ top: number; left: number; width: number; height: number; containerHeight: number; containerWidth: number } | null>(null);
+  let planCellEl: HTMLDivElement | undefined = $state();
+
+  // ── Header: mode + auto-route ──────────────────────────────────────────
   const MODES: Array<{ value: 1 | 2 | 3; label: string }> = [
     { value: 1, label: 'Manual' },
-    { value: 2, label: 'Mirror All' },
+    { value: 2, label: 'Mirror' },
     { value: 3, label: 'Extend' },
   ];
+  function setMode(v: 1 | 2 | 3) { publishAnalog(SIGNALS.routingMode, v); }
+  function toggleAutoRoute() { publishDigital(SIGNALS.autoRouteEnable, !$autoRouteEnableFb); }
 
-  function setMode(v: 1 | 2 | 3) {
-    publishAnalog(SIGNALS.routingMode, v);
+  // ── Marker / sidebar-card tap handlers ─────────────────────────────────
+  function openPopoverFor(displayId: DisplayId, markerEl: HTMLElement): void {
+    if (!planCellEl) return;
+    const planRect = planCellEl.getBoundingClientRect();
+    const markerRect = markerEl.getBoundingClientRect();
+    anchor = {
+      top: markerRect.top - planRect.top,
+      left: markerRect.left - planRect.left,
+      width: markerRect.width,
+      height: markerRect.height,
+      containerHeight: planRect.height,
+      containerWidth: planRect.width,
+    };
+    openDisplay = displayId;
   }
 
-  function toggleAutoRoute() {
-    publishDigital(SIGNALS.autoRouteEnable, !$autoRouteEnableFb);
+  function onMarkerTap(displayId: DisplayId, el: HTMLElement) {
+    openPopoverFor(displayId, el);
   }
 
-  // ── Source list interactions (arm + drag) ──────────────────────────────
-  function onSourceClick(e: MouseEvent, sourceId: SourceId) {
-    if (shouldSuppressClick()) return;
-    armChip(sourceId);
+  function onSidebarTap(displayId: DisplayId) {
+    // Anchor the popover to the matching plan marker, not the sidebar card,
+    // so the visual focus stays on the room view.
+    if (!planCellEl) return;
+    const markerEl = planCellEl.querySelector(`.marker[data-display="${displayId}"]`) as HTMLElement | null;
+    if (markerEl) openPopoverFor(displayId, markerEl);
   }
 
-  function onSourcePointerDown(e: PointerEvent, el: HTMLElement, sourceId: SourceId) {
-    chipPointerDown(e, el, sourceId);
+  function closePopover() {
+    openDisplay = null;
+    anchor = null;
   }
 
-  // ── Display power + audio ─────────────────────────────────────────────
-  function powerToggle(_id: DisplayId) {
-    // Per-display power is not in the current signal set; the global
-    // displayPower pulse is the closest action available. SIMPL catch-up
-    // can split this when per-display signals land.
-    pulseDigital(SIGNALS.displayPower);
+  // ── Popover actions ────────────────────────────────────────────────────
+  function onSelectSource(sourceId: SourceId): void {
+    if (!openDisplay) return;
+    routeSource(sourceId, openDisplay);
+    closePopover();
   }
 
-  function setAudioOutput(v: 1 | 2) {
-    publishAnalog(SIGNALS.audioOutputSelect, v);
+  function onMirrorD1FromPopover(): void {
+    if (!openDisplay || openDisplay === 'd1') { closePopover(); return; }
+    const d1Source = srcFromFb($display1SourceFb);
+    if (!d1Source) { closePopover(); return; }
+    routeSource(d1Source, openDisplay);
+    closePopover();
   }
 
-  // ── Mirror quick-actions ──────────────────────────────────────────────
-  function mirrorD1ToD3() { pulseDigital(SIGNALS.d1MirrorToD3); }
-  function mirrorD2ToD3() { pulseDigital(SIGNALS.d2MirrorToD3); }
-  function mirrorAll()    { pulseDigital(SIGNALS.mirrorAllSame); }
+  function onClearFromPopover(): void {
+    if (!openDisplay) return;
+    const sig =
+      openDisplay === 'd1' ? SIGNALS.display1Source :
+      openDisplay === 'd2' ? SIGNALS.display2Source : SIGNALS.display3Source;
+    publishAnalog(sig, 0);
+    closePopover();
+  }
 
-  // ── Footer quick routes ───────────────────────────────────────────────
+  // ── Click-outside disarm ───────────────────────────────────────────────
+  function onDocPointerDown(e: PointerEvent) {
+    if (!openDisplay) return;
+    const target = e.target as Element | null;
+    if (!target) return;
+    if (target.closest('.popover') || target.closest('.marker') || target.closest('.sd-row')) return;
+    closePopover();
+  }
+
+  // ── Footer quick routes ────────────────────────────────────────────────
   function routeAllTo(value: 1 | 2 | 3 | 4 | 0) {
     publishAnalog(SIGNALS.display1Source, value);
     publishAnalog(SIGNALS.display2Source, value);
     publishAnalog(SIGNALS.display3Source, value);
   }
-
-  function clearAll()       { routeAllTo(0); }
   function routeRoomPcAll() { routeAllTo(1); }
   function routeAirMediaAll() { routeAllTo(3); }
+  function mirrorAll() { pulseDigital(SIGNALS.mirrorAllSame); }
+  function clearAll() { routeAllTo(0); }
+
+  onMount(() => {
+    document.addEventListener('pointerdown', onDocPointerDown);
+    return () => document.removeEventListener('pointerdown', onDocPointerDown);
+  });
+
+  // ── Audio-follows hint (read-only, sidebar) ─────────────────────────────
+  let audioFollowsLabel = $derived.by(() => {
+    const d1 = srcFromFb($display1SourceFb);
+    return d1 ? `D1 · ${SOURCES[d1].label}` : 'D1 · —';
+  });
 </script>
 
 <svelte:head>
@@ -141,7 +172,7 @@
 </svelte:head>
 
 <div class="routing-page">
-  <!-- HEADER ───────────────────────────────────────────────────────── -->
+  <!-- HEADER ──────────────────────────────────────────────────────────── -->
   <header class="routing-header">
     <button class="back-btn" onclick={() => goToPage('home')} aria-label="Back to Home" type="button">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -152,7 +183,7 @@
     <div class="sep"></div>
     <span class="room">{ROOM_NAME}</span>
     <div class="sep"></div>
-    <span class="eyebrow">Display Routing</span>
+    <span class="eyebrow">Display Routing · Live Map</span>
     <div class="hsp"></div>
 
     <div class="mode-seg" role="tablist" aria-label="Routing mode">
@@ -181,83 +212,61 @@
     </button>
   </header>
 
-  <!-- MAIN ──────────────────────────────────────────────────────────── -->
+  <!-- MAIN: plan + sidebar ─────────────────────────────────────────────── -->
   <div class="routing-main">
+    <div class="plan-cell" bind:this={planCellEl}>
+      <RoomPlan
+        displays={displays}
+        openDisplay={openDisplay}
+        onMarkerTap={onMarkerTap}
+      />
 
-    <!-- Source list (left) -->
-    <aside class="src-panel">
-      <div class="sp-head">Input Sources · Tap to arm · Long-press to drag</div>
-      <div class="src-list">
-        {#each SOURCE_ROWS as row (row.id)}
-          <SourceListItem
-            sourceId={row.id}
-            name={SOURCES[row.id].label}
-            subLabel={row.sub}
-            routedTo={routing[row.id]}
-            selected={$armedSource === row.id}
-            onClick={(e) => onSourceClick(e, row.id)}
-            onPointerDown={(e, el) => onSourcePointerDown(e, el, row.id)}
+      {#if openDisplay && anchor}
+        {@const d = displays.find(x => x.id === openDisplay)}
+        {#if d}
+          <SourcePopover
+            displayId={d.id}
+            displayLabel={d.label}
+            activeSource={d.activeSource}
+            anchor={anchor}
+            canMirrorD1={d.id !== 'd1'}
+            onSelectSource={onSelectSource}
+            onMirrorD1={onMirrorD1FromPopover}
+            onClear={onClearFromPopover}
+            onClose={closePopover}
+          />
+        {/if}
+      {/if}
+    </div>
+
+    <aside class="status-cell">
+      <span class="side-h">Display Status</span>
+      <div class="side-disp">
+        {#each displays as d (d.id)}
+          <DisplayStatusCard
+            displayId={d.id}
+            label={d.label}
+            spec={d.spec}
+            activeSource={d.activeSource}
+            powerOn={d.powerOn}
+            selected={openDisplay === d.id}
+            onTap={onSidebarTap}
           />
         {/each}
       </div>
-    </aside>
 
-    <!-- Matrix (right) -->
-    <section class="matrix-panel">
-      <div class="mp-head">
-        <span class="mp-title">Output Displays · Tap cell to route armed source</span>
-        <span class="mp-hint">Drag-to-route supported</span>
-      </div>
-
-      <div class="matrix-body">
-        <DisplayCell
-          displayId="d1"
-          label={DISPLAY_ROWS[0].label}
-          spec={DISPLAY_ROWS[0].spec}
-          activeSourceFb={$display1SourceFb}
-          powerOn={$display1PowerFb}
-          audioActive={$audioOutputSelectFb === 1}
-          onPowerToggle={() => powerToggle('d1')}
-          onAudioToggle={() => setAudioOutput(1)}
-          onMirror={mirrorD1ToD3}
-        />
-        <DisplayCell
-          displayId="d2"
-          label={DISPLAY_ROWS[1].label}
-          spec={DISPLAY_ROWS[1].spec}
-          activeSourceFb={$display2SourceFb}
-          powerOn={$display2PowerFb}
-          audioActive={$audioOutputSelectFb === 2}
-          onPowerToggle={() => powerToggle('d2')}
-          onAudioToggle={() => setAudioOutput(2)}
-          onMirror={mirrorD2ToD3}
-        />
-        <DisplayCell
-          displayId="d3"
-          label={DISPLAY_ROWS[2].label}
-          spec={DISPLAY_ROWS[2].spec}
-          activeSourceFb={$display3SourceFb}
-          powerOn={$display3PowerFb}
-          audioActive={false}
-          onPowerToggle={() => powerToggle('d3')}
-          onAudioToggle={() => { /* D3 has no dedicated audio route */ }}
-        />
-
-        <div class="mirror-row">
-          <button class="mirror-btn" onclick={mirrorD1ToD3} type="button">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 3v18"/>
-            </svg>
-            Mirror D1 → D3
-          </button>
-          <button class="mirror-btn" onclick={mirrorD2ToD3} type="button">Mirror D2 → D3</button>
-          <button class="mirror-btn" onclick={mirrorAll} type="button">All Displays Same</button>
+      <div class="side-aud">
+        <span class="side-h">Audio Source</span>
+        <div class="aud-row">
+          <span class="aud-label">Follows</span>
+          <span class="aud-val">{audioFollowsLabel}</span>
         </div>
+        <div class="aud-hint">Audio always follows D1's routed source.</div>
       </div>
-    </section>
+    </aside>
   </div>
 
-  <!-- FOOTER ────────────────────────────────────────────────────────── -->
+  <!-- FOOTER ──────────────────────────────────────────────────────────── -->
   <footer class="routing-footer">
     <span class="f-label">Quick Routes</span>
     <button class="route-all" onclick={routeRoomPcAll} type="button">
@@ -272,6 +281,12 @@
         <path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
       </svg>
       AirMedia → All
+    </button>
+    <button class="route-all" onclick={mirrorAll} type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3M12 3v18"/>
+      </svg>
+      Mirror All
     </button>
     <div class="fsp"></div>
     <button class="clear-btn" onclick={clearAll} type="button">
@@ -289,13 +304,13 @@
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-rows: 60px 1fr 88px;
+    grid-template-rows: 60px 1fr 76px;
     gap: 10px;
     padding: 10px;
     box-sizing: border-box;
   }
 
-  /* ── Header ─────────────────────────────────────────────────────── */
+  /* ── Header (matches existing matrix-page header styling) ───────────── */
   .routing-header {
     background: var(--color-panel);
     border: 0.5px solid var(--color-border);
@@ -328,18 +343,8 @@
     border-color: var(--color-accent-soft);
   }
 
-  .room {
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--color-copy);
-  }
-
-  .sep {
-    width: 1px;
-    height: 20px;
-    background: var(--color-border);
-  }
-
+  .room { font-size: 18px; font-weight: 900; color: var(--color-copy); }
+  .sep  { width: 1px; height: 20px; background: var(--color-border); }
   .eyebrow {
     font-size: 10px;
     font-weight: 700;
@@ -347,7 +352,6 @@
     text-transform: uppercase;
     color: var(--color-copy-muted);
   }
-
   .hsp { flex: 1; }
 
   .mode-seg {
@@ -356,7 +360,6 @@
     overflow: hidden;
     border: 0.5px solid var(--color-border);
   }
-
   .mode-btn {
     padding: 8px 16px;
     border: none;
@@ -369,6 +372,7 @@
     cursor: pointer;
     border-right: 0.5px solid var(--color-border);
     transition: background 110ms ease, color 110ms ease;
+    font-family: inherit;
   }
   .mode-btn:last-child { border-right: none; }
   .mode-btn:hover { background: rgba(51, 65, 85, 0.7); color: var(--color-copy); }
@@ -390,6 +394,7 @@
     font-weight: 700;
     cursor: pointer;
     transition: background 110ms ease, border-color 110ms ease, color 110ms ease;
+    font-family: inherit;
   }
   .auto-chip.on {
     background: rgba(34, 197, 94, 0.10);
@@ -406,119 +411,91 @@
   .auto-dot.on {
     background: currentColor;
     box-shadow: 0 0 6px currentColor;
-    animation: routing-auto-pulse 2s ease-in-out infinite;
+    animation: dr-auto-pulse 2s ease-in-out infinite;
   }
-
-  @keyframes routing-auto-pulse {
+  @keyframes dr-auto-pulse {
     0%, 100% { opacity: 1; }
     50%      { opacity: 0.4; }
   }
 
-  /* ── Main grid ──────────────────────────────────────────────────── */
+  /* ── Main grid: plan + sidebar ──────────────────────────────────────── */
   .routing-main {
     display: grid;
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 1fr 300px;
     gap: 10px;
     min-height: 0;
   }
 
-  .src-panel {
+  /* The .plan-cell is the popover's positioning context. RoomPlan fills it,
+     and SourcePopover absolute-positions itself inside, anchored against
+     marker rects. */
+  .plan-cell {
+    position: relative;
+    min-height: 0;
+  }
+
+  .status-cell {
     background: var(--color-panel);
     border: 0.5px solid var(--color-border);
     border-radius: 14px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    min-height: 0;
-  }
-
-  .sp-head {
-    padding: 14px 16px 10px;
-    border-bottom: 0.5px solid var(--color-border);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-copy-muted);
-    background: rgba(8, 14, 26, 0.4);
-  }
-
-  .src-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px;
-    min-height: 0;
-  }
-
-  .matrix-panel {
-    background: var(--color-panel);
-    border: 0.5px solid var(--color-border);
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 0;
-  }
-
-  .mp-head {
-    padding: 14px 20px 10px;
-    border-bottom: 0.5px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(8, 14, 26, 0.4);
-  }
-
-  .mp-title {
-    flex: 1;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-copy-muted);
-  }
-
-  .mp-hint {
-    font-size: 11px;
-    color: var(--color-copy-muted);
-  }
-
-  .matrix-body {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: auto;
     gap: 14px;
-    padding: 16px;
+    overflow: hidden;
     min-height: 0;
   }
 
-  .mirror-row {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 2px 0;
-  }
-
-  .mirror-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 14px;
-    border-radius: 8px;
-    background: rgba(245, 166, 35, 0.08);
-    border: 0.5px solid rgba(245, 166, 35, 0.20);
-    color: var(--color-accent);
-    font-size: 11px;
+  .side-h {
+    font-size: 10px;
     font-weight: 700;
-    cursor: pointer;
-    transition: background 110ms ease;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-copy-muted);
   }
-  .mirror-btn:hover { background: rgba(245, 166, 35, 0.16); }
 
-  /* ── Footer ─────────────────────────────────────────────────────── */
+  .side-disp {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .side-aud {
+    border-top: 0.5px solid var(--color-border);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .aud-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .aud-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-copy-soft);
+    flex-shrink: 0;
+  }
+
+  .aud-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--color-copy);
+  }
+
+  .aud-hint {
+    font-size: 10px;
+    color: var(--color-copy-muted);
+    line-height: 1.4;
+  }
+
+  /* ── Footer ──────────────────────────────────────────────────────────── */
   .routing-footer {
     background: var(--color-panel);
     border: 0.5px solid var(--color-border);
@@ -526,7 +503,7 @@
     display: flex;
     align-items: center;
     padding: 0 20px;
-    gap: 14px;
+    gap: 12px;
   }
 
   .f-label {
@@ -550,6 +527,7 @@
     font-weight: 700;
     cursor: pointer;
     transition: background 120ms ease;
+    font-family: inherit;
   }
   .route-all:hover { background: rgba(245, 166, 35, 0.20); }
 
@@ -568,16 +546,12 @@
     font-weight: 700;
     cursor: pointer;
     transition: background 120ms ease;
+    font-family: inherit;
   }
   .clear-btn:hover { background: rgba(239, 68, 68, 0.18); }
 
   @media (prefers-reduced-motion: reduce) {
     .auto-dot.on { animation: none; }
-    .back-btn,
-    .mode-btn,
-    .auto-chip,
-    .mirror-btn,
-    .route-all,
-    .clear-btn { transition: none; }
+    .back-btn, .mode-btn, .auto-chip, .route-all, .clear-btn { transition: none; }
   }
 </style>
