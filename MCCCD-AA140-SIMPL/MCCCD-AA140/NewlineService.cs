@@ -43,6 +43,9 @@ namespace MCCCD_AA140
         private readonly CrestronControlSystem _cs;
         private TCPClient _client;
         private CTimer _reconnectTimer;
+        private string _host = DISPLAY_HOST;
+        private bool _enabled;
+        private readonly object _stateLock = new object();
 
         public NewlineService(Contract c, CrestronControlSystem cs)
         {
@@ -50,7 +53,53 @@ namespace MCCCD_AA140
             _cs = cs;
         }
 
-        public void Initialize() { Connect(); }
+        public void Initialize()
+        {
+            // Caller (ControlSystem) toggles Start/Stop via ApplyConfig based
+            // on DeviceConfigStore.enabled. No auto-start.
+        }
+
+        public string Host    { get { return _host; } }
+        public bool   Enabled { get { return _enabled; } }
+
+        public void ApplyConfig(string host, bool enabled)
+        {
+            SetHost(host);
+            SetEnabled(enabled);
+        }
+
+        public void SetEnabled(bool value)
+        {
+            if (value) {
+                lock (_stateLock) { _enabled = true; }
+                Connect();
+            } else {
+                lock (_stateLock) { _enabled = false; }
+                CloseAndCancelReconnect();
+            }
+        }
+
+        public void SetHost(string host)
+        {
+            lock (_stateLock) {
+                if (host == _host) return;
+                _host = host ?? "";
+            }
+            CloseAndCancelReconnect();
+            if (_enabled) Connect();
+        }
+
+        private void CloseAndCancelReconnect()
+        {
+            try { _reconnectTimer?.Dispose(); _reconnectTimer = null; } catch { }
+            try {
+                if (_client != null) {
+                    _client.DisconnectFromServer();
+                    _client.Dispose();
+                    _client = null;
+                }
+            } catch { }
+        }
 
         public bool DisplayOnline
         {
@@ -89,14 +138,18 @@ namespace MCCCD_AA140
 
         private void Connect()
         {
+            lock (_stateLock) {
+                if (!_enabled) return;
+                if (string.IsNullOrEmpty(_host)) return;
+            }
             try {
-                _client = new TCPClient(DISPLAY_HOST, NEWLINE_PORT, 1024);
+                _client = new TCPClient(_host, NEWLINE_PORT, 1024);
                 _client.SocketStatusChange += (c, s) => {
                     if (s != SocketStatus.SOCKET_STATUS_CONNECTED) ScheduleReconnect();
                 };
                 _client.ConnectToServerAsync(c => {
                     if (c.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED) {
-                        ErrorLog.Notice("Newline: TCP up at {0}:{1}", DISPLAY_HOST, NEWLINE_PORT);
+                        ErrorLog.Notice("Newline: TCP up at {0}:{1}", _host, NEWLINE_PORT);
                         c.ReceiveDataAsync(OnRx);
                     } else {
                         ScheduleReconnect();
@@ -110,6 +163,7 @@ namespace MCCCD_AA140
 
         private void ScheduleReconnect()
         {
+            lock (_stateLock) { if (!_enabled) return; }
             _reconnectTimer?.Dispose();
             _reconnectTimer = new CTimer(_ => Connect(), RECONNECT_DELAY_MS);
         }

@@ -118,7 +118,7 @@ namespace MCCCD_AA140
 
                 _deviceStore = new MCCCD_AA140.Debug.DeviceConfigStore();
                 _debug       = new MCCCD_AA140.Debug.DebugServer();
-                _debug.Configure(_deviceStore, _audio, _mxa, _cameras, _nvx, _power);
+                _debug.Configure(_deviceStore, _audio, _mxa, _cameras, _nvx, _power, _projectors, _newline, _airmedia);
             }
             catch (System.Exception e)
             {

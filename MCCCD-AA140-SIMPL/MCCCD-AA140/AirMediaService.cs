@@ -18,8 +18,9 @@ namespace MCCCD_AA140
     /// </summary>
     public class AirMediaService
     {
-        // AM-3200 in the main room — confirmed IP from user 2026-05-26.
-        private const string AM_HOST = "192.168.1.177";
+        // AM-3200 in the main room — initial IP from user 2026-05-26.
+        // Mutable so the debug panel can update at runtime.
+        private const string DEFAULT_AM_HOST = "192.168.1.177";
 
         // TODO field-config: confirm default credentials for the AM-3200 web admin.
         private const string AM_USER = "admin";
@@ -30,6 +31,9 @@ namespace MCCCD_AA140
         private readonly Contract _c;
         private readonly CrestronControlSystem _cs;
         private CTimer _pollTimer;
+        private string _host = DEFAULT_AM_HOST;
+        private bool _enabled;
+        private readonly object _stateLock = new object();
 
         public AirMediaService(Contract c, CrestronControlSystem cs)
         {
@@ -39,24 +43,57 @@ namespace MCCCD_AA140
 
         public void Initialize()
         {
-            _pollTimer = new CTimer(_ => PollStatus(), null, 5000, POLL_INTERVAL_MS);
+            // Caller (ControlSystem) toggles Start/Stop via ApplyConfig based
+            // on DeviceConfigStore.enabled. No auto-start.
+        }
+
+        public string Host    { get { return _host; } }
+        public bool   Enabled { get { return _enabled; } }
+
+        public void ApplyConfig(string host, bool enabled)
+        {
+            SetHost(host);
+            SetEnabled(enabled);
+        }
+
+        public void SetHost(string host)
+        {
+            lock (_stateLock) { _host = host ?? ""; }
+        }
+
+        public void SetEnabled(bool value)
+        {
+            lock (_stateLock) {
+                if (value == _enabled) return;
+                _enabled = value;
+            }
+            if (value) {
+                _pollTimer?.Dispose();
+                _pollTimer = new CTimer(_ => PollStatus(), null, 5000, POLL_INTERVAL_MS);
+            } else {
+                _pollTimer?.Dispose();
+                _pollTimer = null;
+            }
         }
 
         public void StartPresentation()
         {
-            HttpPost("https://" + AM_HOST + "/Device/AirMedia/Presentation/Start", "");
+            if (!_enabled) { ErrorLog.Notice("AirMedia: StartPresentation dropped (disabled)"); return; }
+            HttpPost("https://" + _host + "/Device/AirMedia/Presentation/Start", "");
         }
 
         public void StopPresentation()
         {
-            HttpPost("https://" + AM_HOST + "/Device/AirMedia/Presentation/Stop", "");
+            if (!_enabled) { ErrorLog.Notice("AirMedia: StopPresentation dropped (disabled)"); return; }
+            HttpPost("https://" + _host + "/Device/AirMedia/Presentation/Stop", "");
         }
 
         private void PollStatus()
         {
+            if (!_enabled) return;
             CrestronInvoke.BeginInvoke(_ => {
                 try {
-                    var body = HttpGet("https://" + AM_HOST + "/Device/AirMedia");
+                    var body = HttpGet("https://" + _host + "/Device/AirMedia");
                     if (string.IsNullOrEmpty(body)) return;
 
                     // Minimal heuristic until contract signals exist:

@@ -38,6 +38,9 @@ namespace MCCCD_AA140.Debug
         private CameraService _cameras;
         private NvxRoutingService _nvx;
         private SystemPowerController _power;
+        private SonyVplService _projectors;
+        private NewlineService _newline;
+        private AirMediaService _airmedia;
 
         public void Configure(
             DeviceConfigStore store,
@@ -45,7 +48,10 @@ namespace MCCCD_AA140.Debug
             ShureMxaService mxa,
             CameraService cameras,
             NvxRoutingService nvx,
-            SystemPowerController power)
+            SystemPowerController power,
+            SonyVplService projectors,
+            NewlineService newline,
+            AirMediaService airmedia)
         {
             _store = store;
             _audio = audio;
@@ -53,6 +59,9 @@ namespace MCCCD_AA140.Debug
             _cameras = cameras;
             _nvx = nvx;
             _power = power;
+            _projectors = projectors;
+            _newline = newline;
+            _airmedia = airmedia;
         }
 
         public void Start()
@@ -251,16 +260,15 @@ namespace MCCCD_AA140.Debug
         {
             try {
                 switch (key) {
-                    case "p300":  _audio?.ApplyConfig(host, enabled); break;
-                    case "mxa-a": _mxa?.ApplyConfigA(host, enabled);  break;
-                    case "mxa-b": _mxa?.ApplyConfigB(host, enabled);  break;
-                    case "cam-1": _cameras?.SetCameraIp(1, host);     break;
-                    case "cam-2": _cameras?.SetCameraIp(2, host);     break;
-                    // sony-1/sony-2/newline/airmedia: not wired to runtime
-                    // services yet — the inner Projector classes need a
-                    // refactor before they can accept runtime IP changes.
-                    // The config is still persisted so future hardware can
-                    // pick it up after a program reload.
+                    case "p300":     _audio?.ApplyConfig(host, enabled);       break;
+                    case "mxa-a":    _mxa?.ApplyConfigA(host, enabled);         break;
+                    case "mxa-b":    _mxa?.ApplyConfigB(host, enabled);         break;
+                    case "cam-1":    _cameras?.SetCameraIp(1, host);            break;
+                    case "cam-2":    _cameras?.SetCameraIp(2, host);            break;
+                    case "sony-1":   _projectors?.ApplyConfig1(host, enabled); break;
+                    case "sony-2":   _projectors?.ApplyConfig2(host, enabled); break;
+                    case "newline":  _newline?.ApplyConfig(host, enabled);      break;
+                    case "airmedia": _airmedia?.ApplyConfig(host, enabled);     break;
                 }
             } catch (Exception ex) {
                 ErrorLog.Warn("ApplyConfigToService[{0}]: {1}", key, ex.Message);

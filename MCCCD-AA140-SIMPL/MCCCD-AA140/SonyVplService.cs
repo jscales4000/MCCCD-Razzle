@@ -47,9 +47,16 @@ namespace MCCCD_AA140
 
         public void Initialize()
         {
-            _proj1.Start();
-            _proj2.Start();
+            // Caller (ControlSystem) toggles Start/Stop via ApplyConfig1/2 based
+            // on DeviceConfigStore.enabled. No auto-start.
         }
+
+        public void ApplyConfig1(string host, bool enabled) { _proj1.SetHost(host); _proj1.SetEnabled(enabled); }
+        public void ApplyConfig2(string host, bool enabled) { _proj2.SetHost(host); _proj2.SetEnabled(enabled); }
+        public string Host1    => _proj1.Host;
+        public string Host2    => _proj2.Host;
+        public bool   Enabled1 => _proj1.Enabled;
+        public bool   Enabled2 => _proj2.Enabled;
 
         // Public commands — call from contract wiring or external triggers.
         public void PowerOn(int projector)    { GetProj(projector)?.Send("power \"on\""); }
@@ -79,13 +86,15 @@ namespace MCCCD_AA140
         // ===================================================================
         private class Projector
         {
-            private readonly string _host;
+            private string _host;
             private readonly int _port;
             private readonly string _name;
             private TCPClient _client;
             private readonly StringBuilder _rxBuf = new StringBuilder();
             private CTimer _reconnectTimer;
             private bool _authReady;
+            private bool _enabled;
+            private readonly object _stateLock = new object();
 
             public Projector(string host, int port, string name)
             {
@@ -99,7 +108,49 @@ namespace MCCCD_AA140
                 get { return _client != null && _client.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED; }
             }
 
-            public void Start() { Connect(); }
+            public string Host    { get { return _host; } }
+            public bool   Enabled { get { return _enabled; } }
+
+            public void Start()
+            {
+                lock (_stateLock) { _enabled = true; }
+                Connect();
+            }
+
+            public void Stop()
+            {
+                lock (_stateLock) { _enabled = false; }
+                CloseAndCancelReconnect();
+            }
+
+            public void SetEnabled(bool value)
+            {
+                if (value) Start();
+                else       Stop();
+            }
+
+            public void SetHost(string host)
+            {
+                lock (_stateLock) {
+                    if (host == _host) return;
+                    _host = host ?? "";
+                }
+                CloseAndCancelReconnect();
+                if (_enabled) Connect();
+            }
+
+            private void CloseAndCancelReconnect()
+            {
+                try { _reconnectTimer?.Dispose(); _reconnectTimer = null; } catch { }
+                try {
+                    if (_client != null) {
+                        _client.DisconnectFromServer();
+                        _client.Dispose();
+                        _client = null;
+                    }
+                } catch { }
+                _authReady = false;
+            }
 
             public void Send(string command)
             {
@@ -113,6 +164,10 @@ namespace MCCCD_AA140
 
             private void Connect()
             {
+                lock (_stateLock) {
+                    if (!_enabled) return;
+                    if (string.IsNullOrEmpty(_host)) return;
+                }
                 try {
                     _authReady = false;
                     _client = new TCPClient(_host, _port, 1024);
@@ -135,6 +190,7 @@ namespace MCCCD_AA140
 
             private void ScheduleReconnect()
             {
+                lock (_stateLock) { if (!_enabled) return; }
                 _authReady = false;
                 _reconnectTimer?.Dispose();
                 _reconnectTimer = new CTimer(_ => Connect(), RECONNECT_DELAY_MS);
