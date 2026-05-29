@@ -41,6 +41,7 @@ namespace MCCCD_AA140.Debug
         private SonyVplService _projectors;
         private NewlineService _newline;
         private AirMediaService _airmedia;
+        private PanelDispatcher _panel;
 
         public void Configure(
             DeviceConfigStore store,
@@ -51,7 +52,8 @@ namespace MCCCD_AA140.Debug
             SystemPowerController power,
             SonyVplService projectors,
             NewlineService newline,
-            AirMediaService airmedia)
+            AirMediaService airmedia,
+            PanelDispatcher panel)
         {
             _store = store;
             _audio = audio;
@@ -62,6 +64,7 @@ namespace MCCCD_AA140.Debug
             _projectors = projectors;
             _newline = newline;
             _airmedia = airmedia;
+            _panel = panel;
         }
 
         public void Start()
@@ -111,6 +114,8 @@ namespace MCCCD_AA140.Debug
                     else if (sub.StartsWith("/mic/",     StringComparison.OrdinalIgnoreCase)) HandleMicPost(args, sub);
                     else if (sub.StartsWith("/audio/",   StringComparison.OrdinalIgnoreCase)) HandleAudioPost(args, sub.Substring("/audio/".Length));
                     else if (sub.StartsWith("/power/",   StringComparison.OrdinalIgnoreCase)) HandlePowerPost(args, sub.Substring("/power/".Length));
+                    else if (sub.StartsWith("/nvx/",     StringComparison.OrdinalIgnoreCase)) HandleNvxPost(args, sub.Substring("/nvx/".Length));
+                    else if (Eq(sub, "/signal"))                                              HandleSignalPost(args);
                     else                                         Serve404(args, "POST " + sub);
                 } else {
                     Serve404(args, method + " " + sub);
@@ -398,6 +403,61 @@ namespace MCCCD_AA140.Debug
             }
             DebugTrace.Command("system", "power-" + action);
             ServeOk(args);
+        }
+
+        // ─── /nvx/route?dec=1..3&src=0..4 ────────────────────────────────
+
+        private void HandleNvxPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            sub = sub.Trim('/').ToLowerInvariant();
+            if (_nvx == null) { ServeJson(args, 503, "{\"error\":\"no nvx\"}"); return; }
+            var qs = args.Context.Request.QueryString;
+
+            if (sub == "route") {
+                if (!int.TryParse(qs?["dec"], out int dec) || dec < 1 || dec > 3) {
+                    ServeJson(args, 400, "{\"error\":\"dec must be 1..3\"}"); return;
+                }
+                if (!int.TryParse(qs?["src"], out int src) || src < 0 || src > 4) {
+                    ServeJson(args, 400, "{\"error\":\"src must be 0..4\"}"); return;
+                }
+                _nvx.RouteSourceToDisplay((ushort)src, dec);
+                DebugTrace.Command("nvx", "route-override", "dec=" + dec + " src=" + src);
+                ServeOk(args);
+            } else {
+                Serve404(args, "nvx/" + sub);
+            }
+        }
+
+        // ─── /signal?join=N&type=bool|ushort|string&value=X ──────────────
+
+        private void HandleSignalPost(HttpCwsRequestEventArgs args)
+        {
+            if (_panel == null) { ServeJson(args, 503, "{\"error\":\"no panel\"}"); return; }
+            var qs = args.Context.Request.QueryString;
+            if (!uint.TryParse(qs?["join"], out uint join) || join == 0) {
+                ServeJson(args, 400, "{\"error\":\"join must be uint > 0\"}"); return;
+            }
+            string type = (qs?["type"] ?? "").ToLowerInvariant();
+            string val  = qs?["value"] ?? "";
+
+            try {
+                if (type == "bool") {
+                    bool b = (val == "1" || val == "true" || val == "on");
+                    _panel.WriteBool(join, b);
+                } else if (type == "ushort") {
+                    if (!ushort.TryParse(val, out ushort u)) {
+                        ServeJson(args, 400, "{\"error\":\"value must be 0..65535\"}"); return;
+                    }
+                    _panel.WriteUShort(join, u);
+                } else {
+                    ServeJson(args, 400, "{\"error\":\"type must be bool or ushort\"}"); return;
+                }
+                DebugTrace.Command("panel", "raw-signal", "join=" + join + " type=" + type + " value=" + val);
+                ServeOk(args);
+            } catch (Exception ex) {
+                ErrorLog.Warn("HandleSignalPost join={0}: {1}", join, ex.Message);
+                ServeJson(args, 500, "{\"error\":\"" + ex.Message.Replace("\"", "'") + "\"}");
+            }
         }
 
         // ─── helpers ─────────────────────────────────────────────────────

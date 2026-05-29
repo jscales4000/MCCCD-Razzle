@@ -35,15 +35,40 @@
       </div>
     </section>
 
+    <!-- Raw signal send: write any SmartObject join to the panel -->
+    <section class="card" id="signal-card">
+      <h2>Raw Signal</h2>
+      <p class="muted small">Writes a value to SmartObject-1 join# on both TSWs. Bool/ushort only.</p>
+      <div class="row">
+        <input id="sig-join"  class="dev-ip" type="number" min="1" max="65535" placeholder="join #" style="max-width:100px"/>
+        <select id="sig-type" class="dev-ip" style="max-width:100px">
+          <option value="bool">bool</option>
+          <option value="ushort">ushort</option>
+        </select>
+        <input id="sig-value" class="dev-ip" type="text" placeholder="value" style="max-width:120px"/>
+        <button id="sig-send" class="btn small">Send</button>
+        <span id="sig-status" class="muted small"></span>
+      </div>
+    </section>
+
     <!-- NVX routing -->
     <section class="card wide" id="nvx-card">
       <h2>NVX Routing</h2>
       <table class="nvx-route-table">
-        <thead><tr><th>Decoder</th><th>State</th><th>Source</th><th>URL</th></tr></thead>
+        <thead><tr><th>Decoder</th><th>State</th><th>Source</th><th>URL</th><th>Override</th></tr></thead>
         <tbody>
-          <tr data-dec="nvx-d1"><td>D1</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td></tr>
-          <tr data-dec="nvx-d2"><td>D2</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td></tr>
-          <tr data-dec="nvx-d3"><td>D3</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td></tr>
+          <tr data-dec="nvx-d1" data-dec-num="1">
+            <td>D1</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td>
+            <td class="nvx-override"><button data-route-src="1">1·RoomPC</button><button data-route-src="2">2·ExtPC</button><button data-route-src="3">3·AirMedia</button><button data-route-src="4">4·NVX-384</button><button data-route-src="0" class="clear">×</button></td>
+          </tr>
+          <tr data-dec="nvx-d2" data-dec-num="2">
+            <td>D2</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td>
+            <td class="nvx-override"><button data-route-src="1">1·RoomPC</button><button data-route-src="2">2·ExtPC</button><button data-route-src="3">3·AirMedia</button><button data-route-src="4">4·NVX-384</button><button data-route-src="0" class="clear">×</button></td>
+          </tr>
+          <tr data-dec="nvx-d3" data-dec-num="3">
+            <td>D3</td><td class="state unknown">—</td><td class="src">—</td><td class="url">—</td>
+            <td class="nvx-override"><button data-route-src="1">1·RoomPC</button><button data-route-src="2">2·ExtPC</button><button data-route-src="3">3·AirMedia</button><button data-route-src="4">4·NVX-384</button><button data-route-src="0" class="clear">×</button></td>
+          </tr>
         </tbody>
       </table>
       <h3 class="muted">Encoders</h3>

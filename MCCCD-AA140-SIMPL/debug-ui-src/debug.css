@@ -72,6 +72,28 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); fon
 #nvx-card td.src  { color: var(--fg); }
 #nvx-card td.ip, #nvx-card td.mcast { color: var(--muted); }
 #nvx-card h3 { margin: 18px 0 6px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+#nvx-card td.nvx-override { display: flex; gap: 4px; flex-wrap: wrap; padding: 4px 8px; }
+#nvx-card td.nvx-override button {
+  padding: 3px 8px;
+  background: rgba(61, 126, 255, 0.10);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  white-space: nowrap;
+}
+#nvx-card td.nvx-override button:hover { background: rgba(61, 126, 255, 0.25); border-color: rgba(61, 126, 255, 0.45); }
+#nvx-card td.nvx-override button.clear  { background: rgba(248, 113, 113, 0.10); border-color: rgba(248, 113, 113, 0.30); color: var(--bad); }
+#nvx-card td.nvx-override button.clear:hover { background: rgba(248, 113, 113, 0.25); }
+
+/* Raw Signal card */
+#signal-card .row { gap: 6px; }
+#signal-card input, #signal-card select { font-size: 12px; padding: 4px 8px; }
+#sig-status { margin-left: 8px; }
+#sig-status.ok  { color: var(--good); }
+#sig-status.bad { color: var(--bad); }
 
 /* DEVICES */
 .devices-body { display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 8px 14px; align-items: center; }

@@ -707,6 +707,47 @@
     btn.addEventListener("click", function () { post("./power/" + btn.getAttribute("data-power")); });
   });
 
+  // ─── NVX manual route override ─────────────────────────────────────
+  document.querySelectorAll("#nvx-card td.nvx-override button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest("tr");
+      var dec = row && row.getAttribute("data-dec-num");
+      var src = btn.getAttribute("data-route-src");
+      if (!dec || src == null) return;
+      post("./nvx/route?dec=" + dec + "&src=" + src);
+    });
+  });
+
+  // ─── Raw signal send ───────────────────────────────────────────────
+  var $sigJoin   = document.getElementById("sig-join");
+  var $sigType   = document.getElementById("sig-type");
+  var $sigValue  = document.getElementById("sig-value");
+  var $sigSend   = document.getElementById("sig-send");
+  var $sigStatus = document.getElementById("sig-status");
+  if ($sigSend) {
+    $sigSend.addEventListener("click", function () {
+      var join = ($sigJoin.value || "").trim();
+      var type = $sigType.value;
+      var val  = ($sigValue.value || "").trim();
+      if (!join) { setSigStatus("bad", "join required"); return; }
+      if (type === "ushort" && !/^\d+$/.test(val)) { setSigStatus("bad", "ushort needs 0..65535"); return; }
+      var url = "./signal?join=" + encodeURIComponent(join) + "&type=" + encodeURIComponent(type) + "&value=" + encodeURIComponent(val);
+      fetch(url, { method: "POST", cache: "no-store" })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          if (res.ok && res.j && res.j.ok) setSigStatus("ok", "sent");
+          else setSigStatus("bad", (res.j && res.j.error) || "failed");
+        })
+        .catch(function (err) { setSigStatus("bad", err.message); });
+    });
+  }
+  function setSigStatus(cls, msg) {
+    if (!$sigStatus) return;
+    $sigStatus.className = "muted small " + cls;
+    $sigStatus.textContent = msg;
+    setTimeout(function () { $sigStatus.textContent = ""; $sigStatus.className = "muted small"; }, 2000);
+  }
+
   function post(url) {
     fetch(url, { method: "POST", cache: "no-store" })
       .catch(function (err) { console.warn("POST failed:", url, err); });
