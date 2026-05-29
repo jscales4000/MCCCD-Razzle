@@ -10,7 +10,7 @@
   } from '../lib/stores/signals';
   import { goToPage } from '../lib/stores/page';
   import { userPoweredOn } from '../lib/stores/session';
-  import AppFooter from '../components/AppFooter.svelte';
+  import Aa140Footer from '../components/Aa140Footer.svelte';
   import HomeSplash from '../components/HomeSplash.svelte';
   import VolIcon from '../lib/ui/VolIcon.svelte';
 
@@ -173,7 +173,7 @@
       </div>
     </main>
 
-    <AppFooter />
+    <Aa140Footer />
     {:else}
     <HomeSplash
       roomName={ROOM_NAME}

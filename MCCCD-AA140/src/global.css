@@ -18,6 +18,12 @@
   --color-accent-glow: rgba(56, 189, 248, 0.25);
   --color-success: #22c55e;
   --color-danger: #ef4444;
+
+  /* AppFooter — mic-state tokens. Other projects override these to retheme
+     the mic Live / Muted states without touching the component. */
+  --color-mic-live: #4ade80;
+  --color-mic-muted: #fca5a5;
+
   --shadow-panel: 0 18px 48px rgba(2, 6, 23, 0.35);
   --radius-panel: 16px;
   --radius-button: 8px;

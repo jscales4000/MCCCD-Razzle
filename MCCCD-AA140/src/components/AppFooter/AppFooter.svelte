@@ -1,83 +1,93 @@
 <!--
-  AppFooter — shared bottom bar used by Home and DisplayRouting.
+  AppFooter — MCCCD standard bottom bar.
 
-  Layout (final, locked):
-   - Power: V2 "Inline Status Chip" — icon + "POWER" + small "ON"/"OFF" chip
-   - Mics: V4 "Live Waveform" — borderless, animated wave bars when live,
-     italic "Muted" label when muted; green/red color-coded icon
-   - Vol: F "Bold +/-" — big typographic minus + 65-level readout + big plus,
-     divider, then a mute icon on the right
+  Pure presentational component. Owns NO room-specific knowledge:
+    - No imports from lib/contract, lib/CrComLib, or lib/stores/signals
+    - All state arrives via props; all actions are callback props
+    - Owns its own modal + volume-popup state (those ARE part of the standard UX)
 
-  Owns its own modal / popup state so any page that mounts the footer
-  gets identical power-off + volume-flash behavior. confirmShutdown
-  navigates back to Home so users always land on the splash.
+  Visual identity is fixed (the "MCCCD footer look"). Per-room variation lives
+  in the data passed in: mics array length, names, mute states, shutdown items.
+
+  See ./README.md for the integration recipe.
 -->
 
 <script lang="ts">
-  import { SIGNALS } from '../lib/contract';
-  import { publishDigital, pulseDigital } from '../lib/CrComLib';
-  import { goToPage } from '../lib/stores/page';
-  import { userPoweredOn } from '../lib/stores/session';
-  import {
-    micLavMuteFb, micHandheldMuteFb,
-    occupancyState, shutdownCountdown,
-    progAudioLevelFb,
-    systemPowerFb,
-  } from '../lib/stores/signals';
-  import ConfirmShutdownModal from './ConfirmShutdownModal.svelte';
-  import VolumePopup from './VolumePopup.svelte';
+  import ConfirmShutdownModal from '../ConfirmShutdownModal.svelte';
+  import VolumePopup from '../VolumePopup.svelte';
+  import type { FooterPower, FooterVolume, MicChannel, ShutdownItem } from './types';
 
-  let systemOn = $derived($systemPowerFb || $userPoweredOn);
+  interface Props {
+    power: FooterPower;
+    mics: MicChannel[];
+    volume: FooterVolume;
+    shutdownItems: ShutdownItem[];
+
+    onPowerOn: () => void;
+    onShutdownConfirm: () => void;
+    onVolumeUp: () => void;
+    onVolumeDown: () => void;
+    onMuteToggle: () => void;
+
+    /** Optional vacancy minutes shown in the shutdown modal's bottom strip. */
+    vacancyMinutes?: number;
+    /** Seconds before the auto-confirm ring completes. Defaults to 30. */
+    shutdownCountdown?: number;
+    /** Custom title for the shutdown modal. Defaults to "Shut Down Room?". */
+    shutdownTitle?: string;
+  }
+
+  let {
+    power,
+    mics,
+    volume,
+    shutdownItems,
+    onPowerOn,
+    onShutdownConfirm,
+    onVolumeUp,
+    onVolumeDown,
+    onMuteToggle,
+    vacancyMinutes,
+    shutdownCountdown = 30,
+    shutdownTitle = 'Shut Down Room?',
+  }: Props = $props();
 
   let showShutdownModal = $state(false);
   let volumePopup: { show: () => void } | undefined = $state(undefined);
 
-  function volDown() {
-    pulseDigital(SIGNALS.volumeDown);
-    volumePopup?.show();
-  }
-  function volUp() {
-    pulseDigital(SIGNALS.volumeUp);
-    volumePopup?.show();
-  }
-  function toggleMaster() {
-    pulseDigital(SIGNALS.muteAll);
-  }
-
-  function toggleLavMute() {
-    publishDigital(SIGNALS.micLavMute, !$micLavMuteFb);
-  }
-  function toggleHandheldMute() {
-    publishDigital(SIGNALS.micHandheldMute, !$micHandheldMuteFb);
-  }
-
-  function powerButtonTapped() {
-    if (systemOn) {
+  function powerTapped() {
+    if (power.isOn) {
       showShutdownModal = true;
     } else {
-      userPoweredOn.set(true);
-      pulseDigital(SIGNALS.displayPower);
+      onPowerOn();
     }
   }
 
   function confirmShutdown() {
     showShutdownModal = false;
-    userPoweredOn.set(false);
-    pulseDigital(SIGNALS.displayPower);
-    goToPage('home');
+    onShutdownConfirm();
   }
   function cancelShutdown() {
     showShutdownModal = false;
   }
+
+  function handleVolUp() {
+    onVolumeUp();
+    volumePopup?.show();
+  }
+  function handleVolDown() {
+    onVolumeDown();
+    volumePopup?.show();
+  }
 </script>
 
-<footer class="app-footer">
+<footer class="app-footer" style:--mic-count={mics.length}>
   <!-- ── Power (V2: Inline Status Chip) ─────────────────────────────── -->
   <button
     class="pwr"
-    class:on={systemOn}
-    onclick={powerButtonTapped}
-    aria-label={systemOn ? 'System on — tap to shut down' : 'System off — tap to power on'}
+    class:on={power.isOn}
+    onclick={powerTapped}
+    aria-label={power.isOn ? 'System on — tap to shut down' : 'System off — tap to power on'}
     type="button"
   >
     <span class="pwr-icon" aria-hidden="true">
@@ -87,76 +97,56 @@
       </svg>
     </span>
     <span class="pwr-name">Power</span>
-    <span class="pwr-status">{systemOn ? 'On' : 'Off'}</span>
+    <span class="pwr-status">{power.isOn ? 'On' : 'Off'}</span>
   </button>
 
   <!-- ── Mics (V4: Live Waveform) ───────────────────────────────────── -->
-  <div class="mics">
-    <span class="mics-label">Mics</span>
-
-    <button
-      class="mbtn"
-      class:live={!$micLavMuteFb}
-      class:muted={$micLavMuteFb}
-      onclick={toggleLavMute}
-      aria-pressed={$micLavMuteFb}
-      type="button"
-    >
-      <span class="mbtn-icon" aria-hidden="true">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="3" width="6" height="11" rx="3"/>
-          <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>
-        </svg>
-      </span>
-      <span class="mbtn-text">
-        <span class="mbtn-name">Lav</span>
-        {#if $micLavMuteFb}
-          <span class="mbtn-mute-label">Muted</span>
-        {:else}
-          <span class="mbtn-waveform" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
+  {#if mics.length > 0}
+    <div class="mics">
+      <span class="mics-label">{mics.length === 1 ? 'Mic' : 'Mics'}</span>
+      {#each mics as mic (mic.id)}
+        <button
+          class="mbtn"
+          class:live={!mic.isMuted}
+          class:muted={mic.isMuted}
+          onclick={mic.onToggle}
+          aria-pressed={mic.isMuted}
+          aria-label="{mic.label} — {mic.isMuted ? 'muted' : 'live'}, tap to toggle"
+          type="button"
+        >
+          <span class="mbtn-icon" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="3" width="6" height="11" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>
+            </svg>
           </span>
-        {/if}
-      </span>
-    </button>
-
-    <button
-      class="mbtn"
-      class:live={!$micHandheldMuteFb}
-      class:muted={$micHandheldMuteFb}
-      onclick={toggleHandheldMute}
-      aria-pressed={$micHandheldMuteFb}
-      type="button"
-    >
-      <span class="mbtn-icon" aria-hidden="true">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="3" width="6" height="11" rx="3"/>
-          <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>
-        </svg>
-      </span>
-      <span class="mbtn-text">
-        <span class="mbtn-name">Handheld</span>
-        {#if $micHandheldMuteFb}
-          <span class="mbtn-mute-label">Muted</span>
-        {:else}
-          <span class="mbtn-waveform" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span class="mbtn-text">
+            <span class="mbtn-name">{mic.label}</span>
+            {#if mic.isMuted}
+              <span class="mbtn-mute-label">Muted</span>
+            {:else}
+              <span class="mbtn-waveform" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </span>
+            {/if}
           </span>
-        {/if}
-      </span>
-    </button>
-  </div>
+        </button>
+      {/each}
+    </div>
+  {:else}
+    <span class="mics-spacer" aria-hidden="true"></span>
+  {/if}
 
   <!-- ── Vol (F: Bold +/−) ──────────────────────────────────────────── -->
   <div class="vol">
     <span class="vol-label">Vol</span>
-    <button class="vbtn" onclick={volDown} aria-label="Volume down" type="button">−</button>
+    <button class="vbtn" onclick={handleVolDown} aria-label="Volume down" type="button">−</button>
     <span class="vol-readout">
-      {$progAudioLevelFb}<small>level</small>
+      {volume.level}<small>level</small>
     </span>
-    <button class="vbtn" onclick={volUp} aria-label="Volume up" type="button">+</button>
+    <button class="vbtn" onclick={handleVolUp} aria-label="Volume up" type="button">+</button>
     <div class="vol-divider" aria-hidden="true"></div>
-    <button class="vbtn-mute" onclick={toggleMaster} aria-label="Mute toggle" type="button">
+    <button class="vbtn-mute" onclick={onMuteToggle} aria-label="Mute toggle" type="button">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/>
       </svg>
@@ -166,18 +156,15 @@
 
 <ConfirmShutdownModal
   open={showShutdownModal}
-  countdown={30}
-  vacancyMinutes={$occupancyState === 2 ? $shutdownCountdown : undefined}
-  shutdownItems={[
-    { icon: 'display', label: '4 Displays (D1 Front Left, D2 Front Right, D3 Rear, D4 Podium)' },
-    { icon: 'audio',   label: 'Audio system + all 5 microphone channels' },
-    { icon: 'camera',  label: 'Camera system (2 PTZ cameras)' },
-  ]}
+  countdown={shutdownCountdown}
+  title={shutdownTitle}
+  {vacancyMinutes}
+  {shutdownItems}
   onConfirm={confirmShutdown}
   onCancel={cancelShutdown}
 />
 
-<VolumePopup bind:this={volumePopup} level={$progAudioLevelFb} />
+<VolumePopup bind:this={volumePopup} level={volume.level} />
 
 <style>
   .app-footer {
@@ -191,6 +178,7 @@
     gap: 18px;
     min-height: 112px;
   }
+  .mics-spacer { display: block; min-height: 1px; }
 
   /* ── Power: V2 Inline Status Chip ─────────────────────────────────── */
   .pwr {
@@ -240,7 +228,6 @@
     background: var(--color-accent-soft, rgba(245, 166, 35, 0.18));
     color: var(--color-accent, #f5a623);
   }
-  /* When the system is off, dim the chip to a neutral state */
   .pwr:not(.on) .pwr-status {
     background: rgba(100, 116, 139, 0.18);
     color: var(--color-copy-soft, #94a3b8);
@@ -278,6 +265,9 @@
     gap: 12px;
     font-family: inherit;
     transition: transform 110ms ease;
+    /* Mic buttons shrink slightly when there are more than 3 in the footer.
+       Override --mic-min-width in the consuming project's CSS if needed. */
+    min-width: var(--mic-min-width, auto);
   }
   .mbtn:active { transform: scale(0.97); }
   .mbtn:focus-visible {
@@ -295,8 +285,8 @@
     position: relative;
     transition: color 200ms ease;
   }
-  .mbtn.live .mbtn-icon { color: #4ade80; }
-  .mbtn.muted .mbtn-icon { color: #fca5a5; }
+  .mbtn.live .mbtn-icon { color: var(--color-mic-live, #4ade80); }
+  .mbtn.muted .mbtn-icon { color: var(--color-mic-muted, #fca5a5); }
   .mbtn.muted .mbtn-icon::after {
     content: '';
     position: absolute;
@@ -330,8 +320,8 @@
   .mbtn-waveform > span {
     width: 3px;
     border-radius: 1px;
-    background: #4ade80;
-    box-shadow: 0 0 4px #4ade80;
+    background: var(--color-mic-live, #4ade80);
+    box-shadow: 0 0 4px var(--color-mic-live, #4ade80);
     animation: af-wave 1100ms ease-in-out infinite;
   }
   .mbtn-waveform > span:nth-child(1) { height: 40%; animation-delay: 0ms; }
@@ -350,7 +340,7 @@
     font-weight: 800;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: #fca5a5;
+    color: var(--color-mic-muted, #fca5a5);
   }
 
   /* ── Vol: F Bold +/− ──────────────────────────────────────────────── */

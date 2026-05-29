@@ -35,7 +35,7 @@
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
   import DisplayStatusCard from '../components/routing/DisplayStatusCard.svelte';
-  import AppFooter from '../components/AppFooter.svelte';
+  import Aa140Footer from '../components/Aa140Footer.svelte';
 
   // ── Source-value (1..4) ↔ SourceId map ─────────────────────────────────
   const VALUE_TO_SOURCE: Record<number, SourceId> = {
@@ -262,7 +262,7 @@
     </aside>
   </div>
 
-  <AppFooter />
+  <Aa140Footer />
 </div>
 
 <style>
