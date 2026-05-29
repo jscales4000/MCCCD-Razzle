@@ -40,6 +40,26 @@ namespace MCCCD_AA140
             // Mirror buttons — one-shot copy of D1/D2 current source onto D3.
             _panel.OnBool(PanelJoins.BoolOut.D1MirrorToD3, v => { if (v) _nvx.MirrorTo3(_lastD1); });
             _panel.OnBool(PanelJoins.BoolOut.D2MirrorToD3, v => { if (v) _nvx.MirrorTo3(_lastD2); });
+
+            // Per-display source select. The panel publishes a UShort 0..4 (0=clear).
+            // We route via NVX and remember the value so the next PowerUpSequence
+            // restores it and so the mirror buttons reflect the live state.
+            //
+            // Driving via PanelDispatcher.OnUShort instead of the Contract Editor
+            // wrappers (_c.AA140.Display{N}SourceFb) — the wrappers' join-name
+            // alignment past index 4 is unreliable per the PanelJoins doc, and
+            // the dispatcher is the proven path used by every other service.
+            _panel.OnUShort(PanelJoins.UShortOut.Display1Source, v => {
+                _lastD1 = v;
+                _nvx.RouteSourceToDisplay(v, 1);
+            });
+            _panel.OnUShort(PanelJoins.UShortOut.Display2Source, v => {
+                _lastD2 = v;
+                _nvx.RouteSourceToDisplay(v, 2);
+            });
+            _panel.OnUShort(PanelJoins.UShortOut.Display3Source, v => {
+                _nvx.RouteSourceToDisplay(v, 3);
+            });
         }
 
         public void PowerUpSequence()
