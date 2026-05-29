@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.Net.Http;
 using Crestron.SimplSharpPro;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -215,11 +217,14 @@ namespace MCCCD_AA140
                             RequestType = RequestType.Get,
                         };
                         var resp = client.Dispatch(req);
-                        if (resp.Code >= 400)
+                        if (resp.Code >= 400) {
                             ErrorLog.Warn("CameraService HTTP {0}: {1}", resp.Code, url);
+                            DebugTrace.Error("cam-" + _active, "HTTP " + resp.Code + ": " + url);
+                        }
                     }
                 } catch (Exception ex) {
                     ErrorLog.Error("CameraService HTTP exception: {0}", ex.Message);
+                    DebugTrace.Error("cam-" + _active, "HTTP exception: " + ex.Message);
                 }
             });
         }

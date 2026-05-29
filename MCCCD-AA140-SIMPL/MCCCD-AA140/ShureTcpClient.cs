@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronSockets;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -110,6 +112,7 @@ namespace MCCCD_AA140
         {
             if (!IsConnected) {
                 ErrorLog.Notice("Shure {0}: drop (not connected): {1}", _name, command);
+                DebugTrace.Error(_name.ToLowerInvariant(), "drop (not connected): " + command);
                 return;
             }
             var bytes = Encoding.ASCII.GetBytes(command);
@@ -136,6 +139,11 @@ namespace MCCCD_AA140
         {
             if (c.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED) {
                 ErrorLog.Notice("Shure {0}: connected to {1}:{2}", _name, _host, _port);
+                DebugTrace.Lifecycle("device_connected", new Dictionary<string, object> {
+                    { "device", _name.ToLowerInvariant() },
+                    { "host", _host },
+                    { "port", _port },
+                });
                 _failedAttempts = 0; // resume fast reconnect on next drop
                 c.ReceiveDataAsync(OnDataReceived);
                 OnConnected?.Invoke(this);
@@ -147,6 +155,12 @@ namespace MCCCD_AA140
                 if (_failedAttempts <= FAST_RECONNECT_ATTEMPTS || _failedAttempts % 10 == 0) {
                     ErrorLog.Warn("Shure {0}: connect returned status {1} (attempt {2})",
                         _name, c.ClientStatus, _failedAttempts);
+                    DebugTrace.Lifecycle("device_connect_failed", new Dictionary<string, object> {
+                        { "device", _name.ToLowerInvariant() },
+                        { "host", _host },
+                        { "status", c.ClientStatus.ToString() },
+                        { "attempt", _failedAttempts },
+                    });
                 }
                 ScheduleReconnect();
             }
@@ -158,6 +172,10 @@ namespace MCCCD_AA140
                 if (_failedAttempts <= FAST_RECONNECT_ATTEMPTS) {
                     ErrorLog.Notice("Shure {0}: socket {1}, reconnecting", _name, status);
                 }
+                DebugTrace.Lifecycle("device_socket_change", new Dictionary<string, object> {
+                    { "device", _name.ToLowerInvariant() },
+                    { "status", status.ToString() },
+                });
                 ScheduleReconnect();
             }
         }

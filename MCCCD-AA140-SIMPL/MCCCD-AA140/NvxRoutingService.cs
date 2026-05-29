@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
 using Crestron.SimplSharpPro.DM.Streaming;
 using MCCCD_AA140;
+using MCCCD_AA140.Debug;
 
 namespace MCCCD_AA140
 {
@@ -124,12 +126,22 @@ namespace MCCCD_AA140
             enc.OnlineStatusChange += (dev, args) => {
                 if (!args.DeviceOnLine) {
                     ErrorLog.Notice("NVX {0}: OFFLINE", label);
+                    DebugTrace.Lifecycle("nvx_encoder_online_change", new Dictionary<string, object> {
+                        { "device", "nvx-" + label.ToLowerInvariant() },
+                        { "online", false },
+                        { "mcast", mcastVideo },
+                    });
                     return;
                 }
                 try {
                     enc.Control.DeviceMode = eDeviceMode.Transmitter;
                     enc.Control.MulticastAddress.StringValue = mcastVideo;
                     ErrorLog.Notice("NVX {0}: ONLINE — configured TX @ {1}", label, mcastVideo);
+                    DebugTrace.Lifecycle("nvx_encoder_online_change", new Dictionary<string, object> {
+                        { "device", "nvx-" + label.ToLowerInvariant() },
+                        { "online", true },
+                        { "mcast", mcastVideo },
+                    });
 
                     // Discover encoder IP and switch the source URL from
                     // multicast to unicast RTSP. The encoder still broadcasts
@@ -149,6 +161,12 @@ namespace MCCCD_AA140
                         _sourceStreamUrls[sourceIndex] = unicastUrl;
                         ErrorLog.Notice("NVX {0}: src{1} ip={2} via {3} -> {4} (was {5})",
                             label, sourceIndex, encIp, ipSource, unicastUrl, oldUrl);
+                        DebugTrace.Lifecycle("nvx_ip_resolved", new Dictionary<string, object> {
+                            { "device", "nvx-" + label.ToLowerInvariant() },
+                            { "src", sourceIndex },
+                            { "ip", encIp },
+                            { "url", unicastUrl },
+                        });
                         ReapplyRoutesForSource(oldUrl, unicastUrl);
                     } else {
                         ErrorLog.Warn("NVX {0}: no IP yet (ConnectedIpList + IpAddressFeedback both empty) — staying on multicast {1}; will retry on next online event",
@@ -200,6 +218,13 @@ namespace MCCCD_AA140
                         _sourceStreamUrls[sourceIndex] = unicastUrl;
                         ErrorLog.Notice("NVX {0}: src{1} ip={2} via {3} (retry) -> {4} (was {5})",
                             label, sourceIndex, encIp, ipSource, unicastUrl, oldUrl);
+                        DebugTrace.Lifecycle("nvx_ip_resolved", new Dictionary<string, object> {
+                            { "device", "nvx-" + label.ToLowerInvariant() },
+                            { "src", sourceIndex },
+                            { "ip", encIp },
+                            { "url", unicastUrl },
+                            { "retry", true },
+                        });
                         ReapplyRoutesForSource(oldUrl, unicastUrl);
                     } else {
                         ErrorLog.Warn("NVX {0}: IP retry still empty — multicast remains in effect", label);
@@ -233,6 +258,10 @@ namespace MCCCD_AA140
             dec.OnlineStatusChange += (dev, args) => {
                 if (!args.DeviceOnLine) {
                     ErrorLog.Notice("NVX D{0}: OFFLINE", displayNum);
+                    DebugTrace.Lifecycle("nvx_decoder_online_change", new Dictionary<string, object> {
+                        { "device", "nvx-d" + displayNum },
+                        { "online", false },
+                    });
                     _rxConfigured[displayNum] = false;
                     return;
                 }
@@ -249,6 +278,10 @@ namespace MCCCD_AA140
                     dec.Control.EnableAutomaticInitiation();
                     _rxConfigured[displayNum] = true;
                     ErrorLog.Notice("NVX D{0}: ONLINE — receiver initialized via EnableAutomaticInitiation()", displayNum);
+                    DebugTrace.Lifecycle("nvx_decoder_online_change", new Dictionary<string, object> {
+                        { "device", "nvx-d" + displayNum },
+                        { "online", true },
+                    });
                 } catch (System.Exception ex) {
                     ErrorLog.Warn("NVX D{0}: receiver init failed: {1}", displayNum, ex.Message);
                     return;
@@ -319,6 +352,10 @@ namespace MCCCD_AA140
             try {
                 dec.Control.ServerUrl.StringValue = url;
                 ErrorLog.Notice("NVX route: D{0} <- {1}", displayNum, url);
+                DebugTrace.Lifecycle("nvx_route_change", new Dictionary<string, object> {
+                    { "device", "nvx-d" + displayNum },
+                    { "url", url },
+                });
             } catch (System.Exception ex) {
                 ErrorLog.Warn("NVX D{0}: route apply failed: {1}", displayNum, ex.Message);
             }
