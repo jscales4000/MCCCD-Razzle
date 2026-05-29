@@ -52,13 +52,16 @@ namespace MCCCD_AA140
             _panel.OnUShort(PanelJoins.UShortOut.Display1Source, v => {
                 _lastD1 = v;
                 _nvx.RouteSourceToDisplay(v, 1);
+                _panel.WriteUShort(PanelJoins.UShortIn.Display1SourceFb, v);
             });
             _panel.OnUShort(PanelJoins.UShortOut.Display2Source, v => {
                 _lastD2 = v;
                 _nvx.RouteSourceToDisplay(v, 2);
+                _panel.WriteUShort(PanelJoins.UShortIn.Display2SourceFb, v);
             });
             _panel.OnUShort(PanelJoins.UShortOut.Display3Source, v => {
                 _nvx.RouteSourceToDisplay(v, 3);
+                _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, v);
             });
         }
 
@@ -79,6 +82,14 @@ namespace MCCCD_AA140
             // D3 boot init: one-shot copy from D2 (per design spec section 6 / 9)
             _nvx.RouteSourceToDisplay(_lastD2, 3);
 
+            // Drive source feedbacks via PanelDispatcher so the panel markers
+            // reflect the restored state on power-on. The Contract Editor write
+            // inside NvxRoutingService is unreliable for these joins per the
+            // PanelJoins docstring.
+            _panel.WriteUShort(PanelJoins.UShortIn.Display1SourceFb, _lastD1);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display2SourceFb, _lastD2);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, _lastD2);
+
             // Audio defaults to D1.
             _panel.WriteUShort(PanelJoins.UShortIn.AudioOutputSelectFb, 1);
         }
@@ -97,6 +108,11 @@ namespace MCCCD_AA140
             _nvx.RouteSourceToDisplay(0, 1);
             _nvx.RouteSourceToDisplay(0, 2);
             _nvx.RouteSourceToDisplay(0, 3);
+
+            // Clear source feedbacks via PanelDispatcher so the markers go gray.
+            _panel.WriteUShort(PanelJoins.UShortIn.Display1SourceFb, 0);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display2SourceFb, 0);
+            _panel.WriteUShort(PanelJoins.UShortIn.Display3SourceFb, 0);
         }
     }
 }
