@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { publishAnalog, pulseDigital } from '../lib/CrComLib';
+  import { pulseDigital } from '../lib/CrComLib';
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import {
     panelOnline,
@@ -8,6 +8,7 @@
     systemPowerFb,
     occupancyState, shutdownCountdown,
   } from '../lib/stores/signals';
+  import { routeSourceToAll } from '../lib/stores/router';
   import { goToPage } from '../lib/stores/page';
   import { userPoweredOn } from '../lib/stores/session';
   import Aa140Footer from '../components/Aa140Footer.svelte';
@@ -25,11 +26,8 @@
     { value: 4, name: 'Laptop',   sub: 'HDMI 3' },
   ] as const;
 
-  function selectSourceForAll(value: number) {
-    publishAnalog(SIGNALS.display1Source, value);
-    publishAnalog(SIGNALS.display2Source, value);
-    publishAnalog(SIGNALS.display3Source, value);
-    publishAnalog(SIGNALS.display4Source, value);
+  function selectSourceForAll(value: 1 | 2 | 3 | 4) {
+    routeSourceToAll(value);
   }
 
   // Preview dock (browser-dev only)

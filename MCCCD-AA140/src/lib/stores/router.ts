@@ -106,7 +106,32 @@ export function disarm(): void {
 export function routeSource(sourceId: SourceId, displayId: DisplayId): void {
   // No-op if already routed there (read from feedback store)
   if (currentRouting(displayId) === sourceId) return;
-  publishAnalog(SET_SIGNAL_BY_DISPLAY[displayId], SOURCES[sourceId].value);
+  const value = SOURCES[sourceId].value;
+  publishAnalog(SET_SIGNAL_BY_DISPLAY[displayId], value);
+  // Optimistic FB. CH5 CrComLib's subscribeState('n', ...) is not firing for
+  // SmartObject 1 UShortInput updates that SIMPL writes — SIMPL writes succeed
+  // (verified via DIAG logging) but the panel-side subscriber never sees them.
+  // Booleans on the same SmartObject work fine. Until the CrComLib analog
+  // subscribe path is fixed, the panel mirrors its own publish into the FB
+  // store so the marker / sidebar update immediately. SIMPL still owns the
+  // actual NVX route.
+  FB_BY_DISPLAY[displayId].set(value);
+}
+
+/** Optimistic clear — mirrors a Display{N}Source=0 publish into the FB store
+ *  for the same reason as routeSource(). Used by the popover's "Clear" action. */
+export function clearDisplay(displayId: DisplayId): void {
+  publishAnalog(SET_SIGNAL_BY_DISPLAY[displayId], 0);
+  FB_BY_DISPLAY[displayId].set(0);
+}
+
+/** Route the same source to all 4 displays with optimistic FB.
+ *  Takes the raw source value (1..4) per the SOURCES.value contract. */
+export function routeSourceToAll(value: 1 | 2 | 3 | 4): void {
+  (['d1', 'd2', 'd3', 'd4'] as DisplayId[]).forEach((d) => {
+    publishAnalog(SET_SIGNAL_BY_DISPLAY[d], value);
+    FB_BY_DISPLAY[d].set(value);
+  });
 }
 
 export function shouldSuppressClick(): boolean {

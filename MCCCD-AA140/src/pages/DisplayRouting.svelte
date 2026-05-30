@@ -17,6 +17,7 @@
   import {
     SOURCES,
     routeSource,
+    clearDisplay,
     type DisplayId,
     type SourceId,
   } from '../lib/stores/router';
@@ -134,11 +135,7 @@
 
   function onClearFromPopover(): void {
     if (!openDisplay) return;
-    const sig =
-      openDisplay === 'd1' ? SIGNALS.display1Source :
-      openDisplay === 'd2' ? SIGNALS.display2Source :
-      openDisplay === 'd3' ? SIGNALS.display3Source : SIGNALS.display4Source;
-    publishAnalog(sig, 0);
+    clearDisplay(openDisplay);
     closePopover();
   }
 
