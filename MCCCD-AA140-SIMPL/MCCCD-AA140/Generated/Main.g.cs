@@ -357,6 +357,20 @@ namespace MCCCD_AA140
                 public const uint MicCeiling1Connected = 13;
                 public const uint MicCeiling2Connected = 14;
                 public const uint MicCeiling3Connected = 15;
+                // Hand-patched (not from Contract Editor regen). Required so
+                // the panel's SmartObject 1 allocates BooleanInput slots 17-24
+                // at CIP capability negotiation. Without these declarations,
+                // PanelDispatcher.WriteBool succeeds locally but writes
+                // never propagate to the panel. Same workaround pattern as
+                // Display4PowerFb at slot 16 (see 2026-05-30 handoff item 3).
+                public const uint RoomPcSync = 17;
+                public const uint ExtPcSync = 18;
+                public const uint AirMediaSync = 19;
+                public const uint AirMediaMiracast = 20;
+                public const uint AirMediaAirPlay = 21;
+                public const uint AirMediaTx3 = 22;
+                public const uint LaptopHdmiSync = 23;
+                public const uint LaptopUsbcSync = 24;
 
                 public const uint DisplayPower = 1;
                 public const uint D1MirrorToD3 = 2;
@@ -457,6 +471,18 @@ namespace MCCCD_AA140
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling1Connected, onMicCeiling1Connected);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling2Connected, onMicCeiling2Connected);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling3Connected, onMicCeiling3Connected);
+            // Hand-patched: register no-op handlers for the 8 new video-sync
+            // feedback joins so the SmartObject 1 BooleanInput slots get
+            // allocated at CIP join time. Required for PanelDispatcher.WriteBool
+            // writes to propagate to the panel.
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.RoomPcSync, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ExtPcSync, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaSync, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaMiracast, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaAirPlay, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaTx3, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.LaptopHdmiSync, onVideoSyncNoOp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.LaptopUsbcSync, onVideoSyncNoOp);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display1SourceFb, onDisplay1SourceFb);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display2SourceFb, onDisplay2SourceFb);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display3SourceFb, onDisplay3SourceFb);
@@ -618,6 +644,13 @@ namespace MCCCD_AA140
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
+
+        // Hand-patched no-op handler shared by the 8 video-sync feedback joins
+        // (RoomPcSync .. LaptopUsbcSync). These are SIMPL→panel signals — the
+        // panel never publishes back on them — but ComponentMediator requires
+        // a handler registered for the SmartObject to allocate the slot at
+        // CIP capability negotiation. See the Configure block above.
+        private void onVideoSyncNoOp(SmartObjectEventArgs eventArgs) { /* no-op */ }
 
 
         public void DisplayPower(MainBoolInputSigDelegate callback)
