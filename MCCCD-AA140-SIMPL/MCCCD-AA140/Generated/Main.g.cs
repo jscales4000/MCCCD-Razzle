@@ -118,6 +118,9 @@ namespace MCCCD_AA140
     /// Analog feedback - ceiling 3 real-time level 0-100
     /// </summary>
     /// <summary>
+    /// Analog feedback - D4 active source
+    /// </summary>
+    /// <summary>
     /// Digital pulse - toggle system on/off
     /// </summary>
     /// <summary>
@@ -228,6 +231,9 @@ namespace MCCCD_AA140
     /// <summary>
     /// Analog set - ceiling 3 line-out level 0-100
     /// </summary>
+    /// <summary>
+    /// Analog set - D4 podium confidence monitor source (default = D3 source at PowerUp; independent runtime)
+    /// </summary>
     public interface IMain
     {
         object UserObject { get; set; }
@@ -269,6 +275,7 @@ namespace MCCCD_AA140
         event EventHandler<UIEventArgs> MicCeiling1Level;
         event EventHandler<UIEventArgs> MicCeiling2Level;
         event EventHandler<UIEventArgs> MicCeiling3Level;
+        event EventHandler<UIEventArgs> Display4SourceFb;
 
         void DisplayPower(MainBoolInputSigDelegate callback);
         void D1MirrorToD3(MainBoolInputSigDelegate callback);
@@ -307,6 +314,7 @@ namespace MCCCD_AA140
         void MicCeiling1LineOut(MainUShortInputSigDelegate callback);
         void MicCeiling2LineOut(MainUShortInputSigDelegate callback);
         void MicCeiling3LineOut(MainUShortInputSigDelegate callback);
+        void Display4Source(MainUShortInputSigDelegate callback);
 
     }
 
@@ -393,6 +401,7 @@ namespace MCCCD_AA140
                 public const uint MicCeiling1Level = 20;
                 public const uint MicCeiling2Level = 21;
                 public const uint MicCeiling3Level = 22;
+                public const uint Display4SourceFb = 23;
 
                 public const uint Display1Source = 1;
                 public const uint Display2Source = 2;
@@ -413,6 +422,7 @@ namespace MCCCD_AA140
                 public const uint MicCeiling1LineOut = 17;
                 public const uint MicCeiling2LineOut = 18;
                 public const uint MicCeiling3LineOut = 19;
+                public const uint Display4Source = 20;
             }
         }
 
@@ -469,6 +479,7 @@ namespace MCCCD_AA140
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling1Level, onMicCeiling1Level);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling2Level, onMicCeiling2Level);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling3Level, onMicCeiling3Level);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display4SourceFb, onDisplay4SourceFb);
 
         }
 
@@ -929,6 +940,14 @@ namespace MCCCD_AA140
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
+        public event EventHandler<UIEventArgs> Display4SourceFb;
+        private void onDisplay4SourceFb(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = Display4SourceFb;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
 
         public void Display1Source(MainUShortInputSigDelegate callback)
         {
@@ -1082,6 +1101,14 @@ namespace MCCCD_AA140
             }
         }
 
+        public void Display4Source(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display4Source], this);
+            }
+        }
+
         #endregion
 
         #region Overrides
@@ -1146,6 +1173,7 @@ namespace MCCCD_AA140
             MicCeiling1Level = null;
             MicCeiling2Level = null;
             MicCeiling3Level = null;
+            Display4SourceFb = null;
         }
 
         #endregion
