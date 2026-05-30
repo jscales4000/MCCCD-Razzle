@@ -114,6 +114,38 @@
 				"AA140.MicCeiling3Connected": {
 					"joinId": 15,
 					"smartObjectId": 1
+				},
+				"AA140.RoomPcSync": {
+					"joinId": 17,
+					"smartObjectId": 1
+				},
+				"AA140.ExtPcSync": {
+					"joinId": 18,
+					"smartObjectId": 1
+				},
+				"AA140.AirMediaSync": {
+					"joinId": 19,
+					"smartObjectId": 1
+				},
+				"AA140.AirMediaMiracast": {
+					"joinId": 20,
+					"smartObjectId": 1
+				},
+				"AA140.AirMediaAirPlay": {
+					"joinId": 21,
+					"smartObjectId": 1
+				},
+				"AA140.AirMediaTx3": {
+					"joinId": 22,
+					"smartObjectId": 1
+				},
+				"AA140.LaptopHdmiSync": {
+					"joinId": 23,
+					"smartObjectId": 1
+				},
+				"AA140.LaptopUsbcSync": {
+					"joinId": 24,
+					"smartObjectId": 1
 				}
 			},
 			"numeric": {

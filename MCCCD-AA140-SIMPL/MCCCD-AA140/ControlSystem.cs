@@ -107,10 +107,10 @@ namespace MCCCD_AA140
                 _panel    = new PanelDispatcher(_tswPrimary, _tswSecondary);
 
                 // Construct services (Initialize() runs after CIPNet is ready)
-                _nvx        = new NvxRoutingService(_contract, this);
+                _nvx        = new NvxRoutingService(_contract, _panel, this);
                 _audio      = new ShureP300Service(_panel, this);
                 _mxa        = new ShureMxaService(_contract, this);
-                _airmedia   = new AirMediaService(_contract, this);
+                _airmedia   = new AirMediaService(_contract, _panel, this);
                 _cameras    = new CameraService(_panel, this);
                 _projectors = new SonyVplService(_contract, this);
                 _newline    = new NewlineService(_contract, this);

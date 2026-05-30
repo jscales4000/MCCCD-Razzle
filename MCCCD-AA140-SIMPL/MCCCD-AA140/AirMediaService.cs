@@ -29,15 +29,23 @@ namespace MCCCD_AA140
         private const int POLL_INTERVAL_MS = 10000;
 
         private readonly Contract _c;
+        private readonly PanelDispatcher _panel;
         private readonly CrestronControlSystem _cs;
         private CTimer _pollTimer;
         private string _host = DEFAULT_AM_HOST;
         private bool _enabled;
         private readonly object _stateLock = new object();
 
-        public AirMediaService(Contract c, CrestronControlSystem cs)
+        // Cached last-published sharing-method states to dedupe per-poll
+        // identical writes and avoid log spam on the SystemPowerFb-style joins.
+        private bool _lastMiracast;
+        private bool _lastAirPlay;
+        private bool _lastTx3;
+
+        public AirMediaService(Contract c, PanelDispatcher panel, CrestronControlSystem cs)
         {
             _c = c;
+            _panel = panel;
             _cs = cs;
         }
 
@@ -94,24 +102,90 @@ namespace MCCCD_AA140
             CrestronInvoke.BeginInvoke(_ => {
                 try {
                     var body = HttpGet("https://" + _host + "/Device/AirMedia");
-                    if (string.IsNullOrEmpty(body)) return;
-
-                    // Minimal heuristic until contract signals exist:
-                    //   - presence of "Connected" + ":true" in the payload signals an active sender
-                    //   - exact JSON keys per Crestron AM3K REST API; refine when the panel needs the state
-                    bool anyConnection =
-                        body.IndexOf("\"Connected\":true", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-                        body.IndexOf("\"NumberOfUsersConnected\":", System.StringComparison.OrdinalIgnoreCase) >= 0;
-
-                    // TODO contract: drive an AirMediaActive feedback signal once the
-                    // .cce is rebuilt. For now this just confirms the device is reachable.
-                    if (anyConnection) {
-                        ErrorLog.Notice("AirMedia: status received (active presentation flag set)");
+                    if (string.IsNullOrEmpty(body)) {
+                        // Device unreachable / HTTP error → treat as no-sharing.
+                        // Don't touch AirMediaSync (that's driven by the E30
+                        // HDMI sync feedback in NvxRoutingService, not REST).
+                        PublishMethodStates(false, false, false);
+                        return;
                     }
+
+                    // Crestron AM-3K REST API field names per
+                    // https://sdkcon78221.crestron.com/sdk/AM3K-API/. Exact key
+                    // shapes vary by firmware — the scan tries the documented
+                    // forms plus likely siblings. If the live device uses
+                    // unrecognized names, all 3 booleans stay false (panel
+                    // shows AirMedia as Idle, even when sync is up → falls
+                    // through to "Ready" state via the AirMediaSync FB).
+                    //
+                    // Field-name candidates per protocol (case-insensitive):
+                    //   Miracast: "Miracast":true | "Type":"Miracast" | "Protocol":"Miracast"
+                    //   AirPlay:  "AirPlay":true  | "Type":"AirPlay"  | "Protocol":"AirPlay"
+                    //   TX3:      "TX3":true | "Type":"TX3" | "Protocol":"TX3"
+                    //            | "WiredPresenter":true | "WiredConnected":true
+                    //   (TX3-200 is wired into a switch port; AM-200 surfaces it
+                    //    as a "wired presenter" in the user list.)
+                    //
+                    // TODO field-config: verify against actual GET /Device/AirMedia
+                    // response from the live AM-3200 and tighten the scan.
+                    bool miracast = HasAny(body,
+                        "\"Miracast\":true",
+                        "\"Type\":\"Miracast\"",
+                        "\"Protocol\":\"Miracast\"");
+                    bool airplay = HasAny(body,
+                        "\"AirPlay\":true",
+                        "\"Type\":\"AirPlay\"",
+                        "\"Protocol\":\"AirPlay\"");
+                    bool tx3 = HasAny(body,
+                        "\"TX3\":true",
+                        "\"Type\":\"TX3\"",
+                        "\"Protocol\":\"TX3\"",
+                        "\"WiredPresenter\":true",
+                        "\"WiredConnected\":true");
+
+                    PublishMethodStates(miracast, airplay, tx3);
                 } catch (System.Exception ex) {
                     ErrorLog.Warn("AirMedia poll: {0}", ex.Message);
+                    // Suppress any stuck "true" if the device drops mid-share.
+                    PublishMethodStates(false, false, false);
                 }
             });
+        }
+
+        /// <summary>
+        /// Dispatch the 3 AirMedia sharing-method booleans to the panel only
+        /// on change. Dedupe avoids log spam from the 10s polling cadence
+        /// when nothing changed between samples.
+        /// </summary>
+        private void PublishMethodStates(bool miracast, bool airplay, bool tx3)
+        {
+            if (_panel == null) return;
+            if (miracast != _lastMiracast) {
+                try { _panel.WriteBool(PanelJoins.BoolIn.AirMediaMiracast, miracast); }
+                catch (System.Exception ex) { ErrorLog.Warn("AirMedia: miracast dispatch: {0}", ex.Message); }
+                _lastMiracast = miracast;
+                ErrorLog.Notice("AirMedia: miracast={0}", miracast);
+            }
+            if (airplay != _lastAirPlay) {
+                try { _panel.WriteBool(PanelJoins.BoolIn.AirMediaAirPlay, airplay); }
+                catch (System.Exception ex) { ErrorLog.Warn("AirMedia: airplay dispatch: {0}", ex.Message); }
+                _lastAirPlay = airplay;
+                ErrorLog.Notice("AirMedia: airplay={0}", airplay);
+            }
+            if (tx3 != _lastTx3) {
+                try { _panel.WriteBool(PanelJoins.BoolIn.AirMediaTx3, tx3); }
+                catch (System.Exception ex) { ErrorLog.Warn("AirMedia: tx3 dispatch: {0}", ex.Message); }
+                _lastTx3 = tx3;
+                ErrorLog.Notice("AirMedia: tx3={0}", tx3);
+            }
+        }
+
+        private static bool HasAny(string body, params string[] needles)
+        {
+            for (int i = 0; i < needles.Length; i++) {
+                if (body.IndexOf(needles[i], System.StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            }
+            return false;
         }
 
         private string HttpGet(string url)

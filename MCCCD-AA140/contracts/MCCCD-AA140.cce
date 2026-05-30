@@ -798,6 +798,86 @@
                     "id": "_b041",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "RoomPcSync",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (Room PC) HDMI sync detect",
+                    "id": "_b050",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "ExtPcSync",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (Ext PC) HDMI sync detect",
+                    "id": "_b051",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaSync",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (AirMedia output) HDMI sync detect",
+                    "id": "_b052",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaMiracast",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 Miracast session active",
+                    "id": "_b053",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaAirPlay",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 AirPlay session active",
+                    "id": "_b054",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaTx3",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 AM-TX3-200 wired transmitter session active",
+                    "id": "_b055",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopHdmiSync",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX-384 input 1 (BYOD HDMI) sync detect",
+                    "id": "_b056",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopUsbcSync",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX-384 input 3 (BYOD USB-C) sync detect",
+                    "id": "_b057",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
                 }
             ],
             "specifications": []

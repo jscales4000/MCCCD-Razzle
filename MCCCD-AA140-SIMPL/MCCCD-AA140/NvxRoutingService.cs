@@ -33,6 +33,7 @@ namespace MCCCD_AA140
         private const string MCAST_VIDEO_NVX384   = "239.8.0.12";
 
         private readonly Contract _c;
+        private readonly PanelDispatcher _panel;
         private readonly CrestronControlSystem _cs;
 
         private DmNvxE30 _encRoomPc;
@@ -57,9 +58,19 @@ namespace MCCCD_AA140
         // BaseEvent-driven retry so we stop attempting once it works.
         private bool[] _rxConfigured = new bool[5];
 
-        public NvxRoutingService(Contract c, CrestronControlSystem cs)
+        // Video sync polling. SDK exposes input sync as BoolOutputSig (has
+        // BoolValue but no OutputChange event), so we poll at 1Hz rather than
+        // subscribe. Each reader closes over a (sig, join, label) tuple and
+        // dispatches BoolValue changes through PanelDispatcher. CPU cost is
+        // negligible — 5 sigs × 1Hz.
+        private CTimer _syncPollTimer;
+        private readonly List<System.Action> _syncReaders = new List<System.Action>();
+        private readonly Dictionary<uint, bool> _lastSync = new Dictionary<uint, bool>();
+
+        public NvxRoutingService(Contract c, PanelDispatcher panel, CrestronControlSystem cs)
         {
             _c = c;
+            _panel = panel;
             _cs = cs;
         }
 
@@ -88,6 +99,25 @@ namespace MCCCD_AA140
             WireEncoderOnline(_encExtPc,    MCAST_VIDEO_EXT_PC,   "ExtPC",    2);
             WireEncoderOnline(_encAirMedia, MCAST_VIDEO_AIRMEDIA, "AirMedia", 3);
             WireEncoderOnline(_encHdmiUsbc, MCAST_VIDEO_NVX384,   "NVX-384",  4);
+
+            // HDMI sync detect feedback → panel sync-dot badges. Each wiring
+            // call registers a reader callback (closure over a Crestron
+            // BoolOutputSig); the 1Hz _syncPollTimer fires them all and
+            // dispatches BoolValue changes to the panel via PanelDispatcher.
+            WireEncoderHdmiSync(_encRoomPc,   PanelJoins.BoolIn.RoomPcSync,   "RoomPC");
+            WireEncoderHdmiSync(_encExtPc,    PanelJoins.BoolIn.ExtPcSync,    "ExtPC");
+            WireEncoderHdmiSync(_encAirMedia, PanelJoins.BoolIn.AirMediaSync, "AirMedia");
+            WireNvx384InputSync(_encHdmiUsbc);
+
+            // Start the sync poll loop after all readers are registered.
+            // First tick fires 1s after Initialize completes so the encoders
+            // have a moment to populate their BoolValue properties.
+            _syncPollTimer = new CTimer(_ => {
+                for (int i = 0; i < _syncReaders.Count; i++) {
+                    try { _syncReaders[i](); }
+                    catch (System.Exception ex) { ErrorLog.Warn("NVX sync poll reader [{0}]: {1}", i, ex.Message); }
+                }
+            }, null, 1000, 1000);
 
             // ============ Decoders (receivers) ============
             _decDisp1 = new DmNvxD30(IPID_D30_DISP1, _cs);
@@ -258,6 +288,165 @@ namespace MCCCD_AA140
                 if (dec != null && dec.IsOnline) {
                     ApplyDecoderUrl(dec, d, newUrl);
                 }
+            }
+        }
+
+        // Registers a poll reader for an input's boolean sync feedback.
+        // Property name discovered via reflection from a candidate list so
+        // SDK variations don't fail the build. The reader is invoked by
+        // the 1Hz _syncPollTimer and dispatches BoolValue changes through
+        // PanelDispatcher with dedupe on _lastSync.
+        //
+        // Subscribing to an event would be cleaner but the SDK 2.21.226
+        // input feedback type is BoolOutputSig, which has BoolValue but no
+        // OutputChange event (that's PepperDash's BoolOutput wrapper). Polling
+        // is the portable path.
+        private void WireSyncFeedbackReflective(object inputWrapper, uint panelJoin, string label, params string[] candidateProps)
+        {
+            if (inputWrapper == null) {
+                ErrorLog.Warn("NVX {0}: sync wire skipped — input wrapper null", label);
+                return;
+            }
+            System.Reflection.PropertyInfo found = null;
+            string foundName = null;
+            foreach (var name in candidateProps) {
+                var prop = inputWrapper.GetType().GetProperty(name);
+                if (prop != null) { found = prop; foundName = name; break; }
+            }
+            if (found == null) {
+                // Log type + all properties (limited count) to make next iteration easier
+                var props = inputWrapper.GetType().GetProperties();
+                var hints = new System.Collections.Generic.List<string>();
+                for (int i = 0; i < props.Length && hints.Count < 12; i++) {
+                    if (props[i].PropertyType.Name.Contains("Sig") || props[i].PropertyType.Name.Contains("Feedback") || props[i].Name.IndexOf("sync", System.StringComparison.OrdinalIgnoreCase) >= 0 || props[i].Name.IndexOf("detect", System.StringComparison.OrdinalIgnoreCase) >= 0 || props[i].Name.IndexOf("connect", System.StringComparison.OrdinalIgnoreCase) >= 0 || props[i].Name.IndexOf("hpd", System.StringComparison.OrdinalIgnoreCase) >= 0) {
+                        hints.Add(props[i].Name);
+                    }
+                }
+                ErrorLog.Warn("NVX {0}: sync wire — no matching property (tried {1}) on {2}; candidates seen: {3}",
+                    label, string.Join(",", candidateProps), inputWrapper.GetType().Name, string.Join(",", hints.ToArray()));
+                return;
+            }
+
+            object fb;
+            try { fb = found.GetValue(inputWrapper); }
+            catch (System.Exception ex) {
+                ErrorLog.Warn("NVX {0}: sync property {1} read threw: {2}", label, foundName, ex.Message);
+                return;
+            }
+            if (fb == null) {
+                ErrorLog.Warn("NVX {0}: sync property {1} returned null", label, foundName);
+                return;
+            }
+
+            var boolValueProp = fb.GetType().GetProperty("BoolValue");
+            if (boolValueProp == null) {
+                ErrorLog.Warn("NVX {0}: feedback ({1}) lacks BoolValue (type {2})", label, foundName, fb.GetType().Name);
+                return;
+            }
+
+            _syncReaders.Add(() => {
+                bool v;
+                try { v = (bool)boolValueProp.GetValue(fb); }
+                catch (System.Exception ex) {
+                    ErrorLog.Warn("NVX {0}: sync read: {1}", label, ex.Message);
+                    return;
+                }
+                bool prev;
+                bool changed = !_lastSync.TryGetValue(panelJoin, out prev) || prev != v;
+                if (!changed) return;
+                _lastSync[panelJoin] = v;
+                try {
+                    _panel.WriteBool(panelJoin, v);
+                    ErrorLog.Notice("NVX {0}: sync -> {1} (join {2})", label, v, panelJoin);
+                    DebugTrace.Lifecycle("nvx_sync_change", new Dictionary<string, object> {
+                        { "device", "nvx-" + label.ToLowerInvariant() },
+                        { "sync", v },
+                        { "join", panelJoin },
+                    });
+                } catch (System.Exception ex) {
+                    ErrorLog.Warn("NVX {0}: sync dispatch: {1}", label, ex.Message);
+                }
+            });
+            ErrorLog.Notice("NVX {0}: sync poller registered via {1} -> join {2}", label, foundName, panelJoin);
+        }
+
+        // E30 encoder — single HDMI input wired through the HdmiIn[1] collection
+        // element. Candidate feedback property names cover SDK variants.
+        private void WireEncoderHdmiSync(DmNvxBaseClass enc, uint panelJoin, string label)
+        {
+            try {
+                object hdmiInput = null;
+                try { hdmiInput = enc.HdmiIn[1]; } catch { /* try GetEnumerator path below */ }
+                if (hdmiInput == null) {
+                    var en = enc.HdmiIn.GetEnumerator();
+                    if (en.MoveNext()) hdmiInput = en.Current;
+                }
+                WireSyncFeedbackReflective(hdmiInput, panelJoin, label,
+                    "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected");
+            } catch (System.Exception ex) {
+                ErrorLog.Warn("NVX {0}: HDMI sync wire setup failed: {1}", label, ex.Message);
+            }
+        }
+
+        // NVX-384 — HDMI input 1 + USB-C input. Both surfaced as separate
+        // boolean FBs so the Laptop dual-token sub-label can highlight which
+        // physical input is live.
+        private void WireNvx384InputSync(DmNvx384 enc)
+        {
+            // HDMI input 1 — same indexed collection as E30.
+            try {
+                object hdmiInput = null;
+                try { hdmiInput = enc.HdmiIn[1]; } catch { }
+                if (hdmiInput == null) {
+                    var en = enc.HdmiIn.GetEnumerator();
+                    if (en.MoveNext()) hdmiInput = en.Current;
+                }
+                WireSyncFeedbackReflective(hdmiInput, PanelJoins.BoolIn.LaptopHdmiSync, "NVX-384-HDMI",
+                    "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected");
+            } catch (System.Exception ex) {
+                ErrorLog.Warn("NVX-384 HDMI: setup failed: {0}", ex.Message);
+            }
+
+            // USB-C input — SDK property name discovered via reflection from
+            // a list of likely candidates. Some SDK builds expose it under
+            // UsbInput as a collection, others as a singular wrapper.
+            try {
+                object usbcInput = null;
+                string[] usbcPropNames = new string[] { "UsbInput", "UsbcInput", "UsbcIn", "Usbc", "UsbInputs", "UsbcInputs" };
+                foreach (var name in usbcPropNames) {
+                    var prop = enc.GetType().GetProperty(name);
+                    if (prop == null) continue;
+                    object v;
+                    try { v = prop.GetValue(enc); } catch { continue; }
+                    if (v == null) continue;
+                    // If it's a collection, take element [1]; otherwise use as-is.
+                    var idx = v.GetType().GetProperty("Item", new System.Type[] { typeof(uint) });
+                    if (idx != null) {
+                        try { usbcInput = idx.GetValue(v, new object[] { (uint)1 }); } catch { }
+                    }
+                    if (usbcInput == null) {
+                        var idxInt = v.GetType().GetProperty("Item", new System.Type[] { typeof(int) });
+                        if (idxInt != null) {
+                            try { usbcInput = idxInt.GetValue(v, new object[] { 1 }); } catch { }
+                        }
+                    }
+                    if (usbcInput == null) usbcInput = v;
+                    if (usbcInput != null) {
+                        ErrorLog.Notice("NVX-384 USB-C: resolved via property {0}", name);
+                        break;
+                    }
+                }
+                // DmNvxUsbInput (per live log) doesn't expose SyncDetectedFeedback.
+                // Expanded candidate list — first reflection pass also logs
+                // the type's actual properties so we can learn from the warning.
+                WireSyncFeedbackReflective(usbcInput, PanelJoins.BoolIn.LaptopUsbcSync, "NVX-384-USBC",
+                    "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected", "SourceDetectedFeedback",
+                    "HpdFeedback", "ConnectedFeedback", "SignalPresentFeedback", "SourceConnectedFeedback",
+                    "DeviceConnectedFeedback", "LinkActiveFeedback", "DetectedFeedback", "Detected",
+                    "HotPlugDetectedFeedback", "HotPlugDetected", "Connected", "VideoStreamStatusFeedback",
+                    "Status", "ActiveFeedback");
+            } catch (System.Exception ex) {
+                ErrorLog.Warn("NVX-384 USB-C: setup failed: {0}", ex.Message);
             }
         }
 
