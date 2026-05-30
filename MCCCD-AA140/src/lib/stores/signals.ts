@@ -59,6 +59,16 @@ export const micCeiling1Connected = writable<boolean>(false);
 export const micCeiling2Connected = writable<boolean>(false);
 export const micCeiling3Connected = writable<boolean>(false);
 
+// Source video sync (panel-side only; SIMPL feedback drives Home card dots)
+export const roomPcSync          = writable<boolean>(false);
+export const extPcSync           = writable<boolean>(false);
+export const airMediaSync        = writable<boolean>(false);
+export const airMediaMiracast    = writable<boolean>(false);
+export const airMediaAirPlay     = writable<boolean>(false);
+export const airMediaTx3         = writable<boolean>(false);
+export const laptopHdmiSync      = writable<boolean>(false);
+export const laptopUsbcSync      = writable<boolean>(false);
+
 // Occupancy + shutdown
 export const occupancyState = writable<0 | 1 | 2>(0); // 0=vacant, 1=occupied, 2=shutdown-pending
 export const shutdownCountdown = writable<number>(0);
@@ -119,6 +129,16 @@ export function initSignals(): void {
   subscribeDigital(SIGNALS.micCeiling1Connected,   (v) => micCeiling1Connected.set(v));
   subscribeDigital(SIGNALS.micCeiling2Connected,   (v) => micCeiling2Connected.set(v));
   subscribeDigital(SIGNALS.micCeiling3Connected,   (v) => micCeiling3Connected.set(v));
+
+  // Source video sync (8 digital FBs)
+  subscribeDigital(SIGNALS.roomPcSync,       (v) => roomPcSync.set(v));
+  subscribeDigital(SIGNALS.extPcSync,        (v) => extPcSync.set(v));
+  subscribeDigital(SIGNALS.airMediaSync,     (v) => airMediaSync.set(v));
+  subscribeDigital(SIGNALS.airMediaMiracast, (v) => airMediaMiracast.set(v));
+  subscribeDigital(SIGNALS.airMediaAirPlay,  (v) => airMediaAirPlay.set(v));
+  subscribeDigital(SIGNALS.airMediaTx3,      (v) => airMediaTx3.set(v));
+  subscribeDigital(SIGNALS.laptopHdmiSync,   (v) => laptopHdmiSync.set(v));
+  subscribeDigital(SIGNALS.laptopUsbcSync,   (v) => laptopUsbcSync.set(v));
 
   subscribeAnalog(SIGNALS.occupancyState,      (v) => occupancyState.set(v === 1 ? 1 : v === 2 ? 2 : 0));
   subscribeAnalog(SIGNALS.shutdownCountdown,   (v) => shutdownCountdown.set(v));
