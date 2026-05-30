@@ -75,6 +75,7 @@ namespace MCCCD_AA140
             public const uint MicCeiling1Connected = 13;
             public const uint MicCeiling2Connected = 14;
             public const uint MicCeiling3Connected = 15;
+            public const uint Display4PowerFb      = 16;
         }
 
         /// <summary>
@@ -103,6 +104,7 @@ namespace MCCCD_AA140
             public const uint MicCeiling1LineOut  = 17;
             public const uint MicCeiling2LineOut  = 18;
             public const uint MicCeiling3LineOut  = 19;
+            public const uint Display4Source      = 20;   // podium confidence monitor
         }
 
         /// <summary>
@@ -134,6 +136,7 @@ namespace MCCCD_AA140
             public const uint MicCeiling1Level     = 20;
             public const uint MicCeiling2Level     = 21;
             public const uint MicCeiling3Level     = 22;
+            public const uint Display4SourceFb     = 23;
         }
     }
 }

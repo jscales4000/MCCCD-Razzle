@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MCCCD AA140 · Footer Variants — Borderless Mic Buttons</title>
+<style>
+  :root {
+    --bg: #06101e;
+    --panel: rgba(13, 27, 46, 0.92);
+    --panel-strong: rgba(15, 30, 53, 0.97);
+    --border: rgba(196, 122, 30, 0.28);
+    --border-soft: rgba(148, 163, 184, 0.22);
+    --copy: #e2e8f0;
+    --soft: #94a3b8;
+    --muted: #64748b;
+    --accent: #f5a623;
+    --accent-soft: rgba(245, 166, 35, 0.18);
+    --success: #4ade80;
+    --success-soft: rgba(34, 197, 94, 0.22);
+    --danger: #fca5a5;
+    --danger-soft: rgba(239, 68, 68, 0.18);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--copy);
+    font-family: "Segoe UI", Arial, sans-serif; min-height: 100vh; }
+  body { padding: 40px 24px 80px; }
+
+  header.page-h {
+    max-width: 1280px; margin: 0 auto 28px;
+  }
+  .page-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 32px; font-weight: 900; letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  h1 b { color: var(--accent); }
+  .lede {
+    font-size: 14px; line-height: 1.6;
+    color: var(--soft);
+    max-width: 760px;
+  }
+  .stage-list {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex; flex-direction: column;
+    gap: 36px;
+  }
+  .variant {
+    background: linear-gradient(180deg, #14213a, #08101e);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px 26px;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.4);
+  }
+  .v-head {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 0.5px solid var(--border-soft);
+  }
+  .v-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px; border-radius: 5px;
+  }
+  .v-title {
+    font-size: 18px; font-weight: 800;
+    color: var(--copy);
+  }
+  .v-desc {
+    margin-left: auto;
+    font-size: 12px; color: var(--soft);
+    max-width: 560px; text-align: right;
+  }
+  .v-stage {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px;
+    /* Slight scale-down so a 1280-wide footer fits within the 1280-wide card. */
+  }
+
+  /* ── Shared footer skeleton — each variant overrides parts ────────── */
+  .ftr {
+    background: rgba(12, 20, 36, 0.97);
+    border: 0.5px solid var(--border-soft);
+    border-radius: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 22px;
+    gap: 18px;
+    min-height: 112px;
+  }
+  .mics {
+    display: flex; align-items: center; gap: 18px;
+    justify-content: center;
+  }
+  .mics-label, .vol-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .vol {
+    display: flex; align-items: center; gap: 8px;
+    justify-self: end;
+  }
+
+  /* ── Universal SVG icons ──────────────────────────────────────────── */
+  .ico-mic {
+    width: 28px; height: 28px;
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .ico-power {
+    width: 30px; height: 30px;
+    fill: none; stroke: currentColor; stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+  .ico-vol {
+    width: 26px; height: 26px;
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT 1 — Glyph + Halo
+     ════════════════════════════════════════════════════════════════════ */
+  .v1 .mbtn {
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    color: var(--soft);
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    font-family: inherit;
+    transition: transform 110ms ease;
+  }
+  .v1 .mbtn:active { transform: scale(0.96); }
+  .v1 .mbtn-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--soft);
+    transition: color 200ms ease, box-shadow 200ms ease;
+  }
+  .v1 .mbtn.live .mbtn-icon {
+    color: var(--success);
+    box-shadow: 0 0 0 1.5px rgba(74, 222, 128, 0.6), 0 0 28px rgba(74, 222, 128, 0.55);
+  }
+  .v1 .mbtn.muted .mbtn-icon {
+    color: var(--danger);
+    box-shadow: 0 0 0 1.5px rgba(252, 165, 165, 0.5), 0 0 22px rgba(239, 68, 68, 0.35);
+  }
+  .v1 .mbtn.muted .mbtn-icon::after {
+    content: ''; position: absolute;
+    width: 38px; height: 2px;
+    background: currentColor;
+    transform: rotate(-22deg);
+    border-radius: 1px;
+  }
+  .v1 .mbtn-icon { position: relative; }
+  .v1 .mbtn-name {
+    font-size: 13px; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .v1 .mbtn-status {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .v1 .mbtn.live .mbtn-status { color: var(--success); }
+  .v1 .mbtn.muted .mbtn-status { color: var(--danger); }
+
+  /* V1 Power — compact glyph + label, matches the mic glyph language */
+  .v1 .pwr {
+    background: transparent; border: none;
+    padding: 8px 14px; gap: 6px;
+    display: flex; flex-direction: column; align-items: center;
+    color: var(--accent); cursor: pointer;
+    font-family: inherit;
+  }
+  .v1 .pwr-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--accent);
+    box-shadow: 0 0 0 1.5px rgba(245, 166, 35, 0.5), 0 0 24px rgba(245, 166, 35, 0.4);
+  }
+  .v1 .pwr-name {
+    font-size: 13px; font-weight: 800; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .v1 .pwr-status {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent);
+  }
+
+  /* V1 Vol — three transparent glyph buttons with label below */
+  .v1 .vbtn {
+    background: transparent; border: none;
+    padding: 8px 10px; gap: 4px;
+    display: flex; flex-direction: column; align-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 110ms ease, transform 110ms ease;
+  }
+  .v1 .vbtn:hover { color: var(--accent); }
+  .v1 .vbtn:active { transform: scale(0.94); }
+  .v1 .vbtn-glyph {
+    width: 44px; height: 36px;
+    display: grid; place-items: center;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT 2 — Inline Status Chip
+     ════════════════════════════════════════════════════════════════════ */
+  .v2 .mbtn {
+    background: transparent; border: none;
+    padding: 12px 14px;
+    color: var(--soft);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    font-family: inherit;
+  }
+  .v2 .mbtn-icon {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    color: inherit;
+    position: relative;
+  }
+  .v2 .mbtn.live .mbtn-icon { color: var(--success); }
+  .v2 .mbtn.muted .mbtn-icon { color: var(--danger); }
+  .v2 .mbtn.muted .mbtn-icon::after {
+    content: ''; position: absolute;
+    inset: 50% 6px auto 6px; height: 2px;
+    background: currentColor; transform: rotate(-22deg);
+    border-radius: 1px;
+  }
+  .v2 .mbtn-name {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.01em;
+    color: var(--copy);
+  }
+  .v2 .mbtn-status {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 3px 9px; border-radius: 4px;
+  }
+  .v2 .mbtn.live .mbtn-status {
+    background: rgba(34, 197, 94, 0.18);
+    color: var(--success);
+  }
+  .v2 .mbtn.muted .mbtn-status {
+    background: rgba(239, 68, 68, 0.16);
+    color: var(--danger);
+  }
+
+  /* V2 Power — inline icon + label + status chip */
+  .v2 .pwr {
+    background: transparent; border: none;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 14px;
+    color: var(--accent); cursor: pointer;
+    font-family: inherit;
+  }
+  .v2 .pwr-name {
+    font-size: 18px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .v2 .pwr-status {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 3px 10px; border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  /* V2 Vol — segmented glyph row, no labels */
+  .v2 .vbtn {
+    background: transparent; border: none;
+    width: 56px; height: 56px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    border-radius: 8px;
+    transition: background 110ms ease, color 110ms ease;
+  }
+  .v2 .vbtn:hover { background: rgba(245, 166, 35, 0.08); color: var(--accent); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT 3 — Underline Accent
+     ════════════════════════════════════════════════════════════════════ */
+  .v3 .mbtn {
+    background: transparent; border: none;
+    padding: 10px 18px 14px;
+    color: var(--soft);
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    font-family: inherit;
+    position: relative;
+  }
+  .v3 .mbtn::after {
+    content: '';
+    position: absolute; left: 18px; right: 18px; bottom: 4px;
+    height: 3px; border-radius: 2px;
+    background: rgba(148, 163, 184, 0.18);
+    transition: background 200ms ease, box-shadow 200ms ease;
+  }
+  .v3 .mbtn.live::after {
+    background: var(--success);
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.7);
+  }
+  .v3 .mbtn.muted::after { background: var(--danger); }
+  .v3 .mbtn-icon { width: 36px; height: 36px; display: grid; place-items: center; color: inherit; position: relative; }
+  .v3 .mbtn.live .mbtn-icon { color: var(--success); }
+  .v3 .mbtn.muted .mbtn-icon { color: var(--danger); }
+  .v3 .mbtn.muted .mbtn-icon::after {
+    content: ''; position: absolute;
+    width: 30px; height: 2px;
+    background: currentColor; transform: rotate(-22deg);
+    border-radius: 1px;
+  }
+  .v3 .mbtn-name {
+    font-size: 15px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .v3 .mbtn-status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--soft);
+  }
+
+  /* V3 Power — soft orange accent strip below */
+  .v3 .pwr {
+    background: transparent; border: none;
+    padding: 10px 22px 14px;
+    color: var(--accent); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    font-family: inherit; position: relative;
+  }
+  .v3 .pwr::after {
+    content: ''; position: absolute; left: 22px; right: 22px; bottom: 4px;
+    height: 3px; border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 14px rgba(245, 166, 35, 0.6);
+  }
+  .v3 .pwr-name {
+    font-size: 15px; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .v3 .pwr-status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent);
+  }
+
+  /* V3 Vol — minimal centered cluster with audio strength bars under it */
+  .v3 .vbtn {
+    background: transparent; border: none;
+    width: 56px; height: 56px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    border-radius: 8px;
+  }
+  .v3 .vbtn:hover { color: var(--accent); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT 4 — Waveform Live Indicator
+     ════════════════════════════════════════════════════════════════════ */
+  .v4 .mbtn {
+    background: transparent; border: none;
+    padding: 14px 16px;
+    color: var(--soft);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    font-family: inherit;
+  }
+  .v4 .mbtn-icon {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    color: inherit;
+    position: relative;
+  }
+  .v4 .mbtn.live .mbtn-icon { color: var(--success); }
+  .v4 .mbtn.muted .mbtn-icon { color: var(--danger); }
+  .v4 .mbtn.muted .mbtn-icon::after {
+    content: ''; position: absolute;
+    width: 32px; height: 2px;
+    background: currentColor; transform: rotate(-22deg);
+    border-radius: 1px;
+  }
+  .v4 .mbtn-text {
+    display: flex; flex-direction: column; gap: 3px;
+    align-items: flex-start;
+  }
+  .v4 .mbtn-name {
+    font-size: 17px; font-weight: 800; letter-spacing: -0.01em;
+    color: var(--copy);
+  }
+  .v4 .mbtn-waveform {
+    display: flex; align-items: flex-end; gap: 3px;
+    height: 16px;
+  }
+  .v4 .mbtn-waveform span {
+    width: 3px; border-radius: 1px;
+    background: var(--success);
+    box-shadow: 0 0 4px var(--success);
+    animation: wave 1100ms ease-in-out infinite;
+  }
+  .v4 .mbtn-waveform span:nth-child(1) { height: 40%; animation-delay: 0ms; }
+  .v4 .mbtn-waveform span:nth-child(2) { height: 90%; animation-delay: 120ms; }
+  .v4 .mbtn-waveform span:nth-child(3) { height: 55%; animation-delay: 240ms; }
+  .v4 .mbtn-waveform span:nth-child(4) { height: 75%; animation-delay: 360ms; }
+  .v4 .mbtn-waveform span:nth-child(5) { height: 35%; animation-delay: 480ms; }
+  .v4 .mbtn-waveform span:nth-child(6) { height: 60%; animation-delay: 600ms; }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.3); }
+    50%      { transform: scaleY(1.0); }
+  }
+  .v4 .mbtn-mute-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--danger);
+  }
+
+  /* V4 Power — pulsing ring */
+  .v4 .pwr {
+    background: transparent; border: none;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 14px;
+    color: var(--accent); cursor: pointer;
+    font-family: inherit;
+  }
+  .v4 .pwr-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    animation: pwr-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pwr-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.45); }
+    50%      { box-shadow: 0 0 0 10px rgba(245, 166, 35, 0); }
+  }
+  .v4 .pwr-name {
+    font-size: 17px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .v4 .pwr-status {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent);
+  }
+
+  /* V4 Vol — slider-style visualization with -/+ at edges */
+  .v4 .vbtn {
+    background: transparent; border: none;
+    width: 48px; height: 56px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-size: 20px; font-weight: 900;
+    font-family: inherit;
+    transition: color 110ms ease;
+  }
+  .v4 .vbtn:hover { color: var(--accent); }
+  .v4 .vol-meter {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 6px;
+    min-width: 140px;
+  }
+  .v4 .vol-track {
+    flex: 1; height: 6px; border-radius: 3px;
+    background: rgba(148, 163, 184, 0.18);
+    position: relative;
+  }
+  .v4 .vol-fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 65%;
+    background: linear-gradient(90deg, rgba(245, 166, 35, 0.6), var(--accent));
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(245, 166, 35, 0.4);
+  }
+  .v4 .vol-thumb {
+    position: absolute; top: 50%;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 12px var(--accent), 0 2px 6px rgba(0,0,0,0.5);
+    left: 65%;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     VARIANT 5 — Typographic Status Strip
+     ════════════════════════════════════════════════════════════════════ */
+  .v5 .mbtn {
+    background: transparent; border: none;
+    padding: 10px 16px 10px 22px;
+    color: var(--soft);
+    cursor: pointer;
+    display: flex; flex-direction: column; gap: 5px;
+    align-items: flex-start;
+    font-family: inherit;
+    position: relative;
+  }
+  /* Left strip = status indicator */
+  .v5 .mbtn::before {
+    content: ''; position: absolute;
+    left: 6px; top: 12px; bottom: 12px;
+    width: 4px; border-radius: 2px;
+    background: rgba(148, 163, 184, 0.22);
+    transition: background 200ms ease, box-shadow 200ms ease;
+  }
+  .v5 .mbtn.live::before {
+    background: var(--success);
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.7);
+  }
+  .v5 .mbtn.muted::before { background: var(--danger); }
+  .v5 .mbtn-name {
+    font-size: 26px; font-weight: 900; letter-spacing: -0.02em;
+    text-transform: uppercase; color: var(--copy);
+    line-height: 0.95;
+  }
+  .v5 .mbtn-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.32em;
+    text-transform: uppercase;
+  }
+  .v5 .mbtn.live .mbtn-status { color: var(--success); }
+  .v5 .mbtn.muted .mbtn-status { color: var(--danger); }
+  .v5 .mbtn-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  /* V5 Power — typographic, big POWER label with left strip */
+  .v5 .pwr {
+    background: transparent; border: none;
+    padding: 10px 20px 10px 22px;
+    color: var(--accent); cursor: pointer;
+    display: flex; flex-direction: column; gap: 5px;
+    align-items: flex-start;
+    font-family: inherit;
+    position: relative;
+  }
+  .v5 .pwr::before {
+    content: ''; position: absolute;
+    left: 6px; top: 12px; bottom: 12px;
+    width: 4px; border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 14px var(--accent);
+  }
+  .v5 .pwr-name {
+    font-size: 26px; font-weight: 900; letter-spacing: -0.02em;
+    text-transform: uppercase; color: var(--copy);
+    line-height: 0.95;
+  }
+  .v5 .pwr-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--accent);
+  }
+
+  /* V5 Vol — clean inline strip with - icon + meter */
+  .v5 .vbtn {
+    background: transparent; border: none;
+    width: 44px; height: 56px;
+    display: grid; place-items: center;
+    color: var(--soft); cursor: pointer;
+    font-family: inherit;
+  }
+  .v5 .vbtn:hover { color: var(--accent); }
+  .v5 .vol-readout {
+    font-size: 26px; font-weight: 900; color: var(--accent);
+    line-height: 0.95;
+    text-shadow: 0 0 10px rgba(245, 166, 35, 0.5);
+  }
+  .v5 .vol-readout small {
+    font-size: 11px; color: var(--soft);
+    letter-spacing: 0.24em; text-transform: uppercase;
+    font-weight: 700;
+    display: block; margin-top: 2px;
+    text-shadow: none;
+  }
+
+  /* Spacer between groups inside the footer */
+  .gap { width: 12px; }
+  .divider {
+    width: 1px; height: 56px;
+    background: var(--border-soft);
+    align-self: center;
+  }
+
+</style>
+</head>
+<body>
+
+<header class="page-h">
+  <div class="page-eyebrow">MCCCD · AA140 · Footer Mockups</div>
+  <h1>Borderless <b>Mic Buttons</b> + Power/Vol Variants</h1>
+  <p class="lede">
+    Five passes on the bottom bar. Each shows Lav + Handheld stripped of background
+    and outline (state shown another way), paired with a matching Power treatment
+    and a tuned Volume control. All cards render at the panel's native
+    <b style="color:var(--accent)">1280px</b> width with the MCCCD orange theme,
+    so layout and weight reflect the real footer.
+  </p>
+</header>
+
+<div class="stage-list">
+
+  <!-- ═══════════════ VARIANT 1 ═══════════════ -->
+  <div class="variant v1">
+    <div class="v-head">
+      <span class="v-num">01</span>
+      <span class="v-title">Glyph + Halo</span>
+      <span class="v-desc">Pure icon, no box. Status = colored ring around the glyph (green halo when live, red when muted). Power matches the same language.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <span class="pwr-icon">
+            <svg class="ico-power" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          </span>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">System On</span>
+        </button>
+
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-name">Lav</span>
+            <span class="mbtn-status">Live</span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-name">Handheld</span>
+            <span class="mbtn-status">Muted</span>
+          </button>
+        </div>
+
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">
+            <span class="vbtn-glyph">
+              <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l-4 6"/></svg>
+            </span>
+            Down
+          </button>
+          <button class="vbtn">
+            <span class="vbtn-glyph">
+              <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+            </span>
+            Mute
+          </button>
+          <button class="vbtn">
+            <span class="vbtn-glyph">
+              <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>
+            </span>
+            Up
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT 2 ═══════════════ -->
+  <div class="variant v2">
+    <div class="v-head">
+      <span class="v-num">02</span>
+      <span class="v-title">Inline Status Chip</span>
+      <span class="v-desc">Icon + name on one row, status read as a small chip. Power uses the same pattern with "ON". Vol becomes a tight inline glyph row.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <svg class="ico-power" viewBox="0 0 24 24" style="width:34px;height:34px;" aria-hidden="true"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">On</span>
+        </button>
+
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24" style="width:32px;height:32px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-name">Lav</span>
+            <span class="mbtn-status">Live</span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24" style="width:32px;height:32px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-name">Handheld</span>
+            <span class="mbtn-status">Muted</span>
+          </button>
+        </div>
+
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM17 12h4"/></svg>
+          </button>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM15 9v6M18 6v12"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT 3 ═══════════════ -->
+  <div class="variant v3">
+    <div class="v-head">
+      <span class="v-num">03</span>
+      <span class="v-title">Underline Accent</span>
+      <span class="v-desc">No box. State telegraphed by a thin colored bar under each label (green/red for mics, orange for power). Reads as a system of related tabs.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <span class="mbtn-icon">
+            <svg class="ico-power" viewBox="0 0 24 24" style="width:30px;height:30px" aria-hidden="true"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          </span>
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status">System On</span>
+        </button>
+
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-name">Lav</span>
+            <span class="mbtn-status">Live</span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-name">Handheld</span>
+            <span class="mbtn-status">Muted</span>
+          </button>
+        </div>
+
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 12h3"/></svg>
+          </button>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM15 9v6M18 6v12"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT 4 ═══════════════ -->
+  <div class="variant v4">
+    <div class="v-head">
+      <span class="v-num">04</span>
+      <span class="v-title">Live Waveform</span>
+      <span class="v-desc">Icon + name horizontal. When live, animated audio bars extend to the right. When muted, just an italic "Muted" label. Power gets a pulsing ring. Vol becomes a real meter.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <span class="pwr-icon">
+            <svg class="ico-power" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          </span>
+          <div class="pwr-text" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">
+            <span class="pwr-name">Power</span>
+            <span class="pwr-status">System Active</span>
+          </div>
+        </button>
+
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-text">
+              <span class="mbtn-name">Lav</span>
+              <span class="mbtn-waveform">
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </span>
+            </span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-icon">
+              <svg class="ico-mic" viewBox="0 0 24 24" style="width:30px;height:30px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg>
+            </span>
+            <span class="mbtn-text">
+              <span class="mbtn-name">Handheld</span>
+              <span class="mbtn-mute-label">Muted</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="vol">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">−</button>
+          <div class="vol-meter">
+            <div class="vol-track">
+              <div class="vol-fill"></div>
+              <div class="vol-thumb"></div>
+            </div>
+          </div>
+          <button class="vbtn">+</button>
+          <button class="vbtn" style="width:56px;">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ═══════════════ VARIANT 5 ═══════════════ -->
+  <div class="variant v5">
+    <div class="v-head">
+      <span class="v-num">05</span>
+      <span class="v-title">Typographic Strip</span>
+      <span class="v-desc">Big bold label, slim color strip on the left edge as the only state indicator. Power matches. Vol becomes a single readout "65" with -/+ chevrons.</span>
+    </div>
+    <div class="v-stage">
+      <footer class="ftr">
+        <button class="pwr">
+          <span class="pwr-name">Power</span>
+          <span class="pwr-status"><span class="mbtn-dot" style="background:var(--accent);box-shadow:0 0 6px var(--accent);width:7px;height:7px;border-radius:50%;display:inline-block;"></span>System On</span>
+        </button>
+
+        <div class="mics">
+          <span class="mics-label">Mics</span>
+          <button class="mbtn live">
+            <span class="mbtn-name">Lav</span>
+            <span class="mbtn-status"><span class="mbtn-dot"></span>Live</span>
+          </button>
+          <button class="mbtn muted">
+            <span class="mbtn-name">Handheld</span>
+            <span class="mbtn-status"><span class="mbtn-dot"></span>Muted</span>
+          </button>
+        </div>
+
+        <div class="vol" style="gap:14px;">
+          <span class="vol-label">Vol</span>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M15 18l-7-6 7-6"/></svg>
+          </button>
+          <span class="vol-readout">65<small>vol</small></span>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M9 6l7 6-7 6"/></svg>
+          </button>
+          <button class="vbtn">
+            <svg class="ico-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM18 9l4 6M22 9l-4 6"/></svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

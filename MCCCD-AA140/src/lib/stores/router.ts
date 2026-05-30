@@ -5,11 +5,12 @@ import {
   display1SourceFb,
   display2SourceFb,
   display3SourceFb,
+  display4SourceFb,
 } from './signals';
 
 // ── Types ──────────────────────────────────────────────────────────────
 export type SourceId = 'roomPc' | 'extPc' | 'airMedia' | 'laptop';
-export type DisplayId = 'd1' | 'd2' | 'd3';
+export type DisplayId = 'd1' | 'd2' | 'd3' | 'd4';
 
 export const SOURCES: Record<SourceId, { label: string; value: 1 | 2 | 3 | 4 }> = {
   roomPc:   { label: 'Room PC',  value: 1 },
@@ -59,12 +60,14 @@ const FB_BY_DISPLAY = {
   d1: display1SourceFb,
   d2: display2SourceFb,
   d3: display3SourceFb,
+  d4: display4SourceFb,
 } as const;
 
 const SET_SIGNAL_BY_DISPLAY: Record<DisplayId, string> = {
   d1: SIGNALS.display1Source,
   d2: SIGNALS.display2Source,
   d3: SIGNALS.display3Source,
+  d4: SIGNALS.display4Source,
 };
 
 export function currentRouting(displayId: DisplayId): SourceId | null {

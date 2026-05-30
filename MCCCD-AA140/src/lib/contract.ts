@@ -67,6 +67,10 @@ export const SIGNALS = {
 
   display1SourceFb:   `${ROOM_NAME}.Display1SourceFb`,    // analog feedback
   display2SourceFb:   `${ROOM_NAME}.Display2SourceFb`,    // analog feedback
+  // D4 = podium confidence monitor (defaults to D3 source on PowerUp, independently routable runtime)
+  display4Source:     `${ROOM_NAME}.Display4Source`,      // analog set
+  display4SourceFb:   `${ROOM_NAME}.Display4SourceFb`,    // analog feedback
+  display4PowerFb:    `${ROOM_NAME}.Display4PowerFb`,     // digital fb
   audioOutputSelectFb:`${ROOM_NAME}.AudioOutputSelectFb`, // analog feedback (1=D1, 2=D2)
 
   micLavMute:         `${ROOM_NAME}.MicLavMute`,          // digital toggle

@@ -12,12 +12,14 @@ export const panelOnline = writable(true);
 export const display1SourceFb = writable<number>(0);
 export const display2SourceFb = writable<number>(0);
 export const display3SourceFb = writable<number>(0);
+export const display4SourceFb = writable<number>(0);
 export const audioOutputSelectFb = writable<1 | 2>(1);
 
 // Per-display power feedback (NVX D200 sink-connected)
 export const display1PowerFb = writable<boolean>(false);
 export const display2PowerFb = writable<boolean>(false);
 export const display3PowerFb = writable<boolean>(false);
+export const display4PowerFb = writable<boolean>(false);
 
 // System power (drives Power button enlarged variant + reflects current power state)
 export const systemPowerFb = writable<boolean>(false);
@@ -81,11 +83,13 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.display1SourceFb,    (v) => display1SourceFb.set(v));
   subscribeAnalog(SIGNALS.display2SourceFb,    (v) => display2SourceFb.set(v));
   subscribeAnalog(SIGNALS.display3SourceFb,    (v) => display3SourceFb.set(v));
+  subscribeAnalog(SIGNALS.display4SourceFb,    (v) => display4SourceFb.set(v));
   subscribeAnalog(SIGNALS.audioOutputSelectFb, (v) => audioOutputSelectFb.set(v === 2 ? 2 : 1));
 
   subscribeDigital(SIGNALS.display1PowerFb,    (v) => display1PowerFb.set(v));
   subscribeDigital(SIGNALS.display2PowerFb,    (v) => display2PowerFb.set(v));
   subscribeDigital(SIGNALS.display3PowerFb,    (v) => display3PowerFb.set(v));
+  subscribeDigital(SIGNALS.display4PowerFb,    (v) => display4PowerFb.set(v));
   subscribeDigital(SIGNALS.systemPowerFb,      (v) => systemPowerFb.set(v));
 
   subscribeDigital(SIGNALS.micLavMuteFb,       (v) => micLavMuteFb.set(v));
