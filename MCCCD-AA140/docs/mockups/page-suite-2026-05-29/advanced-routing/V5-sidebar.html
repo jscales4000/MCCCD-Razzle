@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCCCD AA140 — Advanced Routing · V5 Sidebar</title>
+<style>
+  :root {
+    --bg-page: #050a14;
+    --bg-panel: #0d1b2e;
+    --bg-panel-soft: rgba(15, 23, 42, 0.55);
+    --border: rgba(148, 163, 184, 0.18);
+    --border-strong: rgba(148, 163, 184, 0.32);
+    --accent: #f5a623;
+    --accent-soft: rgba(245, 166, 35, 0.28);
+    --accent-glow: rgba(245, 166, 35, 0.45);
+    --active: #fde047;
+    --copy: #e2e8f0;
+    --copy-soft: #cbd5e1;
+    --copy-muted: #94a3b8;
+    --success: #22c55e;
+    --warn: #fb923c;
+    --danger: #ef4444;
+    --radius-card: 14px;
+    --radius-button: 10px;
+    --radius-pill: 999px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #02060d;
+    color: var(--copy);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .frame {
+    width: 1280px; height: 800px;
+    background: var(--bg-page);
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.08);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 72px 1fr 124px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* HEADER */
+  .hdr {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+    display: flex; align-items: center;
+    padding: 0 18px; gap: 14px;
+  }
+  .hbtn {
+    height: 44px; padding: 0 14px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+  .hsep { width: 1px; height: 22px; background: var(--border); }
+  .room { font-size: 18px; font-weight: 800; }
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .spacer { flex: 1; }
+  .mode-seg {
+    display: flex; height: 44px;
+    border-radius: 10px; overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+  .mode-btn {
+    height: 44px; min-width: 76px; padding: 0 16px;
+    background: rgba(30,41,59,0.55);
+    border: none; border-right: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit;
+  }
+  .mode-btn:last-child { border-right: none; }
+  .mode-btn.active { background: rgba(245,166,35,0.16); color: var(--accent); }
+  .chip {
+    height: 44px; padding: 0 14px;
+    border-radius: 10px;
+    background: rgba(100,116,139,0.08);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; font-family: inherit;
+  }
+  .chip.on {
+    background: rgba(34,197,94,0.10);
+    border-color: rgba(34,197,94,0.30);
+    color: #86efac;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  /* MAIN — V5 sidebar: narrow LEFT sidebar (sources + display picker),
+     main canvas RIGHT is the work surface (room plan + display status). */
+  .main {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  /* LEFT SIDEBAR — source palette stacked vertically */
+  .sidebar {
+    padding: 16px 14px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .side-h {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .src-stack {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .src-tile {
+    min-height: 72px;
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+    background: rgba(15,23,42,0.6);
+    color: var(--copy);
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer; font-family: inherit;
+    text-align: left;
+  }
+  .src-tile svg { width: 22px; height: 22px; color: var(--copy-soft); }
+  .src-tile.live { border-color: var(--accent-soft); background: rgba(245,166,35,0.10); }
+  .src-tile.live svg { color: var(--accent); }
+  .src-meta { display: flex; flex-direction: column; gap: 2px; }
+  .src-name { font-size: 14px; font-weight: 800; color: var(--copy); }
+  .src-tile.live .src-name { color: var(--active); }
+  .src-sub { font-size: 10px; color: var(--copy-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .src-count {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.10em;
+    color: var(--copy-muted);
+    background: rgba(148,163,184,0.08);
+    border-radius: 999px; padding: 4px 8px;
+  }
+  .src-tile.live .src-count {
+    color: var(--accent);
+    background: rgba(245,166,35,0.18);
+  }
+
+  .target-picker {
+    border-top: 0.5px solid var(--border);
+    padding-top: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .target-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .target-btn {
+    min-height: 64px;
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    background: rgba(15,23,42,0.55);
+    color: var(--copy-soft);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    cursor: pointer; font-family: inherit;
+  }
+  .target-btn b { font-size: 12px; font-weight: 800; color: var(--copy); }
+  .target-btn span { font-size: 10px; color: var(--active); font-weight: 800; }
+  .target-btn span.empty { color: var(--copy-muted); font-weight: 600; }
+  .target-btn.selected {
+    border-color: var(--accent);
+    background: rgba(245,166,35,0.14);
+  }
+
+  .aud-block {
+    margin-top: auto;
+    border-top: 0.5px solid var(--border);
+    padding-top: 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .aud-row { display: flex; align-items: baseline; gap: 10px; }
+  .aud-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--copy-soft); }
+  .aud-val { font-size: 13px; font-weight: 800; color: var(--active); }
+  .aud-hint { font-size: 10px; color: var(--copy-muted); line-height: 1.4; }
+
+  /* MAIN CANVAS — room plan */
+  .canvas {
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .canvas-head {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .canvas-title {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.30em;
+    text-transform: uppercase; color: var(--copy);
+  }
+  .canvas-tag {
+    font-size: 10px; font-weight: 700; color: var(--copy-muted);
+    letter-spacing: 0.14em;
+  }
+  .canvas-tag b { color: var(--success); }
+  .canvas-svg-wrap { flex: 1; position: relative; min-height: 0; }
+  .room-svg { width: 100%; height: 100%; display: block; }
+
+  .marker-card {
+    background: linear-gradient(180deg, rgba(13,27,46,0.92), rgba(8,14,26,0.92));
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    min-height: 96px;
+    justify-content: center;
+  }
+  .marker-card.active {
+    border-color: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent-soft), 0 0 24px rgba(245,166,35,0.18), 0 8px 24px rgba(0,0,0,0.45);
+  }
+  .m-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    color: var(--copy-muted); text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .m-pwr { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+  .m-pwr.off { background: rgba(148,163,184,0.4); box-shadow: none; }
+  .m-name { font-size: 14px; font-weight: 800; color: var(--copy); }
+  .m-src { font-size: 16px; font-weight: 800; color: var(--active); }
+  .m-src.empty { color: var(--copy-muted); font-weight: 600; }
+
+  .front-strip {
+    height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.30em;
+    color: var(--copy-muted); text-transform: uppercase;
+    border-top: 1px dashed rgba(148,163,184,0.18);
+    padding-top: 8px;
+  }
+
+  /* FOOTER — locked */
+  .footer {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 96px 1fr 96px 64px 64px;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .pwr {
+    border-radius: 12px;
+    background: rgba(34,197,94,0.10);
+    border: 0.5px solid rgba(34,197,94,0.30);
+    color: #86efac;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; cursor: pointer;
+  }
+  .pwr svg { width: 28px; height: 28px; }
+  .pwr-name { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  .pwr-status { font-size: 11px; font-weight: 800; }
+  .mics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .mic {
+    min-height: 96px;
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px; cursor: pointer; position: relative;
+  }
+  .mic.live { border-color: rgba(34,197,94,0.32); }
+  .mic.muted { border-color: rgba(239,68,68,0.28); background: rgba(127,29,29,0.18); }
+  .mic-name { font-size: 11px; font-weight: 700; color: var(--copy); }
+  .mic-sub { font-size: 9px; color: var(--copy-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .wave { display: flex; align-items: end; gap: 2px; height: 22px; }
+  .wave i { display: block; width: 3px; background: var(--success); border-radius: 2px; }
+  .mic.muted .wave i { background: var(--danger); opacity: 0.55; }
+  .mute-x { position: absolute; top: 8px; right: 8px; color: var(--danger); font-weight: 900; font-size: 12px; }
+  .vol {
+    border-radius: 12px; background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 32px; color: var(--copy); cursor: pointer;
+  }
+  .mute-btn {
+    border-radius: 12px; background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--copy); cursor: pointer; gap: 4px;
+  }
+  .mute-btn .mlbl { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .mute-btn svg { width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <button class="hbtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Home
+    </button>
+    <div class="hsep"></div>
+    <span class="room">AA140</span>
+    <div class="hsep"></div>
+    <span class="eyebrow">Display Routing · Sidebar</span>
+    <div class="spacer"></div>
+    <div class="mode-seg" role="tablist">
+      <button class="mode-btn active" type="button">Manual</button>
+      <button class="mode-btn" type="button">Mirror</button>
+      <button class="mode-btn" type="button">Extend</button>
+    </div>
+    <button class="chip on" type="button">
+      <span class="dot"></span>
+      Auto-Route On
+    </button>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="card sidebar">
+      <span class="side-h">Sources</span>
+      <div class="src-stack">
+        <button class="src-tile live" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="12" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/>
+          </svg>
+          <div class="src-meta">
+            <span class="src-name">Room PC</span>
+            <span class="src-sub">HDMI 1</span>
+          </div>
+          <span class="src-count">D1·D2</span>
+        </button>
+        <button class="src-tile" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/>
+          </svg>
+          <div class="src-meta">
+            <span class="src-name">Ext PC</span>
+            <span class="src-sub">HDMI 2</span>
+          </div>
+          <span class="src-count">—</span>
+        </button>
+        <button class="src-tile live" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12a10 10 0 0 1 20 0"/><path d="M5 14a7 7 0 0 1 14 0"/><path d="M9 16a3 3 0 0 1 6 0"/>
+          </svg>
+          <div class="src-meta">
+            <span class="src-name">AirMedia</span>
+            <span class="src-sub">Wireless</span>
+          </div>
+          <span class="src-count">D3·D4</span>
+        </button>
+        <button class="src-tile" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/>
+          </svg>
+          <div class="src-meta">
+            <span class="src-name">Laptop</span>
+            <span class="src-sub">HDMI 3</span>
+          </div>
+          <span class="src-count">—</span>
+        </button>
+      </div>
+
+      <div class="target-picker">
+        <span class="side-h">Route To</span>
+        <div class="target-row">
+          <button class="target-btn selected" type="button">
+            <b>D1</b><span>Room PC</span>
+          </button>
+          <button class="target-btn" type="button">
+            <b>D2</b><span>Room PC</span>
+          </button>
+        </div>
+        <div class="target-row">
+          <button class="target-btn" type="button">
+            <b>D3</b><span>AirMedia</span>
+          </button>
+          <button class="target-btn" type="button">
+            <b>D4</b><span>AirMedia</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="aud-block">
+        <div class="aud-row">
+          <span class="aud-lbl">Audio</span>
+          <span class="aud-val">D1 · Room PC</span>
+        </div>
+        <span class="aud-hint">Audio always follows D1's routed source.</span>
+      </div>
+    </aside>
+
+    <!-- MAIN CANVAS -->
+    <section class="card canvas">
+      <div class="canvas-head">
+        <span class="canvas-title">AA140 — Reflected Ceiling Plan</span>
+        <span class="canvas-tag"><b>● </b>4 of 4 Displays Powered</span>
+      </div>
+
+      <div class="canvas-svg-wrap">
+        <svg class="room-svg" viewBox="0 0 920 540" preserveAspectRatio="none">
+          <rect x="20" y="20" width="880" height="500" rx="10"
+                fill="rgba(15,23,42,0.35)"
+                stroke="rgba(148,163,184,0.22)" stroke-width="1.5"/>
+          <g stroke="rgba(148,163,184,0.06)" stroke-width="1">
+            <line x1="20" y1="180" x2="900" y2="180"/>
+            <line x1="20" y1="340" x2="900" y2="340"/>
+            <line x1="313" y1="20" x2="313" y2="520"/>
+            <line x1="606" y1="20" x2="606" y2="520"/>
+          </g>
+          <rect x="220" y="180" width="480" height="180"
+                fill="rgba(148,163,184,0.04)"
+                stroke="rgba(148,163,184,0.10)" stroke-dasharray="4 4"/>
+          <text x="460" y="278" text-anchor="middle"
+                fill="rgba(148,163,184,0.32)" font-size="11"
+                letter-spacing="4" font-weight="700">SEATING</text>
+
+          <!-- D3 (top center) -->
+          <foreignObject x="350" y="42" width="220" height="100">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+              <div class="m-label"><span class="m-pwr"></span> D3 · Rear</div>
+              <div class="m-name">Newline 86"</div>
+              <div class="m-src">AirMedia</div>
+            </div>
+          </foreignObject>
+
+          <!-- D1 (front left) -->
+          <foreignObject x="60" y="390" width="220" height="100">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+              <div class="m-label"><span class="m-pwr"></span> D1 · Front Left</div>
+              <div class="m-name">Sony VPL 100"</div>
+              <div class="m-src">Room PC</div>
+            </div>
+          </foreignObject>
+
+          <!-- D2 (front right) -->
+          <foreignObject x="640" y="390" width="220" height="100">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+              <div class="m-label"><span class="m-pwr"></span> D2 · Front Right</div>
+              <div class="m-name">Sony VPL 100"</div>
+              <div class="m-src">Room PC</div>
+            </div>
+          </foreignObject>
+
+          <!-- D4 (podium, near center forward) -->
+          <foreignObject x="350" y="332" width="220" height="100">
+            <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+              <div class="m-label"><span class="m-pwr"></span> D4 · Podium</div>
+              <div class="m-name">Confidence Monitor</div>
+              <div class="m-src">AirMedia</div>
+            </div>
+          </foreignObject>
+        </svg>
+      </div>
+
+      <div class="front-strip">Front of Room</div>
+    </section>
+  </div>
+
+  <!-- FOOTER (locked) -->
+  <footer class="footer">
+    <button class="pwr" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/>
+      </svg>
+      <span class="pwr-name">Power</span>
+      <span class="pwr-status">On</span>
+    </button>
+    <div class="mics">
+      <div class="mic live">
+        <span class="mic-name">Lav</span>
+        <span class="wave"><i style="height:8px"></i><i style="height:14px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:6px"></i></span>
+        <span class="mic-sub">Wireless · 1</span>
+      </div>
+      <div class="mic muted">
+        <span class="mute-x">×</span>
+        <span class="mic-name">Handheld</span>
+        <span class="wave"><i style="height:4px"></i><i style="height:6px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:4px"></i></span>
+        <span class="mic-sub">Wireless · 2</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 1</span>
+        <span class="wave"><i style="height:10px"></i><i style="height:18px"></i><i style="height:14px"></i><i style="height:8px"></i><i style="height:11px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 2</span>
+        <span class="wave"><i style="height:6px"></i><i style="height:9px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:6px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 3</span>
+        <span class="wave"><i style="height:5px"></i><i style="height:12px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:8px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+    </div>
+    <button class="mute-btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+      <span class="mlbl">Mute All</span>
+    </button>
+    <button class="vol" type="button">−</button>
+    <button class="vol" type="button">+</button>
+  </footer>
+
+</div>
+</body>
+</html>

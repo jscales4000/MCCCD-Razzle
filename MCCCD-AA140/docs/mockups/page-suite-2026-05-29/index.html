@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MCCCD-AA140 · Page Suite Mockups · 2026-05-29</title>
+  <style>
+    :root {
+      --bg-page: #050a14;
+      --bg-panel: #0d1b2e;
+      --border: rgba(148, 163, 184, 0.18);
+      --accent: #f5a623;
+      --active: #fde047;
+      --copy: #e2e8f0;
+      --copy-soft: #cbd5e1;
+      --copy-muted: #94a3b8;
+      --radius-card: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--copy); }
+    body {
+      min-height: 100vh;
+      padding: 48px 64px;
+      background:
+        radial-gradient(1200px 600px at 50% -120px, rgba(245, 166, 35, 0.08), transparent 70%),
+        var(--bg-page);
+    }
+    header {
+      max-width: 1280px;
+      margin: 0 auto 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      margin: 0;
+      color: var(--copy);
+    }
+    .sub {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--copy-muted);
+    }
+    .body-copy {
+      font-size: 14px;
+      color: var(--copy-soft);
+      max-width: 880px;
+      line-height: 1.6;
+      margin-top: 6px;
+    }
+    .body-copy a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--accent);
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    section.page {
+      background: linear-gradient(180deg, rgba(13, 27, 46, 0.85), rgba(8, 14, 26, 0.85));
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 28px 32px 32px;
+    }
+    section.page > h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--copy);
+    }
+    section.page > p.page-sub {
+      margin: 0 0 22px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--copy-muted);
+    }
+
+    ul.variants {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1100px) {
+      ul.variants { grid-template-columns: repeat(2, 1fr); }
+    }
+    li.variant a {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px 16px;
+      min-height: 88px;
+      border-radius: 10px;
+      border: 0.5px solid var(--border);
+      background: rgba(15, 23, 42, 0.55);
+      color: var(--copy);
+      text-decoration: none;
+      transition: border-color 140ms ease, background 140ms ease, transform 110ms ease;
+    }
+    li.variant a:hover {
+      border-color: rgba(245, 166, 35, 0.45);
+      background: rgba(15, 23, 42, 0.85);
+      transform: translateY(-1px);
+    }
+    li.variant a strong {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--active);
+    }
+    li.variant a span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--copy-muted);
+    }
+    li.variant a em {
+      font-style: normal;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--copy-soft);
+      line-height: 1.45;
+    }
+
+    footer.meta {
+      max-width: 1280px;
+      margin: 56px auto 0;
+      padding: 18px 0;
+      border-top: 0.5px solid var(--border);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--copy-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="sub">Page Suite · 2026-05-29</span>
+    <h1>MCCCD-AA140 — Advanced Routing, Cameras, Audio Mixer</h1>
+    <p class="body-copy">
+      Five layout variants per page (15 mockups total), all built against the
+      <a href="design-system.md">shared design system</a>.
+      Each variant explores one direction: Spacious, Dense, Asymmetric, Card-Grid, or Sidebar.
+      Tokens, header height, glass-card pattern, and lemon-yellow active state are locked
+      across the suite so the three pages read as one product. Mockups are designed for
+      a 1280×800 viewport (TSW-1070).
+    </p>
+  </header>
+
+  <main>
+    <section class="page">
+      <h2>Advanced Routing</h2>
+      <p class="page-sub">Reflected ceiling plan · 4 displays · 4 sources · live FB</p>
+      <ul class="variants">
+        <li class="variant"><a href="advanced-routing/V1-spacious.html">
+          <span>V1</span><strong>Spacious</strong><em>Big ceiling plan, 96px markers, 76px sidebar rows</em>
+        </a></li>
+        <li class="variant"><a href="advanced-routing/V2-dense.html">
+          <span>V2</span><strong>Dense</strong><em>2×2 status + quick-route strip + headline metrics</em>
+        </a></li>
+        <li class="variant"><a href="advanced-routing/V3-asymmetric.html">
+          <span>V3</span><strong>Asymmetric</strong><em>D1 elevated as focus marker, compressed sidebar</em>
+        </a></li>
+        <li class="variant"><a href="advanced-routing/V4-card-grid.html">
+          <span>V4</span><strong>Card-Grid</strong><em>Display cards arranged in physical room positions</em>
+        </a></li>
+        <li class="variant"><a href="advanced-routing/V5-sidebar.html">
+          <span>V5</span><strong>Sidebar</strong><em>Source-tile column + target picker · wider plan</em>
+        </a></li>
+      </ul>
+    </section>
+
+    <section class="page">
+      <h2>Cameras</h2>
+      <p class="page-sub">2 cameras · PTZ overlay · speed · zoom · tracking · presets</p>
+      <ul class="variants">
+        <li class="variant"><a href="cameras/V1-spacious.html">
+          <span>V1</span><strong>Spacious</strong><em>96px PTZ on translucent discs, fat right rail</em>
+        </a></li>
+        <li class="variant"><a href="cameras/V2-dense.html">
+          <span>V2</span><strong>Dense</strong><em>Camera selector in header, telemetry chips, tight grid</em>
+        </a></li>
+        <li class="variant"><a href="cameras/V3-asymmetric.html">
+          <span>V3</span><strong>Asymmetric</strong><em>Preview ~62% canvas with hero 96px PTZ</em>
+        </a></li>
+        <li class="variant"><a href="cameras/V4-card-grid.html">
+          <span>V4</span><strong>Card-Grid</strong><em>2×2 quadrants · preview / control / tracking / presets</em>
+        </a></li>
+        <li class="variant"><a href="cameras/V5-sidebar.html">
+          <span>V5</span><strong>Sidebar</strong><em>240px left nav (camera + tracking + VTC) · centered preview</em>
+        </a></li>
+      </ul>
+    </section>
+
+    <section class="page">
+      <h2>Audio Mixer</h2>
+      <p class="page-sub">4 mic channels · VU meters · master + output select · scene presets</p>
+      <ul class="variants">
+        <li class="variant"><a href="audio-mixer/V1-spacious.html">
+          <span>V1</span><strong>Spacious</strong><em>4 tall mic strips · 10-segment LED VU · 72px mute</em>
+        </a></li>
+        <li class="variant"><a href="audio-mixer/V2-dense.html">
+          <span>V2</span><strong>Dense</strong><em>Same columns, design-system-floor touch targets</em>
+        </a></li>
+        <li class="variant"><a href="audio-mixer/V3-asymmetric.html">
+          <span>V3</span><strong>Asymmetric</strong><em>Hero master ~60% with horizontal level fader</em>
+        </a></li>
+        <li class="variant"><a href="audio-mixer/V4-card-grid.html">
+          <span>V4</span><strong>Card-Grid</strong><em>3×2 mic cards + Mix Status info tile + Master</em>
+        </a></li>
+        <li class="variant"><a href="audio-mixer/V5-sidebar.html">
+          <span>V5</span><strong>Sidebar</strong><em>240px left dedicated Master · vertical mic strips</em>
+        </a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="meta">
+    <span>15 mockups · 3 pages × 5 variants</span>
+    <span>Touch target floor: 64×64 · Header 72px · Active: lemon</span>
+    <span>1280×800 · TSW-1070</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCCCD AA140 — Advanced Routing · V1 Spacious</title>
+<style>
+  :root {
+    --bg-page: #050a14;
+    --bg-panel: #0d1b2e;
+    --bg-panel-soft: rgba(15, 23, 42, 0.55);
+    --border: rgba(148, 163, 184, 0.18);
+    --border-strong: rgba(148, 163, 184, 0.32);
+    --accent: #f5a623;
+    --accent-soft: rgba(245, 166, 35, 0.28);
+    --accent-glow: rgba(245, 166, 35, 0.45);
+    --active: #fde047;
+    --copy: #e2e8f0;
+    --copy-soft: #cbd5e1;
+    --copy-muted: #94a3b8;
+    --success: #22c55e;
+    --warn: #fb923c;
+    --danger: #ef4444;
+    --radius-card: 14px;
+    --radius-button: 10px;
+    --radius-pill: 999px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #02060d;
+    color: var(--copy);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .frame {
+    width: 1280px;
+    height: 800px;
+    background: var(--bg-page);
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.08);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 72px 1fr 124px;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  /* ─── HEADER ─── */
+  .hdr {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .hbtn {
+    height: 44px; padding: 0 16px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+  .hsep { width: 1px; height: 24px; background: var(--border); }
+  .room { font-size: 18px; font-weight: 800; }
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .spacer { flex: 1; }
+  .mode-seg {
+    display: flex; height: 44px;
+    border-radius: 10px; overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+  .mode-btn {
+    height: 44px; min-width: 80px; padding: 0 18px;
+    background: rgba(30,41,59,0.55);
+    border: none; border-right: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit;
+  }
+  .mode-btn:last-child { border-right: none; }
+  .mode-btn.active { background: rgba(245,166,35,0.16); color: var(--accent); }
+  .chip {
+    height: 44px; padding: 0 14px;
+    border-radius: 10px;
+    background: rgba(100,116,139,0.08);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; font-family: inherit;
+  }
+  .chip.on {
+    background: rgba(34,197,94,0.10);
+    border-color: rgba(34,197,94,0.30);
+    color: #86efac;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  /* ─── MAIN ─── V1 spacious: oversized room plan + roomy right rail ─── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 12px;
+    min-height: 0;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+  .plan {
+    position: relative;
+    padding: 24px;
+    overflow: hidden;
+  }
+  .plan-title {
+    position: absolute; top: 18px; left: 24px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .plan-legend {
+    position: absolute; top: 18px; right: 24px;
+    display: flex; gap: 14px; font-size: 11px; color: var(--copy-muted);
+    font-weight: 600;
+  }
+  .legend-key { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-sw { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+  .legend-sw.off { background: rgba(148,163,184,0.4); }
+
+  .room-svg {
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  /* Marker text styles (used in SVG via foreignObject) */
+  .marker-card {
+    background: linear-gradient(180deg, rgba(13,27,46,0.92), rgba(8,14,26,0.92));
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    min-height: 96px;
+    justify-content: center;
+  }
+  .marker-card.active {
+    border-color: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent-soft), 0 0 24px rgba(245,166,35,0.18), 0 8px 24px rgba(0,0,0,0.45);
+  }
+  .m-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    color: var(--copy-muted); text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .m-pwr { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+  .m-pwr.off { background: rgba(148,163,184,0.4); box-shadow: none; }
+  .m-name { font-size: 14px; font-weight: 800; color: var(--copy); }
+  .m-src { font-size: 16px; font-weight: 800; color: var(--active); }
+  .m-src.empty { color: var(--copy-muted); font-weight: 600; }
+
+  .front-strip {
+    position: absolute; left: 24px; right: 24px; bottom: 18px;
+    height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.30em;
+    color: var(--copy-muted); text-transform: uppercase;
+    border-top: 1px dashed rgba(148,163,184,0.18);
+    padding-top: 8px;
+  }
+
+  /* RIGHT RAIL */
+  .rail {
+    padding: 20px;
+    display: flex; flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+  }
+  .rail h3 {
+    margin: 0;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .ds-list {
+    display: flex; flex-direction: column;
+    gap: 10px;
+  }
+  .ds-row {
+    min-height: 76px;
+    border-radius: 12px;
+    border: 0.5px solid var(--border);
+    background: rgba(15,23,42,0.55);
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+  }
+  .ds-pwr {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 8px var(--success);
+  }
+  .ds-pwr.off { background: rgba(148,163,184,0.4); box-shadow: none; }
+  .ds-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ds-id {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    color: var(--copy-muted); text-transform: uppercase;
+  }
+  .ds-name { font-size: 14px; font-weight: 800; }
+  .ds-src {
+    font-size: 13px; font-weight: 800;
+    color: var(--active);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .ds-src.empty { color: var(--copy-muted); font-weight: 600; }
+
+  .aud-block {
+    margin-top: auto;
+    border-top: 0.5px solid var(--border);
+    padding-top: 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .aud-row { display: flex; align-items: baseline; gap: 10px; }
+  .aud-lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--copy-soft);
+  }
+  .aud-val { font-size: 14px; font-weight: 800; color: var(--active); }
+  .aud-hint { font-size: 11px; color: var(--copy-muted); line-height: 1.45; }
+
+  /* ─── FOOTER (locked across all variants) ─── */
+  .footer {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 96px 1fr 96px 64px 64px;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .pwr {
+    border-radius: 12px;
+    background: rgba(34,197,94,0.10);
+    border: 0.5px solid rgba(34,197,94,0.30);
+    color: #86efac;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+  }
+  .pwr svg { width: 28px; height: 28px; }
+  .pwr-name { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  .pwr-status { font-size: 11px; font-weight: 800; }
+  .mics {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .mic {
+    min-height: 96px;
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    position: relative;
+  }
+  .mic.live { border-color: rgba(34,197,94,0.32); }
+  .mic.muted { border-color: rgba(239,68,68,0.28); background: rgba(127,29,29,0.18); }
+  .mic-name { font-size: 11px; font-weight: 700; color: var(--copy); }
+  .mic-sub { font-size: 9px; color: var(--copy-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .wave {
+    display: flex; align-items: end; gap: 2px; height: 22px;
+  }
+  .wave i {
+    display: block; width: 3px; background: var(--success);
+    border-radius: 2px;
+  }
+  .mic.muted .wave i { background: var(--danger); opacity: 0.55; }
+  .mute-x {
+    position: absolute; top: 8px; right: 8px;
+    color: var(--danger);
+    font-weight: 900; font-size: 12px;
+  }
+  .vol {
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 32px;
+    color: var(--copy);
+    cursor: pointer;
+  }
+  .vol-block {
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: grid; grid-template-rows: 1fr 1fr;
+    overflow: hidden;
+  }
+  .vol-up, .vol-down {
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 28px;
+    color: var(--copy);
+    cursor: pointer;
+    border: none; background: transparent;
+    font-family: inherit;
+  }
+  .vol-up { border-bottom: 0.5px solid var(--border); }
+  .mute-btn {
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--copy);
+    cursor: pointer; gap: 4px;
+  }
+  .mute-btn .mlbl { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .mute-btn svg { width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <button class="hbtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Home
+    </button>
+    <div class="hsep"></div>
+    <span class="room">AA140</span>
+    <div class="hsep"></div>
+    <span class="eyebrow">Display Routing · Live Map</span>
+    <div class="spacer"></div>
+    <div class="mode-seg" role="tablist">
+      <button class="mode-btn active" type="button">Manual</button>
+      <button class="mode-btn" type="button">Mirror</button>
+      <button class="mode-btn" type="button">Extend</button>
+    </div>
+    <button class="chip on" type="button">
+      <span class="dot"></span>
+      Auto-Route On
+    </button>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ROOM PLAN -->
+    <section class="card plan">
+      <div class="plan-title">Reflected Ceiling Plan</div>
+      <div class="plan-legend">
+        <span class="legend-key"><span class="legend-sw"></span> Powered</span>
+        <span class="legend-key"><span class="legend-sw off"></span> Off</span>
+      </div>
+
+      <svg class="room-svg" viewBox="0 0 860 560" preserveAspectRatio="none">
+        <!-- Room outline -->
+        <rect x="20" y="40" width="820" height="490" rx="10"
+              fill="rgba(15,23,42,0.35)"
+              stroke="rgba(148,163,184,0.22)" stroke-width="1.5"/>
+        <!-- Grid suggestion -->
+        <g stroke="rgba(148,163,184,0.06)" stroke-width="1">
+          <line x1="20" y1="180" x2="840" y2="180"/>
+          <line x1="20" y1="320" x2="840" y2="320"/>
+          <line x1="280" y1="40" x2="280" y2="530"/>
+          <line x1="580" y1="40" x2="580" y2="530"/>
+        </g>
+        <!-- Seating zone hint -->
+        <rect x="200" y="180" width="460" height="180"
+              fill="rgba(148,163,184,0.04)"
+              stroke="rgba(148,163,184,0.10)" stroke-dasharray="4 4" stroke-width="1"/>
+        <text x="430" y="278" text-anchor="middle"
+              fill="rgba(148,163,184,0.32)" font-size="11"
+              letter-spacing="4" font-weight="700">SEATING</text>
+
+        <!-- D3 Rear Newline (top) -->
+        <foreignObject x="320" y="60" width="220" height="100">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+            <div class="m-label"><span class="m-pwr"></span> D3 · Rear</div>
+            <div class="m-name">Newline 86"</div>
+            <div class="m-src">AirMedia</div>
+          </div>
+        </foreignObject>
+
+        <!-- D1 Front Left (bottom left) -->
+        <foreignObject x="70" y="380" width="220" height="100">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+            <div class="m-label"><span class="m-pwr"></span> D1 · Front Left</div>
+            <div class="m-name">Sony VPL 100"</div>
+            <div class="m-src">Room PC</div>
+          </div>
+        </foreignObject>
+
+        <!-- D2 Front Right (bottom right) -->
+        <foreignObject x="570" y="380" width="220" height="100">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+            <div class="m-label"><span class="m-pwr"></span> D2 · Front Right</div>
+            <div class="m-name">Sony VPL 100"</div>
+            <div class="m-src">Room PC</div>
+          </div>
+        </foreignObject>
+
+        <!-- D4 Podium confidence (center, shifted forward) -->
+        <foreignObject x="320" y="330" width="220" height="100">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="marker-card active">
+            <div class="m-label"><span class="m-pwr"></span> D4 · Podium</div>
+            <div class="m-name">Confidence Monitor</div>
+            <div class="m-src">AirMedia</div>
+          </div>
+        </foreignObject>
+      </svg>
+
+      <div class="front-strip">Front of Room</div>
+    </section>
+
+    <!-- RIGHT RAIL -->
+    <aside class="card rail">
+      <h3>Display Status</h3>
+      <div class="ds-list">
+        <div class="ds-row">
+          <div class="ds-pwr"></div>
+          <div class="ds-meta">
+            <div class="ds-id">D1 · Front Left</div>
+            <div class="ds-name">Sony VPL Projector</div>
+          </div>
+          <div class="ds-src">Room PC</div>
+        </div>
+        <div class="ds-row">
+          <div class="ds-pwr"></div>
+          <div class="ds-meta">
+            <div class="ds-id">D2 · Front Right</div>
+            <div class="ds-name">Sony VPL Projector</div>
+          </div>
+          <div class="ds-src">Room PC</div>
+        </div>
+        <div class="ds-row">
+          <div class="ds-pwr"></div>
+          <div class="ds-meta">
+            <div class="ds-id">D3 · Rear</div>
+            <div class="ds-name">Newline 86" Interactive</div>
+          </div>
+          <div class="ds-src">AirMedia</div>
+        </div>
+        <div class="ds-row">
+          <div class="ds-pwr"></div>
+          <div class="ds-meta">
+            <div class="ds-id">D4 · Podium</div>
+            <div class="ds-name">Confidence Monitor</div>
+          </div>
+          <div class="ds-src">AirMedia</div>
+        </div>
+      </div>
+
+      <div class="aud-block">
+        <h3>Audio Source</h3>
+        <div class="aud-row">
+          <span class="aud-lbl">Follows</span>
+          <span class="aud-val">D1 · Room PC</span>
+        </div>
+        <div class="aud-hint">Audio always follows D1's routed source.</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- FOOTER (locked) -->
+  <footer class="footer">
+    <button class="pwr" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/>
+      </svg>
+      <span class="pwr-name">Power</span>
+      <span class="pwr-status">On</span>
+    </button>
+    <div class="mics">
+      <div class="mic live">
+        <span class="mic-name">Lav</span>
+        <span class="wave"><i style="height:8px"></i><i style="height:14px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:6px"></i></span>
+        <span class="mic-sub">Wireless · 1</span>
+      </div>
+      <div class="mic muted">
+        <span class="mute-x">×</span>
+        <span class="mic-name">Handheld</span>
+        <span class="wave"><i style="height:4px"></i><i style="height:6px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:4px"></i></span>
+        <span class="mic-sub">Wireless · 2</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 1</span>
+        <span class="wave"><i style="height:10px"></i><i style="height:18px"></i><i style="height:14px"></i><i style="height:8px"></i><i style="height:11px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 2</span>
+        <span class="wave"><i style="height:6px"></i><i style="height:9px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:6px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 3</span>
+        <span class="wave"><i style="height:5px"></i><i style="height:12px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:8px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+    </div>
+    <button class="mute-btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+      <span class="mlbl">Mute All</span>
+    </button>
+    <button class="vol" type="button">−</button>
+    <button class="vol" type="button">+</button>
+  </footer>
+
+</div>
+</body>
+</html>

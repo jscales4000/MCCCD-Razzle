@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCCCD AA140 — Cameras · V5 Sidebar</title>
+<style>
+  :root {
+    --bg-page: #050a14;
+    --bg-panel: #0d1b2e;
+    --bg-panel-soft: rgba(15, 23, 42, 0.55);
+    --border: rgba(148, 163, 184, 0.18);
+    --border-strong: rgba(148, 163, 184, 0.32);
+    --accent: #f5a623;
+    --accent-soft: rgba(245, 166, 35, 0.28);
+    --accent-glow: rgba(245, 166, 35, 0.45);
+    --active: #fde047;
+    --copy: #e2e8f0;
+    --copy-soft: #cbd5e1;
+    --copy-muted: #94a3b8;
+    --success: #22c55e;
+    --warn: #fb923c;
+    --danger: #ef4444;
+    --radius-card: 14px;
+    --radius-button: 10px;
+    --radius-pill: 999px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #02060d;
+    color: var(--copy);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .frame {
+    width: 1280px;
+    height: 800px;
+    background: var(--bg-page);
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.08);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 72px 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  .gc {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  /* HEADER */
+  .hdr { display: flex; align-items: center; gap: 16px; padding: 0 20px; }
+  .hbtn {
+    height: 56px; padding: 0 22px; min-width: 64px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-family: inherit;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 10px;
+    cursor: pointer;
+  }
+  .hsep { width: 1px; height: 28px; background: var(--border); }
+  .room { font-size: 20px; font-weight: 800; line-height: 1; }
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--copy-muted); margin-bottom: 4px; }
+  .spacer { flex: 1; }
+  .pill {
+    height: 44px; padding: 0 16px;
+    border-radius: var(--radius-pill);
+    background: rgba(34,197,94,0.10);
+    border: 0.5px solid rgba(34,197,94,0.30);
+    color: #86efac;
+    font-weight: 700; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  /* MAIN — V5 sidebar (LEFT 240px nav · CENTER preview+actions · RIGHT 232px context) */
+  .main {
+    display: grid;
+    grid-template-columns: 240px 1fr 232px;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  /* LEFT SIDEBAR: cameras + tracking */
+  .sidebar {
+    padding: 16px;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 12px;
+    min-height: 0;
+  }
+  .block-label {
+    margin: 0 0 8px;
+    color: var(--copy-muted);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .cam-stack { display: flex; flex-direction: column; gap: 8px; }
+  .cam-btn {
+    min-height: 84px;
+    padding: 12px 14px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  }
+  .cam-btn strong { font-size: 15px; font-weight: 800; color: var(--copy); letter-spacing: 0.02em; }
+  .cam-btn em { font-style: normal; font-size: 11px; color: var(--copy-muted); font-weight: 600; }
+  .cam-btn.active {
+    border-color: rgba(253,224,71,0.55);
+    background: linear-gradient(180deg, rgba(253,224,71,0.10), rgba(8,14,26,0.85));
+  }
+  .cam-btn.active strong { color: var(--active); }
+
+  .track-stack { display: flex; flex-direction: column; gap: 6px; }
+  .track-btn {
+    min-height: 64px;
+    padding: 0 14px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-family: inherit;
+    font-weight: 700; font-size: 13px;
+    text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .track-btn .tdot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: rgba(148,163,184,0.35);
+    flex-shrink: 0;
+  }
+  .track-btn.active {
+    border-color: rgba(253,224,71,0.55);
+    background: linear-gradient(180deg, rgba(253,224,71,0.10), rgba(8,14,26,0.85));
+    color: var(--active);
+  }
+  .track-btn.active .tdot { background: var(--active); box-shadow: 0 0 8px var(--active); }
+
+  .vtc-btn {
+    height: 72px;
+    border-radius: var(--radius-button);
+    background: linear-gradient(180deg, var(--accent), #d8881c);
+    border: none;
+    color: #1a1206;
+    font-family: inherit;
+    font-weight: 800; font-size: 14px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(245,166,35,0.30);
+  }
+
+  /* CENTER: preview takes nearly all of canvas + presets bar below */
+  .center {
+    display: grid;
+    grid-template-rows: 1fr 152px;
+    gap: 10px;
+    min-height: 0;
+  }
+  .preview {
+    padding: 12px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 8px;
+    min-height: 0;
+  }
+  .preview-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .panel-label {
+    margin: 0; color: var(--copy-muted);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.20em; text-transform: uppercase;
+  }
+  .telemetry { display: flex; gap: 6px; }
+  .tchip {
+    height: 26px; padding: 0 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(30,41,59,0.65);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .tchip b { color: var(--copy); font-weight: 800; }
+  .tchip.live { background: rgba(239,68,68,0.10); border-color: rgba(239,68,68,0.30); color: #fca5a5; }
+  .tchip.live .ld { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  .video-window {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    place-self: center;
+    background: #000;
+    border-radius: var(--radius-button);
+    border: 0.5px solid var(--border-strong);
+    overflow: hidden;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px),
+      radial-gradient(circle at 50% 40%, rgba(40,60,90,0.40) 0%, rgba(0,0,0,0.95) 70%);
+  }
+  .stamp {
+    position: absolute; bottom: 12px; right: 12px;
+    padding: 5px 10px; border-radius: 6px;
+    background: rgba(0,0,0,0.55); border: 0.5px solid rgba(255,255,255,0.08);
+    font-size: 11px; font-weight: 600; color: #cbd5e1;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.06em;
+  }
+
+  .ptz-overlay { position: absolute; inset: 0; pointer-events: none; }
+  .ptz-btn {
+    pointer-events: auto;
+    position: absolute;
+    width: 84px; height: 84px;
+    color: #fff;
+    background: rgba(0,0,0,0.42);
+    border: 1px solid rgba(255,255,255,0.20);
+    border-radius: 50%;
+    backdrop-filter: blur(6px);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .ptz-up    { top: 16px;    left: 50%; transform: translateX(-50%); }
+  .ptz-down  { bottom: 16px; left: 50%; transform: translateX(-50%); }
+  .ptz-left  { left: 16px;   top: 50%;  transform: translateY(-50%); }
+  .ptz-right { right: 16px;  top: 50%;  transform: translateY(-50%); }
+  .ptz-btn svg { width: 34px; height: 34px; }
+
+  /* Presets bar under preview */
+  .presets {
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 18px;
+  }
+  .pre-label { display: flex; flex-direction: column; gap: 2px; min-width: 132px; }
+  .pre-label strong { font-size: 14px; font-weight: 800; color: var(--copy); }
+  .pre-label em { font-style: normal; font-size: 10px; color: var(--copy-muted); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .preset-btn {
+    height: 96px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy);
+    font-family: inherit;
+    cursor: pointer;
+    padding: 12px 14px;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between;
+    text-align: left;
+  }
+  .preset-btn .num {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: rgba(15,23,42,0.7);
+    border: 0.5px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px;
+    color: var(--copy-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .preset-btn .pname { font-size: 16px; font-weight: 800; }
+  .preset-btn .pmeta { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--copy-muted); }
+  .preset-btn.set { border-color: rgba(253,224,71,0.55); background: linear-gradient(180deg, rgba(253,224,71,0.10), rgba(8,14,26,0.85)); }
+  .preset-btn.set .pname { color: var(--active); }
+  .preset-btn.set .pmeta { color: var(--active); }
+  .preset-btn.set .num { background: rgba(253,224,71,0.18); color: var(--active); border-color: rgba(253,224,71,0.40); }
+  .hint {
+    text-align: right;
+    color: var(--copy-muted);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    line-height: 1.5;
+    min-width: 140px;
+  }
+  .hint strong { color: var(--copy-soft); font-weight: 800; }
+
+  /* RIGHT CONTEXT: speeds + zoom (always-visible adjustment rail) */
+  .ctx {
+    padding: 16px;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    gap: 14px;
+    min-height: 0;
+  }
+  .speed-cell { display: grid; grid-template-rows: auto auto; gap: 8px; }
+  .speed-cell .head {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .speed-cell .lab {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.20em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .speed-cell .read {
+    font-weight: 800; font-size: 18px; color: var(--copy);
+    font-variant-numeric: tabular-nums;
+  }
+  .slider-vtrack {
+    position: relative; height: 16px;
+    border-radius: var(--radius-pill);
+    background: rgba(30,41,59,0.7);
+    border: 0.5px solid var(--border);
+  }
+  .slider-vfill {
+    position: absolute; inset: 0 auto 0 0;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, rgba(245,166,35,0.55), rgba(245,166,35,0.85));
+  }
+  .slider-vthumb {
+    position: absolute; top: 50%;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transform: translate(-50%, -50%);
+  }
+  .zoom-pad {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .zbtn {
+    height: 72px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy);
+    font-family: inherit;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .zbtn svg { width: 24px; height: 24px; }
+
+  .ctx-foot {
+    align-self: end;
+    color: var(--copy-muted);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    text-align: center;
+    padding-top: 8px;
+    border-top: 0.5px dashed var(--border);
+  }
+  .ctx-foot b { color: var(--copy-soft); font-weight: 800; }
+</style>
+</head>
+<body>
+  <div class="frame">
+
+    <div class="hdr gc">
+      <button class="hbtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Home
+      </button>
+      <div class="hsep"></div>
+      <div>
+        <div class="eyebrow">CH5 Touch Panel</div>
+        <div class="room">AA140 — Cameras</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="pill"><span class="dot"></span>Panel Online</div>
+    </div>
+
+    <div class="main">
+
+      <!-- LEFT sidebar: cameras + tracking + send -->
+      <div class="sidebar gc">
+        <div>
+          <div class="block-label">Camera</div>
+          <div class="cam-stack">
+            <button class="cam-btn active">
+              <strong>IV-CAM-I12-B</strong>
+              <em>12× Optical Zoom</em>
+            </button>
+            <button class="cam-btn">
+              <strong>IV-CAM-I20-B</strong>
+              <em>20× Optical Zoom</em>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="block-label">Tracking</div>
+          <div class="track-stack">
+            <button class="track-btn"><span class="tdot"></span>People</button>
+            <button class="track-btn"><span class="tdot"></span>Group</button>
+            <button class="track-btn active"><span class="tdot"></span>VX AutoSwitch</button>
+          </div>
+        </div>
+
+        <div></div>
+
+        <button class="vtc-btn">Send to VTC</button>
+      </div>
+
+      <!-- CENTER work surface -->
+      <div class="center">
+        <div class="preview gc">
+          <div class="preview-head">
+            <div class="panel-label">Preview — IV-CAM-I12-B · 12× Optical</div>
+            <div class="telemetry">
+              <div class="tchip live"><span class="ld"></span>Live</div>
+              <div class="tchip"><b>1080p30</b></div>
+              <div class="tchip">Track <b>VX</b></div>
+            </div>
+          </div>
+          <div class="video-window">
+            <div class="stamp">VX AutoSwitch · Pan 60 · Tilt 45</div>
+            <div class="ptz-overlay">
+              <button class="ptz-btn ptz-up" aria-label="Tilt up">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l7 8H5z" fill="currentColor"/></svg>
+              </button>
+              <button class="ptz-btn ptz-down" aria-label="Tilt down">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19l-7-8h14z" fill="currentColor"/></svg>
+              </button>
+              <button class="ptz-btn ptz-left" aria-label="Pan left">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l8-7v14z" fill="currentColor"/></svg>
+              </button>
+              <button class="ptz-btn ptz-right" aria-label="Pan right">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12l-8-7v14z" fill="currentColor"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="presets gc">
+          <div class="pre-label">
+            <strong>Shot Presets</strong>
+            <em>IV-CAM-I12-B · 3 slots</em>
+          </div>
+          <div class="preset-grid">
+            <button class="preset-btn">
+              <div class="num">1</div>
+              <div class="pname">Default</div>
+              <div class="pmeta">empty</div>
+            </button>
+            <button class="preset-btn set">
+              <div class="num">2</div>
+              <div class="pname">Primary</div>
+              <div class="pmeta">Set</div>
+            </button>
+            <button class="preset-btn">
+              <div class="num">3</div>
+              <div class="pname">Secondary</div>
+              <div class="pmeta">empty</div>
+            </button>
+          </div>
+          <div class="hint">
+            <strong>Tap</strong> to recall<br>
+            <strong>Hold 3s</strong> to save
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT context rail: speeds + zoom -->
+      <div class="ctx gc">
+        <div>
+          <div class="block-label">Adjustments</div>
+          <div class="speed-cell">
+            <div class="head">
+              <div class="lab">Pan Speed</div>
+              <div class="read">60</div>
+            </div>
+            <div class="slider-vtrack">
+              <div class="slider-vfill" style="width:60%"></div>
+              <div class="slider-vthumb" style="left:60%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="speed-cell">
+          <div class="head">
+            <div class="lab">Tilt Speed</div>
+            <div class="read">45</div>
+          </div>
+          <div class="slider-vtrack">
+            <div class="slider-vfill" style="width:45%"></div>
+            <div class="slider-vthumb" style="left:45%"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="block-label">Zoom</div>
+          <div class="zoom-pad">
+            <button class="zbtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M11 8v6M8 11h6M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+              In
+            </button>
+            <button class="zbtn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M8 11h6M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+              Out
+            </button>
+          </div>
+        </div>
+
+        <div class="ctx-foot">
+          Hold zoom · <b>Vary speed</b><br>
+          via Pan/Tilt sliders
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

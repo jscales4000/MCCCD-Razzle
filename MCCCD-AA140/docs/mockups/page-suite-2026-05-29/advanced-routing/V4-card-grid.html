@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCCCD AA140 — Advanced Routing · V4 Card-Grid</title>
+<style>
+  :root {
+    --bg-page: #050a14;
+    --bg-panel: #0d1b2e;
+    --bg-panel-soft: rgba(15, 23, 42, 0.55);
+    --border: rgba(148, 163, 184, 0.18);
+    --border-strong: rgba(148, 163, 184, 0.32);
+    --accent: #f5a623;
+    --accent-soft: rgba(245, 166, 35, 0.28);
+    --accent-glow: rgba(245, 166, 35, 0.45);
+    --active: #fde047;
+    --copy: #e2e8f0;
+    --copy-soft: #cbd5e1;
+    --copy-muted: #94a3b8;
+    --success: #22c55e;
+    --warn: #fb923c;
+    --danger: #ef4444;
+    --radius-card: 14px;
+    --radius-button: 10px;
+    --radius-pill: 999px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #02060d;
+    color: var(--copy);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .frame {
+    width: 1280px; height: 800px;
+    background: var(--bg-page);
+    border-radius: 18px;
+    border: 1px solid rgba(148,163,184,0.08);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 72px 1fr 124px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* HEADER */
+  .hdr {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+    display: flex; align-items: center;
+    padding: 0 18px; gap: 14px;
+  }
+  .hbtn {
+    height: 44px; padding: 0 14px;
+    border-radius: var(--radius-button);
+    background: rgba(30,41,59,0.55);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+  .hsep { width: 1px; height: 22px; background: var(--border); }
+  .room { font-size: 18px; font-weight: 800; }
+  .eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .spacer { flex: 1; }
+  .mode-seg {
+    display: flex; height: 44px;
+    border-radius: 10px; overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+  .mode-btn {
+    height: 44px; min-width: 76px; padding: 0 16px;
+    background: rgba(30,41,59,0.55);
+    border: none; border-right: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit;
+  }
+  .mode-btn:last-child { border-right: none; }
+  .mode-btn.active { background: rgba(245,166,35,0.16); color: var(--accent); }
+  .chip {
+    height: 44px; padding: 0 14px;
+    border-radius: 10px;
+    background: rgba(100,116,139,0.08);
+    border: 0.5px solid var(--border);
+    color: var(--copy-soft);
+    font-weight: 700; font-size: 12px;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; font-family: inherit;
+  }
+  .chip.on {
+    background: rgba(34,197,94,0.10);
+    border-color: rgba(34,197,94,0.30);
+    color: #86efac;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+
+  /* MAIN — V4 card-grid: 4 equal display cards laid out as a 2x2 mosaic
+     matching the physical room arrangement (D3 top, D1 bottom-left, D2
+     bottom-right, D4 center-forward overlay). All cards same weight. */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  /* Display card grid positions — front-of-room = bottom */
+  .d3 { grid-column: 1 / span 2; grid-row: 1; }   /* rear at top, wide */
+  .d4 { grid-column: 3;          grid-row: 1; }   /* podium near center, top-right of grid */
+  .d1 { grid-column: 1;          grid-row: 2; }   /* front-left, bottom-left */
+  .d2 { grid-column: 2;          grid-row: 2; }   /* front-right (visually middle-bottom) */
+  .srcs { grid-column: 3;        grid-row: 2; }   /* shared source palette */
+
+  /* Each display card is identical in shape and weight (the V4 thesis) */
+  .display-card {
+    padding: 16px 18px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .display-card.active {
+    border-color: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent-soft), 0 0 24px rgba(245,166,35,0.08);
+  }
+  .dc-head {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dc-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .dc-pwr { width: 9px; height: 9px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .dc-pwr.off { background: rgba(148,163,184,0.4); box-shadow: none; }
+  .dc-pos {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .dc-name {
+    font-size: 16px; font-weight: 800; color: var(--copy);
+  }
+  .dc-spec {
+    font-size: 11px; color: var(--copy-muted);
+  }
+  .dc-divider {
+    height: 1px; background: rgba(148,163,184,0.12); margin: 4px 0;
+  }
+  .dc-active-row {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .dc-active-lbl {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .dc-active-val {
+    font-size: 22px; font-weight: 800; color: var(--active);
+    line-height: 1.1;
+  }
+  .dc-active-val.empty { color: var(--copy-muted); font-weight: 600; }
+  .dc-foot {
+    margin-top: auto;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; color: var(--copy-muted);
+    letter-spacing: 0.10em;
+  }
+  .dc-tag {
+    height: 22px; padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(15,23,42,0.55);
+    border: 0.5px solid var(--border);
+    display: inline-flex; align-items: center;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--copy-soft);
+  }
+  .dc-tag.audio {
+    background: rgba(245,166,35,0.10);
+    border-color: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  /* Source palette (shared sidebar in V4 grid) */
+  .srcs {
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .srcs-head {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--copy-muted);
+  }
+  .srcs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    flex: 1; min-height: 0;
+  }
+  .src-btn {
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    background: rgba(15,23,42,0.6);
+    color: var(--copy);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    min-height: 64px;
+    cursor: pointer; font-family: inherit;
+  }
+  .src-btn b { font-size: 13px; font-weight: 800; }
+  .src-btn span { font-size: 9px; color: var(--copy-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .src-btn.live { border-color: var(--accent-soft); background: rgba(245,166,35,0.10); color: var(--active); }
+  .src-btn.live span { color: var(--accent); }
+  .aud-hint {
+    font-size: 10px; color: var(--copy-muted); line-height: 1.4;
+    padding-top: 4px; border-top: 0.5px solid var(--border);
+  }
+
+  /* FOOTER — locked */
+  .footer {
+    background: linear-gradient(180deg, rgba(13,27,46,0.85), rgba(8,14,26,0.85));
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 96px 1fr 96px 64px 64px;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .pwr {
+    border-radius: 12px;
+    background: rgba(34,197,94,0.10);
+    border: 0.5px solid rgba(34,197,94,0.30);
+    color: #86efac;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; cursor: pointer;
+  }
+  .pwr svg { width: 28px; height: 28px; }
+  .pwr-name { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+  .pwr-status { font-size: 11px; font-weight: 800; }
+  .mics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .mic {
+    min-height: 96px;
+    border-radius: 12px;
+    background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px; cursor: pointer; position: relative;
+  }
+  .mic.live { border-color: rgba(34,197,94,0.32); }
+  .mic.muted { border-color: rgba(239,68,68,0.28); background: rgba(127,29,29,0.18); }
+  .mic-name { font-size: 11px; font-weight: 700; color: var(--copy); }
+  .mic-sub { font-size: 9px; color: var(--copy-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  .wave { display: flex; align-items: end; gap: 2px; height: 22px; }
+  .wave i { display: block; width: 3px; background: var(--success); border-radius: 2px; }
+  .mic.muted .wave i { background: var(--danger); opacity: 0.55; }
+  .mute-x { position: absolute; top: 8px; right: 8px; color: var(--danger); font-weight: 900; font-size: 12px; }
+  .vol {
+    border-radius: 12px; background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 32px; color: var(--copy); cursor: pointer;
+  }
+  .mute-btn {
+    border-radius: 12px; background: rgba(15,23,42,0.6);
+    border: 0.5px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--copy); cursor: pointer; gap: 4px;
+  }
+  .mute-btn .mlbl { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .mute-btn svg { width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <button class="hbtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Home
+    </button>
+    <div class="hsep"></div>
+    <span class="room">AA140</span>
+    <div class="hsep"></div>
+    <span class="eyebrow">Display Routing · Card Grid</span>
+    <div class="spacer"></div>
+    <div class="mode-seg" role="tablist">
+      <button class="mode-btn active" type="button">Manual</button>
+      <button class="mode-btn" type="button">Mirror</button>
+      <button class="mode-btn" type="button">Extend</button>
+    </div>
+    <button class="chip on" type="button">
+      <span class="dot"></span>
+      Auto-Route On
+    </button>
+  </header>
+
+  <!-- MAIN: 3×2 grid mirrors room layout -->
+  <div class="main">
+
+    <!-- D3 (top, spans 2 columns — rear wall) -->
+    <section class="card display-card d3 active">
+      <div class="dc-head">
+        <span class="dc-eyebrow"><span class="dc-pwr"></span> D3 · Rear Wall</span>
+        <span class="dc-pos">Back of Room</span>
+      </div>
+      <span class="dc-name">Newline 86" Interactive</span>
+      <span class="dc-spec">4K · IFP · Touch</span>
+      <div class="dc-divider"></div>
+      <div class="dc-active-row">
+        <span class="dc-active-lbl">Now Routed</span>
+        <span class="dc-active-val">AirMedia</span>
+      </div>
+      <div class="dc-foot">
+        <span class="dc-tag">Wireless</span>
+        <span>Tap card to change source</span>
+      </div>
+    </section>
+
+    <!-- D4 (top-right — podium center, forward) -->
+    <section class="card display-card d4 active">
+      <div class="dc-head">
+        <span class="dc-eyebrow"><span class="dc-pwr"></span> D4 · Podium</span>
+        <span class="dc-pos">Center</span>
+      </div>
+      <span class="dc-name">Confidence Monitor</span>
+      <span class="dc-spec">1080p · Podium-mount</span>
+      <div class="dc-divider"></div>
+      <div class="dc-active-row">
+        <span class="dc-active-lbl">Now Routed</span>
+        <span class="dc-active-val">AirMedia</span>
+      </div>
+      <div class="dc-foot">
+        <span class="dc-tag">Defaults to D3</span>
+      </div>
+    </section>
+
+    <!-- D1 (bottom-left — front-left projector) -->
+    <section class="card display-card d1 active">
+      <div class="dc-head">
+        <span class="dc-eyebrow"><span class="dc-pwr"></span> D1 · Front Left</span>
+        <span class="dc-pos">Front of Room</span>
+      </div>
+      <span class="dc-name">Sony VPL Projection</span>
+      <span class="dc-spec">100" · Laser · 4K</span>
+      <div class="dc-divider"></div>
+      <div class="dc-active-row">
+        <span class="dc-active-lbl">Now Routed</span>
+        <span class="dc-active-val">Room PC</span>
+      </div>
+      <div class="dc-foot">
+        <span class="dc-tag audio">Audio Source</span>
+        <span class="dc-tag">HDMI 1</span>
+      </div>
+    </section>
+
+    <!-- D2 (bottom-center — front-right projector) -->
+    <section class="card display-card d2 active">
+      <div class="dc-head">
+        <span class="dc-eyebrow"><span class="dc-pwr"></span> D2 · Front Right</span>
+        <span class="dc-pos">Front of Room</span>
+      </div>
+      <span class="dc-name">Sony VPL Projection</span>
+      <span class="dc-spec">100" · Laser · 4K</span>
+      <div class="dc-divider"></div>
+      <div class="dc-active-row">
+        <span class="dc-active-lbl">Now Routed</span>
+        <span class="dc-active-val">Room PC</span>
+      </div>
+      <div class="dc-foot">
+        <span class="dc-tag">HDMI 1</span>
+        <span class="dc-tag">Mirror of D1</span>
+      </div>
+    </section>
+
+    <!-- SOURCE PALETTE -->
+    <aside class="card srcs">
+      <span class="srcs-head">Source Palette</span>
+      <div class="srcs-grid">
+        <button class="src-btn live" type="button">
+          <b>Room PC</b><span>HDMI 1</span>
+        </button>
+        <button class="src-btn" type="button">
+          <b>Ext PC</b><span>HDMI 2</span>
+        </button>
+        <button class="src-btn live" type="button">
+          <b>AirMedia</b><span>Wireless</span>
+        </button>
+        <button class="src-btn" type="button">
+          <b>Laptop</b><span>HDMI 3</span>
+        </button>
+      </div>
+      <div class="aud-hint">
+        <b style="color: var(--copy-soft); display: block; margin-bottom: 2px;">Audio · D1 · Room PC</b>
+        Audio always follows D1's routed source.
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- FOOTER (locked) -->
+  <footer class="footer">
+    <button class="pwr" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/>
+      </svg>
+      <span class="pwr-name">Power</span>
+      <span class="pwr-status">On</span>
+    </button>
+    <div class="mics">
+      <div class="mic live">
+        <span class="mic-name">Lav</span>
+        <span class="wave"><i style="height:8px"></i><i style="height:14px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:6px"></i></span>
+        <span class="mic-sub">Wireless · 1</span>
+      </div>
+      <div class="mic muted">
+        <span class="mute-x">×</span>
+        <span class="mic-name">Handheld</span>
+        <span class="wave"><i style="height:4px"></i><i style="height:6px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:4px"></i></span>
+        <span class="mic-sub">Wireless · 2</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 1</span>
+        <span class="wave"><i style="height:10px"></i><i style="height:18px"></i><i style="height:14px"></i><i style="height:8px"></i><i style="height:11px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 2</span>
+        <span class="wave"><i style="height:6px"></i><i style="height:9px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:6px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+      <div class="mic live">
+        <span class="mic-name">Ceiling 3</span>
+        <span class="wave"><i style="height:5px"></i><i style="height:12px"></i><i style="height:16px"></i><i style="height:11px"></i><i style="height:8px"></i></span>
+        <span class="mic-sub">MXA920W</span>
+      </div>
+    </div>
+    <button class="mute-btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+      </svg>
+      <span class="mlbl">Mute All</span>
+    </button>
+    <button class="vol" type="button">−</button>
+    <button class="vol" type="button">+</button>
+  </footer>
+
+</div>
+</body>
+</html>
