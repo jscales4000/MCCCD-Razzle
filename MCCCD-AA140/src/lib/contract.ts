@@ -155,5 +155,17 @@ export const SIGNALS = {
   sceneRecallFb:         `${ROOM_NAME}.SceneRecallFb`,       // analog fb (1-4 active preset)
   audioLinkCeilings12:   `${ROOM_NAME}.AudioLinkCeilings12`, // digital toggle
   audioLinkCeilings12Fb: `${ROOM_NAME}.AudioLinkCeilings12Fb`,
+
+  // Source video sync feedback (digital FB, panel-side only)
+  // Drives the tri-state corner badge on each Home source card.
+  // AirMedia method priority on simultaneous-fire: tx3 > airPlay > miracast.
+  roomPcSync:           `${ROOM_NAME}.RoomPcSync`,
+  extPcSync:            `${ROOM_NAME}.ExtPcSync`,
+  airMediaSync:         `${ROOM_NAME}.AirMediaSync`,
+  airMediaMiracast:     `${ROOM_NAME}.AirMediaMiracast`,
+  airMediaAirPlay:      `${ROOM_NAME}.AirMediaAirPlay`,
+  airMediaTx3:          `${ROOM_NAME}.AirMediaTx3`,
+  laptopHdmiSync:       `${ROOM_NAME}.LaptopHdmiSync`,
+  laptopUsbcSync:       `${ROOM_NAME}.LaptopUsbcSync`,
 } as const;
 
