@@ -7,6 +7,9 @@
     display1SourceFb,
     systemPowerFb,
     occupancyState, shutdownCountdown,
+    roomPcSync, extPcSync,
+    airMediaSync, airMediaMiracast, airMediaAirPlay, airMediaTx3,
+    laptopHdmiSync, laptopUsbcSync,
   } from '../lib/stores/signals';
   import { routeSourceToAll } from '../lib/stores/router';
   import { goToPage } from '../lib/stores/page';
@@ -19,16 +22,38 @@
   // Tapping a source publishes its value to ALL THREE displays at once.
   // Default-meeting assumption: one source mirrored across D1/D2/D3.
   // Advanced (per-display) routing reachable via the Advanced Routing chip.
+  // `key` selects which sync FB stores feed `sourceStates` below.
+  // `sub` is the static sub-label; null = rendered specially (Laptop dual-token).
   const SOURCES = [
-    { value: 1, name: 'Room PC',  sub: 'HDMI 1' },
-    { value: 2, name: 'Ext PC',   sub: 'HDMI 2' },
-    { value: 3, name: 'AirMedia', sub: 'Wireless' },
-    { value: 4, name: 'Laptop',   sub: 'HDMI 3' },
+    { value: 1, name: 'Room PC',  key: 'roomPc',   sub: 'HDMI 1'   },
+    { value: 2, name: 'Ext PC',   key: 'extPc',    sub: 'HDMI 2'   },
+    { value: 3, name: 'AirMedia', key: 'airMedia', sub: 'WIRELESS' },
+    { value: 4, name: 'Laptop',   key: 'laptop',   sub: null       },
   ] as const;
 
   function selectSourceForAll(value: 1 | 2 | 3 | 4) {
     routeSourceToAll(value);
   }
+
+  // AirMedia rolls 4 signals (sync + 3 sharing methods) into the tri-state model.
+  // Sharing-method priority on simultaneous fire: TX3 > AirPlay > Miracast.
+  function airMediaState(sync: boolean, miracast: boolean, airplay: boolean, tx3: boolean) {
+    const sharing = miracast || airplay || tx3;
+    if (sharing) {
+      const method = tx3 ? 'AM-TX3' : airplay ? 'AIRPLAY' : 'MIRACAST';
+      return { state: 'live' as const, subDetail: method };
+    }
+    if (sync) return { state: 'ready' as const, subDetail: null };
+    return { state: 'idle' as const, subDetail: null };
+  }
+
+  // Per-card state, keyed by SOURCES[i].key. Drives the corner dot + AirMedia sub.
+  let sourceStates = $derived({
+    roomPc:   { state: ($roomPcSync ? 'live' : 'idle') as 'live' | 'idle', subDetail: null as string | null },
+    extPc:    { state: ($extPcSync  ? 'live' : 'idle') as 'live' | 'idle', subDetail: null as string | null },
+    airMedia: airMediaState($airMediaSync, $airMediaMiracast, $airMediaAirPlay, $airMediaTx3),
+    laptop:   { state: (($laptopHdmiSync || $laptopUsbcSync) ? 'live' : 'idle') as 'live' | 'idle', subDetail: null as string | null },
+  });
 
   // Preview dock (browser-dev only)
   const BASE_WIDTH = 1280;
@@ -148,13 +173,17 @@
       <div class="eyebrow">— Choose your source —</div>
       <div class="src-row">
         {#each SOURCES as src}
+          {@const s = sourceStates[src.key]}
           <button
             class="hero-card"
             class:active={$display1SourceFb === src.value}
             onclick={() => selectSourceForAll(src.value)}
             aria-pressed={$display1SourceFb === src.value}
-            aria-label={`Send ${src.name} to all displays`}
+            aria-label={`Send ${src.name} to all displays${s.state !== 'idle' ? ' — ' + s.state : ''}`}
           >
+            {#if s.state !== 'idle'}
+              <span class="sync-dot {s.state}" aria-hidden="true"></span>
+            {/if}
             {#if src.value === 1}
               <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
             {:else if src.value === 2}
@@ -165,7 +194,16 @@
               <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M2 20h20"/></svg>
             {/if}
             <span class="hc-name">{src.name}</span>
-            <span class="hc-sub">{src.sub}</span>
+            {#if src.key === 'laptop'}
+              <span class="hc-sub laptop-sub">
+                <span class="hc-sub-token" class:lit={$laptopHdmiSync}>HDMI</span>
+                <span class="hc-sub-token" class:lit={$laptopUsbcSync}>USBC</span>
+              </span>
+            {:else if src.key === 'airMedia'}
+              <span class="hc-sub">{s.subDetail ?? src.sub}</span>
+            {:else}
+              <span class="hc-sub">{src.sub}</span>
+            {/if}
           </button>
         {/each}
       </div>
@@ -447,8 +485,54 @@
 
   /* Footer styles live in AppFooter.svelte. */
 
+  /* Sync badge — top-right corner of each hero card.
+     Sits BELOW the 3px orange active-routing stripe (top:0;height:3px), so they
+     never overlap. Green = live, amber = ready. Idle = not rendered. */
+  .sync-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .sync-dot.live {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.65);
+    animation: sync-pulse 2.2s ease-in-out infinite;
+  }
+  .sync-dot.ready {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+  }
+  @keyframes sync-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+  }
+
+  /* Laptop dual-token sub-label — both tokens always rendered; .lit on whichever
+     NVX-384 input currently has sync. Both lit handled implicitly. */
+  .hc-sub.laptop-sub {
+    display: inline-flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .hc-sub-token {
+    color: var(--color-copy-muted, #64748b);
+    transition: color 160ms ease;
+  }
+  .hc-sub-token.lit {
+    color: var(--color-copy, #e2e8f0);
+  }
+  .hero-card.active .hc-sub-token.lit {
+    color: #f5a623;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .pdot { animation: none; }
     .hero-card { transition: none; }
+    .sync-dot.live { animation: none; }
+    .hc-sub-token { transition: none; }
   }
 </style>
