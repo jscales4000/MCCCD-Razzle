@@ -131,7 +131,7 @@ pattern is cheap and matches the existing aria treatment.
 - Live + AirPlay:  `AIRPLAY`
 - Live + AM-TX3:   `AM-TX3`
 - Live + multiple simultaneous (shouldn't happen but possible during
-  handoff): priority order `airPlay > miracast > tx3`. Document the order
+  handoff): priority order `tx3 > airPlay > miracast`. Document the order
   in a code comment; don't try to render a list.
 
 **Laptop (`key === 'laptop'`):**
