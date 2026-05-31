@@ -30,6 +30,17 @@ namespace MCCCD_AA140.Visca
         private bool _enabled;
         private readonly object _stateLock = new object();
 
+        // Inquiry polling — one inquiry in flight at a time (cameras = 1 socket).
+        private enum Inq { None, PanTilt, Zoom, Tracking }
+        private Inq _pending = Inq.None;
+        private CTimer _pollTimer;
+        private int _pollCycle;
+
+        public short  PanPosition  { get; private set; }
+        public short  TiltPosition { get; private set; }
+        public ushort ZoomPosition { get; private set; }
+        public bool   TrackingActive { get; private set; }
+
         public ViscaCameraClient(string host, int port, string name)
         {
             _host = host;
@@ -73,6 +84,7 @@ namespace MCCCD_AA140.Visca
 
         private void CloseAndCancelReconnect()
         {
+            try { _pollTimer?.Dispose(); _pollTimer = null; } catch { }
             try { _reconnectTimer?.Dispose(); _reconnectTimer = null; } catch { }
             try {
                 if (_client != null) {
@@ -110,6 +122,10 @@ namespace MCCCD_AA140.Visca
                 });
                 _failedAttempts = 0;
                 c.ReceiveDataAsync(OnDataReceived);
+                _pending = Inq.None;
+                _pollCycle = 0;
+                _pollTimer?.Dispose();
+                _pollTimer = new CTimer(_ => PollTick(), null, 500, 333);
             } else {
                 _failedAttempts++;
                 if (_failedAttempts <= FAST_RECONNECT_ATTEMPTS || _failedAttempts % 10 == 0) {
@@ -144,6 +160,24 @@ namespace MCCCD_AA140.Visca
             _reconnectTimer = new CTimer(_ => Connect(), delay);
         }
 
+        // Send the next position/tracking inquiry. One in flight; drop a stale one
+        // and keep cycling so a missed reply never wedges the poll.
+        private void PollTick()
+        {
+            if (!IsConnected) return;
+            if (_pending != Inq.None) _pending = Inq.None;
+            _pollCycle++;
+            if (_pollCycle % 3 == 0) { _pending = Inq.Tracking; SendRaw(ViscaProtocol.TrackingInq()); }
+            else                     { _pending = Inq.PanTilt;  SendRaw(ViscaProtocol.PanTiltPosInq()); }
+        }
+
+        // Send without the "not connected" drop-logging used by command Send().
+        private void SendRaw(byte[] frame)
+        {
+            if (frame == null || !IsConnected) return;
+            _client.SendDataAsync(frame, frame.Length, null);
+        }
+
         private void OnDataReceived(TCPClient c, int bytesReceived)
         {
             if (bytesReceived > 0) {
@@ -153,13 +187,39 @@ namespace MCCCD_AA140.Visca
                     if (b == ViscaProtocol.FrameEnd) {
                         var frame = _rxBuf.ToArray();
                         _rxBuf.Clear();
-                        DebugTrace.Response(_name, ViscaProtocol.Hex(frame) + " [" + ViscaProtocol.ReplyKind(frame) + "]");
+                        HandleFrame(frame);
                     }
                 }
             }
             if (c.ClientStatus == SocketStatus.SOCKET_STATUS_CONNECTED) {
                 c.ReceiveDataAsync(OnDataReceived);
             }
+        }
+
+        private void HandleFrame(byte[] frame)
+        {
+            var kind = ViscaProtocol.Categorize(frame, out var payload);
+            if (kind == ViscaProtocol.Kind.InquiryResponse && _pending != Inq.None) {
+                var which = _pending; _pending = Inq.None;
+                if (which == Inq.PanTilt) {
+                    if (ViscaProtocol.ParsePanTilt(payload, out var pan, out var tilt)) {
+                        lock (_stateLock) { PanPosition = pan; TiltPosition = tilt; }
+                    }
+                    // chain the zoom inquiry right after pan/tilt
+                    _pending = Inq.Zoom; SendRaw(ViscaProtocol.ZoomPosInq());
+                    return;
+                }
+                if (which == Inq.Zoom) {
+                    if (ViscaProtocol.ParseZoom(payload, out var z)) { lock (_stateLock) { ZoomPosition = z; } }
+                    return;
+                }
+                if (which == Inq.Tracking) {
+                    lock (_stateLock) { TrackingActive = ViscaProtocol.ParseTrackingActive(payload); }
+                    return;
+                }
+            }
+            // commands (ACK/Completion/Error) — log for the debug feed
+            DebugTrace.Response(_name, ViscaProtocol.Hex(frame) + " [" + ViscaProtocol.ReplyKind(frame) + "]");
         }
     }
 }
