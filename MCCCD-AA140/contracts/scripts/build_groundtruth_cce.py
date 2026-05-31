@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
-"""Phase 0 ground-truth contract generator (v2 — corrected direction encoding).
+"""Ground-truth contract generator (v3 — full type x direction matrix).
 
-GROUND TRUTH established by building v1 in CH5 Contract Editor:
-  - attributeType 0  -> STATE column  -> FEEDBACK (processor -> panel)  -> generates `void Name(setter)`
-  - attributeType 1  -> EVENT column  -> COMMAND/press (panel -> processor) -> generates `event Name`
+A reusable verification harness: before authoring a real contract, build THIS,
+run it through CH5 Contract Editor, and confirm the generated Main.g.cs exposes
+every feedback as a name-based SETTER (`void Name(...)`) and every command as a
+C# EVENT (`event Name`). If a feedback shows up as an `event`, the .cce is
+inverted -- STOP and fix the encoding before scaling to a real contract.
 
-This is the OPPOSITE of the FRED ".cce Generation Guide" wording, which is what
-inverted the real AA140 contract. Contract Editor is the authority.
+VERIFIED ENCODING (empirically, CH5 Contract Editor):
+  attributeType 0 = State column = FEEDBACK (processor -> panel) -> `void Name(setter)`
+  attributeType 1 = Event column = COMMAND  (panel -> processor) -> `event Name`
+This is the OPPOSITE of the FRED ".cce Generation Guide" -- the tool is the authority.
 
-This emits two fully-paired signals so the State column is populated:
-  Boolean : State "ToggleFb"  (feedback)  <-> Event "TogglePress" (command)
-  Numeric : State "LevelFb"   (feedback)  <-> Event "LevelSet"    (command)
+Covers all three signal types in BOTH directions so a single build proves the
+whole codegen surface:
+  dataType 1 = Boolean : State "BoolFb"  <-> Event "BoolPress"
+  dataType 2 = Numeric : State "NumFb"   <-> Event "NumSet"
+  dataType 3 = String  : State "TextFb"  <-> Event "TextSet"
 
-Observed container mapping (from v1 build): items in the `commands` array with
-attributeType 0 feed the State column; items in the `feedbacks` array with
-attributeType 1 feed the Event column. We keep that container/attributeType
-alignment and simply put the FEEDBACK name on the State (attributeType 0) side.
+Expected Main.g.cs after Build:
+  void BoolFb(MainBoolInputSigDelegate),  void NumFb(MainUShortInputSigDelegate),
+  void TextFb(MainStringInputSigDelegate)                      <- feedback SETTERS
+  event BoolPress, event NumSet, event TextSet                <- command EVENTS
 """
 import json
 import os
@@ -23,50 +29,43 @@ import os
 ROOT_ID = "_gtroot01"
 COMP_ID = "_gtcomp01"
 SPEC_ID = "_gtspec01"
-INSTANCE = "GT"  # contract symbol -> "GT.ToggleFb", "GT.TogglePress", ...
+INSTANCE = "GT"  # contract symbol -> "GT.BoolFb", "GT.BoolPress", ...
 
-# (stateName=feedback, eventName=command, dataType, stateId, eventId, notes)
+# (stateName=feedback, eventName=command, dataType)  dataType: 1=bool 2=num 3=string
 SIGNALS = [
-    ("ToggleFb", "TogglePress", 1, "_gts01", "_gte01", "bool: State=feedback proc->panel; Event=press panel->proc"),
-    ("LevelFb",  "LevelSet",    2, "_gts02", "_gte02", "numeric: State=feedback proc->panel; Event=set panel->proc"),
+    ("BoolFb", "BoolPress", 1),
+    ("NumFb",  "NumSet",    2),
+    ("TextFb", "TextSet",   3),
 ]
 
 
-def state_entry(name, state_id, event_id, data_type, notes):
-    # attributeType 0 -> STATE column -> feedback (proc->panel) -> generates setter
-    return {
-        "Errors": [], "name": name, "siblingId": event_id, "dataType": data_type,
-        "notes": notes, "id": state_id, "parentId": COMP_ID, "attributeType": 0,
-    }
-
-
-def event_entry(name, event_id, state_id, data_type, notes):
-    # attributeType 1 -> EVENT column -> command/press (panel->proc) -> generates event
-    return {
-        "Errors": [], "name": name, "siblingId": state_id, "dataType": data_type,
-        "notes": notes, "id": event_id, "parentId": COMP_ID, "attributeType": 1,
-    }
+def pair(state_name, event_name, data_type, n):
+    """One signal = State(attrType 0, feedback) + Event(attrType 1, command), bidirectional siblingId."""
+    sid, eid = f"_gts{n:02d}", f"_gte{n:02d}"
+    state = {"Errors": [], "name": state_name, "siblingId": eid, "dataType": data_type,
+             "notes": "ground-truth State=feedback proc->panel (attrType 0 -> setter)",
+             "id": sid, "parentId": COMP_ID, "attributeType": 0}
+    event = {"Errors": [], "name": event_name, "siblingId": sid, "dataType": data_type,
+             "notes": "ground-truth Event=command panel->proc (attrType 1 -> event)",
+             "id": eid, "parentId": COMP_ID, "attributeType": 1}
+    return state, event
 
 
 def build():
-    commands, feedbacks = [], []  # array names are containers only; attributeType drives the column
-    for state_name, event_name, dt, sid, eid, notes in SIGNALS:
-        commands.append(state_entry(state_name, sid, eid, dt, notes))   # attributeType 0 -> State
-        feedbacks.append(event_entry(event_name, eid, sid, dt, notes))  # attributeType 1 -> Event
-
+    states, events = [], []
+    for i, (st, ev, dt) in enumerate(SIGNALS, start=1):
+        s, e = pair(st, ev, dt, i)
+        states.append(s)
+        events.append(e)
     return {
         "Errors": [], "id": ROOT_ID, "name": "GroundTruth",
-        "description": "Phase 0 ground-truth v2: feedback on State (attributeType 0), command on Event (attributeType 1).",
+        "description": "Ground-truth: all types x both directions; verifies feedback=setter, command=event.",
         "company": "MCCCD", "client": "MCCCD", "author": "Jordan Scales",
         "version": "1.0.0.0", "schemaVersion": 1, "subContractLinks": [], "subContracts": [],
-        "specifications": [{
-            "Errors": [], "parentId": ROOT_ID, "id": SPEC_ID,
-            "componentId": COMP_ID, "instanceName": INSTANCE, "numberOfInstances": 1,
-        }],
-        "components": [{
-            "Errors": [], "parentId": ROOT_ID, "id": COMP_ID, "name": "Main",
-            "specifications": [], "commands": commands, "feedbacks": feedbacks,
-        }],
+        "specifications": [{"Errors": [], "parentId": ROOT_ID, "id": SPEC_ID,
+                            "componentId": COMP_ID, "instanceName": INSTANCE, "numberOfInstances": 1}],
+        "components": [{"Errors": [], "parentId": ROOT_ID, "id": COMP_ID, "name": "Main",
+                        "specifications": [], "commands": states, "feedbacks": events}],
         "allComponentsForAllContracts": [],
     }
 
@@ -74,23 +73,22 @@ def build():
 def validate(doc):
     comp = doc["components"][0]
     by_id = {s["id"]: s for s in comp["commands"] + comp["feedbacks"]}
-    errors = []
+    errs = []
+    for s in comp["commands"]:
+        if s["attributeType"] != 0:
+            errs.append(f"State {s['name']} must be attributeType 0")
+    for e in comp["feedbacks"]:
+        if e["attributeType"] != 1:
+            errs.append(f"Event {e['name']} must be attributeType 1")
     for s in comp["commands"] + comp["feedbacks"]:
         if not s["name"]:
-            errors.append(f"{s['id']} has empty name")
+            errs.append(f"{s['id']} empty name")
         sib = by_id.get(s["siblingId"])
         if not sib or sib.get("siblingId") != s["id"]:
-            errors.append(f"{s['id']} sibling not bidirectional")
+            errs.append(f"{s['id']} sibling not bidirectional")
         if sib and sib["dataType"] != s["dataType"]:
-            errors.append(f"{s['id']} dataType mismatch with sibling")
-    # State items must be attributeType 0, Event items attributeType 1
-    for c in comp["commands"]:
-        if c["attributeType"] != 0:
-            errors.append(f"State item {c['name']} must be attributeType 0")
-    for f in comp["feedbacks"]:
-        if f["attributeType"] != 1:
-            errors.append(f"Event item {f['name']} must be attributeType 1")
-    return errors
+            errs.append(f"{s['id']} dataType mismatch")
+    return errs
 
 
 if __name__ == "__main__":
@@ -100,9 +98,9 @@ if __name__ == "__main__":
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(doc, fh, indent=2)
     print(f"wrote {out}")
-    print("rows:")
-    for s, e, dt, *_ in SIGNALS:
-        print(f"  {'Boolean' if dt == 1 else 'Numeric':8} State={s:10} Event={e}")
-    print("VALIDATION:", "OK" if not errs else "")
+    types = {1: "Boolean", 2: "Numeric", 3: "String"}
+    for st, ev, dt in SIGNALS:
+        print(f"  {types[dt]:8} State(feedback)={st:8} Event(command)={ev}")
+    print("VALIDATION:", "OK" if not errs else "FAILED")
     for e in errs:
         print("  -", e)

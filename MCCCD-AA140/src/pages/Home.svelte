@@ -182,9 +182,6 @@
             aria-label={`Send ${src.name} to all displays — sync ${s.state}`}
           >
             <span class="sync-dot {s.state}" aria-hidden="true"></span>
-            <span class="dbg-raw">
-              {#if src.key === 'roomPc'}r:{$roomPcSync ? '1' : '0'}{:else if src.key === 'extPc'}e:{$extPcSync ? '1' : '0'}{:else if src.key === 'airMedia'}a:{$airMediaSync ? '1' : '0'}/m:{$airMediaMiracast ? '1' : '0'}/p:{$airMediaAirPlay ? '1' : '0'}/t:{$airMediaTx3 ? '1' : '0'}{:else}h:{$laptopHdmiSync ? '1' : '0'}/u:{$laptopUsbcSync ? '1' : '0'}{/if}
-            </span>
             {#if src.value === 1}
               <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
             {:else if src.value === 2}
@@ -513,18 +510,6 @@
   .sync-dot.ready {
     background: #f59e0b;
     box-shadow: 0 0 8px rgba(245, 158, 11, 0.55), 0 0 0 1px rgba(245, 158, 11, 0.45);
-  }
-  .dbg-raw {
-    position: absolute;
-    bottom: 6px;
-    left: 8px;
-    font-size: 9px;
-    font-weight: 700;
-    color: #fde047;
-    background: rgba(0, 0, 0, 0.45);
-    padding: 1px 5px;
-    border-radius: 3px;
-    pointer-events: none;
   }
   @keyframes sync-pulse {
     0%, 100% { opacity: 1; }
