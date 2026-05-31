@@ -13,7 +13,11 @@ export const display1SourceFb = writable<number>(0);
 export const display2SourceFb = writable<number>(0);
 export const display3SourceFb = writable<number>(0);
 export const display4SourceFb = writable<number>(0);
+export const display5SourceFb = writable<number>(0);  // outside signage
 export const audioOutputSelectFb = writable<1 | 2>(1);
+
+// USB peripheral host (USB-SW-400): 1=RoomPC, 2=AirMedia, 3=Laptop
+export const usbHostSelectFb = writable<number>(1);
 
 // Per-display power feedback (NVX D200 sink-connected)
 export const display1PowerFb = writable<boolean>(false);
@@ -94,7 +98,9 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.display2SourceFb,    (v) => display2SourceFb.set(v));
   subscribeAnalog(SIGNALS.display3SourceFb,    (v) => display3SourceFb.set(v));
   subscribeAnalog(SIGNALS.display4SourceFb,    (v) => display4SourceFb.set(v));
+  subscribeAnalog(SIGNALS.display5SourceFb,    (v) => display5SourceFb.set(v));
   subscribeAnalog(SIGNALS.audioOutputSelectFb, (v) => audioOutputSelectFb.set(v === 2 ? 2 : 1));
+  subscribeAnalog(SIGNALS.usbHostSelectFb,     (v) => usbHostSelectFb.set(v));
 
   subscribeDigital(SIGNALS.display1PowerFb,    (v) => display1PowerFb.set(v));
   subscribeDigital(SIGNALS.display2PowerFb,    (v) => display2PowerFb.set(v));

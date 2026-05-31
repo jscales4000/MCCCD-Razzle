@@ -126,6 +126,34 @@ export function routeSourceToAll(value: 1 | 2 | 3 | 4): void {
   });
 }
 
+// ── Outside signage (D5) ───────────────────────────────────────────────
+// Routed independently and kept OFF the in-room map (the display is outside
+// the conference space). Publishes Display5Source; marker/state come from
+// the real Display5SourceFb feedback.
+export function routeSignage(sourceId: SourceId): void {
+  publishAnalog(SIGNALS.display5Source, SOURCES[sourceId].value);
+}
+export function clearSignage(): void {
+  publishAnalog(SIGNALS.display5Source, 0);
+}
+
+// ── USB peripheral host (USB-SW-400) ───────────────────────────────────
+// One-tap host selection routes the room camera + Shure mic/speaker to the
+// chosen host. Independent of video routing. PowerUp default = Room PC.
+export type UsbHostId = 'roomPc' | 'airMedia' | 'laptop';
+export const USB_HOSTS: Record<UsbHostId, { label: string; value: 1 | 2 | 3 }> = {
+  roomPc:   { label: 'Room PC',  value: 1 },
+  airMedia: { label: 'AirMedia', value: 2 },
+  laptop:   { label: 'Laptop',   value: 3 },
+};
+const USB_VALUE_TO_HOST: Record<number, UsbHostId> = { 1: 'roomPc', 2: 'airMedia', 3: 'laptop' };
+export function usbHostFromFb(v: number): UsbHostId | null {
+  return USB_VALUE_TO_HOST[v] ?? null;
+}
+export function selectUsbHost(host: UsbHostId): void {
+  publishAnalog(SIGNALS.usbHostSelect, USB_HOSTS[host].value);
+}
+
 export function shouldSuppressClick(): boolean {
   if (!suppressNextClick) return false;
   suppressNextClick = false;
