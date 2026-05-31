@@ -20,6 +20,7 @@ namespace MCCCD_AA140
         private CameraService _cameras;
         private SonyVplService _projectors;
         private NewlineService _newline;
+        private UsbSwitchService _usb;
         private SystemPowerController _power;
         private MCCCD_AA140.Debug.DeviceConfigStore _deviceStore;
         private MCCCD_AA140.Debug.DebugServer _debug;
@@ -109,11 +110,12 @@ namespace MCCCD_AA140
                 _cameras    = new CameraService(_contract, this);
                 _projectors = new SonyVplService(_contract, this);
                 _newline    = new NewlineService(_contract, this);
-                _power      = new SystemPowerController(_contract, _nvx, this);
+                _usb        = new UsbSwitchService(_contract, this);
+                _power      = new SystemPowerController(_contract, _nvx, _usb, this);
 
                 _deviceStore = new MCCCD_AA140.Debug.DeviceConfigStore();
                 _debug       = new MCCCD_AA140.Debug.DebugServer();
-                _debug.Configure(_deviceStore, _audio, _mxa, _cameras, _nvx, _power, _projectors, _newline, _airmedia, _contract);
+                _debug.Configure(_deviceStore, _audio, _mxa, _cameras, _nvx, _power, _projectors, _newline, _airmedia, _usb, _contract);
             }
             catch (System.Exception e)
             {
@@ -148,6 +150,7 @@ namespace MCCCD_AA140
                 _cameras.Initialize();
                 _projectors.Initialize();
                 _newline.Initialize();
+                _usb.Initialize();
                 _power.Initialize();
 
                 // Apply each stored config to its service — gates TCP connects

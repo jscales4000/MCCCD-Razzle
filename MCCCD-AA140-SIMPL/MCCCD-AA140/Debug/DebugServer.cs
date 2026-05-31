@@ -41,6 +41,7 @@ namespace MCCCD_AA140.Debug
         private SonyVplService _projectors;
         private NewlineService _newline;
         private AirMediaService _airmedia;
+        private UsbSwitchService _usb;
         private Contract _contract;
 
         public void Configure(
@@ -53,6 +54,7 @@ namespace MCCCD_AA140.Debug
             SonyVplService projectors,
             NewlineService newline,
             AirMediaService airmedia,
+            UsbSwitchService usb,
             Contract contract)
         {
             _store = store;
@@ -64,6 +66,7 @@ namespace MCCCD_AA140.Debug
             _projectors = projectors;
             _newline = newline;
             _airmedia = airmedia;
+            _usb = usb;
             _contract = contract;
         }
 
@@ -119,6 +122,7 @@ namespace MCCCD_AA140.Debug
                     else if (sub.StartsWith("/sony/",     StringComparison.OrdinalIgnoreCase)) HandleSonyPost(args, sub.Substring("/sony/".Length));
                     else if (sub.StartsWith("/newline/",  StringComparison.OrdinalIgnoreCase)) HandleNewlinePost(args, sub.Substring("/newline/".Length));
                     else if (sub.StartsWith("/airmedia/", StringComparison.OrdinalIgnoreCase)) HandleAirMediaPost(args, sub.Substring("/airmedia/".Length));
+                    else if (sub.StartsWith("/usb/",      StringComparison.OrdinalIgnoreCase)) HandleUsbPost(args, sub.Substring("/usb/".Length));
                     else                                         Serve404(args, "POST " + sub);
                 } else {
                     Serve404(args, method + " " + sub);
@@ -436,8 +440,8 @@ namespace MCCCD_AA140.Debug
             var qs = args.Context.Request.QueryString;
 
             if (sub == "route") {
-                if (!int.TryParse(qs?["dec"], out int dec) || dec < 1 || dec > 3) {
-                    ServeJson(args, 400, "{\"error\":\"dec must be 1..3\"}"); return;
+                if (!int.TryParse(qs?["dec"], out int dec) || dec < 1 || dec > 5) {
+                    ServeJson(args, 400, "{\"error\":\"dec must be 1..5\"}"); return;
                 }
                 if (!int.TryParse(qs?["src"], out int src) || src < 0 || src > 4) {
                     ServeJson(args, 400, "{\"error\":\"src must be 0..4\"}"); return;
@@ -549,6 +553,21 @@ namespace MCCCD_AA140.Debug
             }
             DebugTrace.Command("airmedia", action);
             ServeOk(args);
+        }
+
+        // ─── /usb/host/<roompc|airmedia|laptop> ─────────────────────────
+
+        private void HandleUsbPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_usb == null) { ServeJson(args, 503, "{\"error\":\"no usb\"}"); return; }
+            var parts = sub.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 && parts[0].Equals("host", StringComparison.OrdinalIgnoreCase)) {
+                _usb.SelectHostFromDebug(parts[1].ToLowerInvariant());
+                DebugTrace.Command("usb-sw-400", "host", parts[1]);
+                ServeOk(args);
+                return;
+            }
+            Serve404(args, "usb/" + sub);
         }
 
         // ─── helpers ─────────────────────────────────────────────────────

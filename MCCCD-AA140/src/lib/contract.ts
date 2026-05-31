@@ -71,6 +71,12 @@ export const SIGNALS = {
   display4Source:     `${ROOM_NAME}.Display4Source`,      // analog set
   display4SourceFb:   `${ROOM_NAME}.Display4SourceFb`,    // analog feedback
   display4PowerFb:    `${ROOM_NAME}.Display4PowerFb`,     // digital fb
+  // D5 = outside signage display (independently routable; idle on PowerUp)
+  display5Source:     `${ROOM_NAME}.Display5Source`,      // analog set
+  display5SourceFb:   `${ROOM_NAME}.Display5SourceFb`,    // analog feedback
+  // USB peripheral host switch (USB-SW-400): 1=RoomPC, 2=AirMedia, 3=Laptop
+  usbHostSelect:      `${ROOM_NAME}.UsbHostSelect`,       // analog set
+  usbHostSelectFb:    `${ROOM_NAME}.UsbHostSelectFb`,     // analog feedback
   audioOutputSelectFb:`${ROOM_NAME}.AudioOutputSelectFb`, // analog feedback (1=D1, 2=D2)
 
   micLavMute:         `${ROOM_NAME}.MicLavMute`,          // digital toggle
