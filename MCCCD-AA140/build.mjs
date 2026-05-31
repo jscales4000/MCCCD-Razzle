@@ -98,9 +98,9 @@ const panelHtml = `<!DOCTYPE html>
   <ch5-video
     id="cam-preview"
     sourcetype="Network"
-    url="rtsp://admin:crestron@192.168.1.172:554/1.h264"
+    url="rtsp://admin:Password1!@192.168.2.174:554/1.h264"
     userid="admin"
-    password="crestron"
+    password="Password1!"
     size="custom"
     aspectratio="16:9"
     stretch="true"

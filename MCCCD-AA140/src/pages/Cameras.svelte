@@ -58,6 +58,27 @@
     if (vid) vid.style.display = 'none';
   }
 
+  // ch5-video reads url/sourcetype only at CONSTRUCTION — runtime setAttribute()
+  // is silently ignored on Crestron's Android Chromium. To switch the camera feed
+  // we REPLACE the #cam-preview element via insertAdjacentHTML (the firmware's
+  // normal custom-element upgrade path), then reposition it. Proven technique from
+  // 1beyond-multicam/CameraPreview.svelte.
+  function mountCameraStream(cam: Camera) {
+    const old = document.getElementById('cam-preview');
+    if (!old || !old.parentNode) return;
+    const url = rtspMain(cam);
+    const html =
+      '<ch5-video id="cam-preview" sourcetype="Network"' +
+      ` url="${url}" userid="${CAM_USER}" password="${CAM_PASS}"` +
+      ' size="custom" aspectratio="16:9" stretch="true" componentwasresized="true"' +
+      ' receivestateplay="CamPlay" sendeventstate="CamState" sendeventerrorcode="CamError"' +
+      ' sendeventerrormessage="CamErrorMsg" sendeventresolution="CamResolution"' +
+      ' style="display:block;position:fixed;z-index:0;"></ch5-video>';
+    old.insertAdjacentHTML('afterend', html);
+    old.remove();
+    requestAnimationFrame(syncVideoToWindow);
+  }
+
   // Hide the video element BEFORE the route change paints, otherwise the
   // native cutout lingers on top of the next page for a frame or two.
   // Svelte's onDestroy fires after the page swap, so we tear down here first.
@@ -69,6 +90,7 @@
   function selectCamera(cam: Camera) {
     activeCamera = cam;
     publishAnalog(SIGNALS.cameraSelect, cam.selectIndex);
+    mountCameraStream(cam);   // swap the live feed to the selected camera
   }
 
   // PTZ press-and-hold (rising edge starts movement, falling edge stops)
@@ -130,6 +152,8 @@
       syncVideoToWindow();
       resizeObs = new ResizeObserver(syncVideoToWindow);
       resizeObs.observe(videoWindow);
+      // Mount the active camera's RTSP feed (replaces the static stub element).
+      mountCameraStream(activeCamera);
     }
 
     // Page-change pre-emption: hide the body-level ch5-video the instant the
