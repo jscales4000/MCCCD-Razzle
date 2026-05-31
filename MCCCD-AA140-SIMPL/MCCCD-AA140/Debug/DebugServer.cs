@@ -231,6 +231,25 @@ namespace MCCCD_AA140.Debug
         {
             if (_store == null) { ServeJson(args, 503, "{\"error\":\"no store\"}"); return; }
             key = key.Trim('/');
+
+            // /devices/<key>/ping — reachability probe, does not mutate config.
+            if (key.EndsWith("/ping", StringComparison.OrdinalIgnoreCase)) {
+                var pkey = key.Substring(0, key.Length - "/ping".Length).Trim('/');
+                var entry = _store.Get(pkey);
+                var phost = entry != null ? entry.Host : "";
+                var pr = DeviceProbe.Probe(pkey, phost);
+                var psb = new StringBuilder(96);
+                psb.Append("{\"ok\":true,\"key\":");
+                JsonProtocol.AppendString(psb, pkey);
+                psb.Append(",\"reachable\":").Append(pr.Reachable ? "true" : "false");
+                psb.Append(",\"detail\":");
+                JsonProtocol.AppendString(psb, pr.Detail ?? "");
+                psb.Append('}');
+                DebugTrace.Command(pkey, "ping", pr.Detail);
+                ServeJson(args, 200, psb.ToString());
+                return;
+            }
+
             var qs = args.Context.Request.QueryString;
             string host = qs?["host"];
             string enabledStr = qs?["enabled"];
