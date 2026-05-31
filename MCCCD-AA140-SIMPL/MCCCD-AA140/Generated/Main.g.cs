@@ -59,6 +59,7 @@ namespace MCCCD_AA140
         void Display1PowerFb(MainBoolInputSigDelegate callback);
         void Display2PowerFb(MainBoolInputSigDelegate callback);
         void Display3PowerFb(MainBoolInputSigDelegate callback);
+        void Display4PowerFb(MainBoolInputSigDelegate callback);
         void MicLavConnected(MainBoolInputSigDelegate callback);
         void MicHandheldConnected(MainBoolInputSigDelegate callback);
         void MicCeiling1Connected(MainBoolInputSigDelegate callback);
@@ -151,19 +152,20 @@ namespace MCCCD_AA140
                 public const uint Display1PowerFb = 21;
                 public const uint Display2PowerFb = 22;
                 public const uint Display3PowerFb = 23;
-                public const uint MicLavConnected = 24;
-                public const uint MicHandheldConnected = 25;
-                public const uint MicCeiling1Connected = 26;
-                public const uint MicCeiling2Connected = 27;
-                public const uint MicCeiling3Connected = 28;
-                public const uint RoomPcSync = 29;
-                public const uint ExtPcSync = 30;
-                public const uint AirMediaSync = 31;
-                public const uint AirMediaMiracast = 32;
-                public const uint AirMediaAirPlay = 33;
-                public const uint AirMediaTx3 = 34;
-                public const uint LaptopHdmiSync = 35;
-                public const uint LaptopUsbcSync = 36;
+                public const uint Display4PowerFb = 24;
+                public const uint MicLavConnected = 25;
+                public const uint MicHandheldConnected = 26;
+                public const uint MicCeiling1Connected = 27;
+                public const uint MicCeiling2Connected = 28;
+                public const uint MicCeiling3Connected = 29;
+                public const uint RoomPcSync = 30;
+                public const uint ExtPcSync = 31;
+                public const uint AirMediaSync = 32;
+                public const uint AirMediaMiracast = 33;
+                public const uint AirMediaAirPlay = 34;
+                public const uint AirMediaTx3 = 35;
+                public const uint LaptopHdmiSync = 36;
+                public const uint LaptopUsbcSync = 37;
             }
             internal static class Numerics
             {
@@ -509,6 +511,14 @@ namespace MCCCD_AA140
             for (int index = 0; index < Devices.Count; index++)
             {
                 callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.Display3PowerFb], this);
+            }
+        }
+
+        public void Display4PowerFb(MainBoolInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.Display4PowerFb], this);
             }
         }
 

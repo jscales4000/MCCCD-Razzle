@@ -41,7 +41,7 @@ namespace MCCCD_AA140.Debug
         private SonyVplService _projectors;
         private NewlineService _newline;
         private AirMediaService _airmedia;
-        private PanelDispatcher _panel;
+        private Contract _contract;
 
         public void Configure(
             DeviceConfigStore store,
@@ -53,7 +53,7 @@ namespace MCCCD_AA140.Debug
             SonyVplService projectors,
             NewlineService newline,
             AirMediaService airmedia,
-            PanelDispatcher panel)
+            Contract contract)
         {
             _store = store;
             _audio = audio;
@@ -64,7 +64,7 @@ namespace MCCCD_AA140.Debug
             _projectors = projectors;
             _newline = newline;
             _airmedia = airmedia;
-            _panel = panel;
+            _contract = contract;
         }
 
         public void Start()
@@ -433,32 +433,43 @@ namespace MCCCD_AA140.Debug
 
         // ─── /signal?join=N&type=bool|ushort|string&value=X ──────────────
 
+        // POST /signal?name=<FeedbackName>&type=bool|ushort&value=X
+        // Injects a SIMPL->panel feedback BY NAME through the generated Contract
+        // (e.g. name=SystemPowerFb&type=bool&value=1). No raw joins.
         private void HandleSignalPost(HttpCwsRequestEventArgs args)
         {
-            if (_panel == null) { ServeJson(args, 503, "{\"error\":\"no panel\"}"); return; }
+            if (_contract == null) { ServeJson(args, 503, "{\"error\":\"no contract\"}"); return; }
             var qs = args.Context.Request.QueryString;
-            if (!uint.TryParse(qs?["join"], out uint join) || join == 0) {
-                ServeJson(args, 400, "{\"error\":\"join must be uint > 0\"}"); return;
+            string name = qs?["name"];
+            if (string.IsNullOrEmpty(name)) {
+                ServeJson(args, 400, "{\"error\":\"name required, e.g. SystemPowerFb\"}"); return;
             }
-            string type = (qs?["type"] ?? "").ToLowerInvariant();
+            string type = (qs?["type"] ?? "bool").ToLowerInvariant();
             string val  = qs?["value"] ?? "";
 
+            var main = _contract.AA140;
+            var mi = main.GetType().GetMethod(name);
+            if (mi == null) {
+                ServeJson(args, 404, "{\"error\":\"unknown feedback signal '" + name + "'\"}"); return;
+            }
             try {
                 if (type == "bool") {
                     bool b = (val == "1" || val == "true" || val == "on");
-                    _panel.WriteBool(join, b);
+                    MainBoolInputSigDelegate cb = (sig, m) => sig.BoolValue = b;
+                    mi.Invoke(main, new object[] { cb });
                 } else if (type == "ushort") {
                     if (!ushort.TryParse(val, out ushort u)) {
                         ServeJson(args, 400, "{\"error\":\"value must be 0..65535\"}"); return;
                     }
-                    _panel.WriteUShort(join, u);
+                    MainUShortInputSigDelegate cb = (sig, m) => sig.UShortValue = u;
+                    mi.Invoke(main, new object[] { cb });
                 } else {
                     ServeJson(args, 400, "{\"error\":\"type must be bool or ushort\"}"); return;
                 }
-                DebugTrace.Command("panel", "raw-signal", "join=" + join + " type=" + type + " value=" + val);
+                DebugTrace.Command("panel", "signal-by-name", "name=" + name + " type=" + type + " value=" + val);
                 ServeOk(args);
             } catch (Exception ex) {
-                ErrorLog.Warn("HandleSignalPost join={0}: {1}", join, ex.Message);
+                ErrorLog.Warn("HandleSignalPost name={0}: {1}", name, ex.Message);
                 ServeJson(args, 500, "{\"error\":\"" + ex.Message.Replace("\"", "'") + "\"}");
             }
         }

@@ -62,7 +62,7 @@ PURE_COMMAND = [
 # Pure feedback (State only): (stateName, dataType)
 PURE_FEEDBACK = [
     ("PanelOnline", 1), ("SystemPowerFb", 1),
-    ("Display1PowerFb", 1), ("Display2PowerFb", 1), ("Display3PowerFb", 1),
+    ("Display1PowerFb", 1), ("Display2PowerFb", 1), ("Display3PowerFb", 1), ("Display4PowerFb", 1),
     ("MicLavConnected", 1), ("MicHandheldConnected", 1),
     ("MicCeiling1Connected", 1), ("MicCeiling2Connected", 1), ("MicCeiling3Connected", 1),
     ("OccupancyState", 2), ("ShutdownCountdown", 2),
