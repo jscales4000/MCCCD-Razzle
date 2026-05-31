@@ -334,9 +334,20 @@ namespace MCCCD_AA140.Debug
                 case "preset-delete":
                     if (int.TryParse(qs?["id"], out int did)) _cameras.DeletePresetFromDebug(camId, (ushort)did);
                     break;
-                case "tracking":
-                    if (int.TryParse(qs?["mode"], out int tm)) _cameras.SetTrackingModeFromDebug(camId, (ushort)tm);
+                case "framing":
+                    _cameras.SetPresenterFramingFromDebug(qs?["on"] == "true" || qs?["on"] == "1");
                     break;
+                case "usb":
+                    if (int.TryParse(qs?["out"], out int uo)) _cameras.SetUsbOutputFromDebug((ushort)uo);
+                    break;
+                case "zone":
+                    if (int.TryParse(qs?["n"], out int zn)) _cameras.SetPresetZoneFromDebug((ushort)zn);
+                    break;
+                case "profile":
+                    if (int.TryParse(qs?["n"], out int prn)) _cameras.SetTrackingProfileFromDebug((ushort)prn);
+                    break;
+                case "home":          _cameras.RecallHomeFromDebug(camId);         break;
+                case "tracking-shot": _cameras.RecallTrackingShotFromDebug(camId); break;
                 case "vtc":
                     _cameras.SendToVtcFromDebug(camId);
                     break;

@@ -30,13 +30,20 @@ namespace MCCCD_AA140
         // 0,1,80-86,95,99,101-108). idx 1..3 -> 109..111.
         private const byte PRESET_SLOT_BASE = 108;
 
+        // Role targets (fixed by camera model, independent of _active):
+        //   I20 (.2.174, cam-1) = Presenter — tracking 80/81, zones 101-104, profiles 105-108.
+        //   I12 (.2.173, cam-2) = Group/host — Intelligent Switching / USB output 84/85/86.
+        private const int CAM_PRESENTER = 1;
+        private const int CAM_GROUP     = 2;
+
         private readonly Contract _c;
         private readonly CrestronControlSystem _cs;
         private readonly ViscaCameraClient _cam1;
         private readonly ViscaCameraClient _cam2;
 
         private int _active = 1;            // 1..2
-        private ushort _trackingMode = 1;   // 1=People,2=Group,3=AutoSwitch
+        private CTimer _publishTimer;
+        private bool _lastPresenterTracking;
 
         public CameraService(Contract c, CrestronControlSystem cs)
         {
@@ -71,7 +78,58 @@ namespace MCCCD_AA140
             _c.AA140.ShotPresetRecall += (s, a) => { var v = a.SigArgs.Sig.UShortValue; if (v >= 1 && v <= 3) RecallPreset(v); };
             _c.AA140.ShotPresetSave   += (s, a) => { var v = a.SigArgs.Sig.UShortValue; if (v >= 1 && v <= 3) SavePreset(v);   };
 
-            _c.AA140.CamTrackingMode += (s, a) => SetTrackingMode(a.SigArgs.Sig.UShortValue);
+            // Presenter tracking on the I20 (80=on / 81=off). Feedback is polled (PublishTick).
+            _c.AA140.CamPresenterFraming += (s, a) => {
+                bool on = a.SigArgs.Sig.BoolValue;
+                Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(80) : ViscaProtocol.PresetRecall(81));
+                DebugTrace.Command("cam-1", "presenter-framing", on ? "on" : "off");
+            };
+            // USB output / Q&A switch on the I12 host: 1=Presenter(86) 2=Group(85) 3=Auto(84).
+            _c.AA140.CamUsbOutput += (s, a) => {
+                ushort v = a.SigArgs.Sig.UShortValue;
+                byte slot = v == 1 ? (byte)86 : v == 2 ? (byte)85 : v == 3 ? (byte)84 : (byte)0;
+                if (slot == 0) return;
+                Cam(CAM_GROUP)?.Send(ViscaProtocol.PresetRecall(slot));
+                DebugTrace.Command("cam-2", "usb-output", v.ToString());
+                _c.AA140.CamUsbOutputFb((sig, m) => sig.UShortValue = v);
+            };
+            // Preset zones (I20): 1..4 -> 101..104.
+            _c.AA140.CamPresetZone += (s, a) => {
+                ushort v = a.SigArgs.Sig.UShortValue;
+                if (v < 1 || v > 4) return;
+                Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(100 + v)));
+                DebugTrace.Command("cam-1", "preset-zone", v.ToString());
+                _c.AA140.CamPresetZoneFb((sig, m) => sig.UShortValue = v);
+            };
+            // Tracking profiles (I20): 1..4 -> 105..108.
+            _c.AA140.CamTrackingProfile += (s, a) => {
+                ushort v = a.SigArgs.Sig.UShortValue;
+                if (v < 1 || v > 4) return;
+                Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(104 + v)));
+                DebugTrace.Command("cam-1", "tracking-profile", v.ToString());
+                _c.AA140.CamTrackingProfileFb((sig, m) => sig.UShortValue = v);
+            };
+            // Home (0) / Tracking shot (1) on the SELECTED camera.
+            _c.AA140.CamHomeShot     += (s, a) => { if (a.SigArgs.Sig.BoolValue) Active()?.Send(ViscaProtocol.PresetRecall(0)); };
+            _c.AA140.CamTrackingShot += (s, a) => { if (a.SigArgs.Sig.BoolValue) Active()?.Send(ViscaProtocol.PresetRecall(1)); };
+
+            // Coordinate + presenter-tracking-state publisher (selected cam coords; I20 tracking fb).
+            _publishTimer = new CTimer(_ => PublishTick(), null, 1000, 333);
+        }
+
+        private void PublishTick()
+        {
+            var cam = Active();
+            if (cam != null) {
+                _c.AA140.CamPanPos((sig, m) => sig.UShortValue = unchecked((ushort)cam.PanPosition));
+                _c.AA140.CamTiltPos((sig, m) => sig.UShortValue = unchecked((ushort)cam.TiltPosition));
+                _c.AA140.CamZoomPos((sig, m) => sig.UShortValue = cam.ZoomPosition);
+            }
+            var i20 = Cam(CAM_PRESENTER);
+            if (i20 != null && i20.TrackingActive != _lastPresenterTracking) {
+                _lastPresenterTracking = i20.TrackingActive;
+                _c.AA140.CamPresenterFramingFb((sig, m) => sig.BoolValue = i20.TrackingActive);
+            }
         }
 
         // ─── Config (host + enabled) per camera, from the debug panel ────────
@@ -156,22 +214,6 @@ namespace MCCCD_AA140
             DebugTraceCmd("send-to-vtc", _active.ToString());
         }
 
-        private void SetTrackingMode(ushort mode)
-        {
-            if (mode < 1 || mode > 3) return;
-            var cam = Active(); if (cam == null) return;
-            byte[] f;
-            switch (mode) {
-                case 1: f = ViscaProtocol.StartTracking();      break; // People  -> slot 80
-                case 2: f = ViscaProtocol.StartGroupTracking(); break; // Group   -> slot 82
-                default: f = ViscaProtocol.IntelligentSwitch(); break; // VX Auto -> slot 84 (IS Active)
-            }
-            _trackingMode = mode;
-            DebugTraceCmd("tracking", mode.ToString());
-            cam.Send(f);
-            _c.AA140.CamTrackingModeFb((sig, m) => sig.UShortValue = mode);
-        }
-
         private void DebugTraceCmd(string action, string detail)
         {
             MCCCD_AA140.Debug.DebugTrace.Command("cam-" + _active, action, detail);
@@ -186,7 +228,14 @@ namespace MCCCD_AA140
         public void RecallPresetFromDebug(int camId, ushort idx)    { int s=_active; _active=camId; RecallPreset(idx);    _active=s; }
         public void SavePresetFromDebug(int camId, ushort idx)      { int s=_active; _active=camId; SavePreset(idx);      _active=s; }
         public void DeletePresetFromDebug(int camId, ushort idx)    { /* delete not exposed on panel; no-op (reserved-safe) */ }
-        public void SetTrackingModeFromDebug(int camId, ushort mode){ int s=_active; _active=camId; SetTrackingMode(mode); _active=s; }
         public void SendToVtcFromDebug(int camId)                   { int s=_active; _active=camId; SendActiveToVtc();    _active=s; }
+
+        // v2 framing / USB / zones / profiles / shots (role-targeted; not _active-dependent).
+        public void SetPresenterFramingFromDebug(bool on) { Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(80) : ViscaProtocol.PresetRecall(81)); }
+        public void SetUsbOutputFromDebug(ushort v) { byte s = v==1?(byte)86:v==2?(byte)85:v==3?(byte)84:(byte)0; if (s!=0) Cam(CAM_GROUP)?.Send(ViscaProtocol.PresetRecall(s)); }
+        public void SetPresetZoneFromDebug(ushort v) { if (v>=1&&v<=4) Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(100+v))); }
+        public void SetTrackingProfileFromDebug(ushort v) { if (v>=1&&v<=4) Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(104+v))); }
+        public void RecallHomeFromDebug(int camId) { Cam(camId)?.Send(ViscaProtocol.PresetRecall(0)); }
+        public void RecallTrackingShotFromDebug(int camId) { Cam(camId)?.Send(ViscaProtocol.PresetRecall(1)); }
     }
 }
