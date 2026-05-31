@@ -1,0 +1,97 @@
+{
+  "Errors": [],
+  "id": "_gtroot01",
+  "name": "GroundTruth",
+  "description": "Ground-truth: all types x both directions; verifies feedback=setter, command=event.",
+  "company": "MCCCD",
+  "client": "MCCCD",
+  "author": "Jordan Scales",
+  "version": "1.0.0.0",
+  "schemaVersion": 1,
+  "subContractLinks": [],
+  "subContracts": [],
+  "specifications": [
+    {
+      "Errors": [],
+      "parentId": "_gtroot01",
+      "id": "_gtspec01",
+      "componentId": "_gtcomp01",
+      "instanceName": "GT",
+      "numberOfInstances": 1
+    }
+  ],
+  "components": [
+    {
+      "Errors": [],
+      "parentId": "_gtroot01",
+      "id": "_gtcomp01",
+      "name": "Main",
+      "specifications": [],
+      "commands": [
+        {
+          "Errors": [],
+          "name": "BoolFb",
+          "siblingId": "_gte01",
+          "dataType": 1,
+          "notes": "ground-truth State=feedback proc->panel (attrType 0 -> setter)",
+          "id": "_gts01",
+          "parentId": "_gtcomp01",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "NumFb",
+          "siblingId": "_gte02",
+          "dataType": 2,
+          "notes": "ground-truth State=feedback proc->panel (attrType 0 -> setter)",
+          "id": "_gts02",
+          "parentId": "_gtcomp01",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "TextFb",
+          "siblingId": "_gte03",
+          "dataType": 3,
+          "notes": "ground-truth State=feedback proc->panel (attrType 0 -> setter)",
+          "id": "_gts03",
+          "parentId": "_gtcomp01",
+          "attributeType": 0
+        }
+      ],
+      "feedbacks": [
+        {
+          "Errors": [],
+          "name": "BoolPress",
+          "siblingId": "_gts01",
+          "dataType": 1,
+          "notes": "ground-truth Event=command panel->proc (attrType 1 -> event)",
+          "id": "_gte01",
+          "parentId": "_gtcomp01",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "NumSet",
+          "siblingId": "_gts02",
+          "dataType": 2,
+          "notes": "ground-truth Event=command panel->proc (attrType 1 -> event)",
+          "id": "_gte02",
+          "parentId": "_gtcomp01",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "TextSet",
+          "siblingId": "_gts03",
+          "dataType": 3,
+          "notes": "ground-truth Event=command panel->proc (attrType 1 -> event)",
+          "id": "_gte03",
+          "parentId": "_gtcomp01",
+          "attributeType": 1
+        }
+      ]
+    }
+  ],
+  "allComponentsForAllContracts": []
+}

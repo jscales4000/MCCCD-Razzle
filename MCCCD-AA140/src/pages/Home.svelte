@@ -171,18 +171,6 @@
         Advanced Routing →
       </button>
       <div class="eyebrow">— Choose your source —</div>
-      <!-- DIAG: bidirectional contract test. Two buttons publish on opposite SmartObjects;
-           displays show feedback values from each. Compare panel taps against err log. -->
-      <div style="font-size:11px;font-weight:700;color:#fde047;background:rgba(0,0,0,0.65);padding:8px 12px;border-radius:6px;margin-bottom:8px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-        <strong style="color:#fff;">CONTRACT TEST</strong>
-        <button onclick={() => pulseDigital(SIGNALS.displayPower)} style="padding:4px 10px;border-radius:4px;background:#1e293b;color:#fde047;border:1px solid #475569;cursor:pointer;font:inherit;">Pulse SO1.DisplayPower</button>
-        <button onclick={() => pulseDigital(SIGNALS.roomPcSyncSet)} style="padding:4px 10px;border-radius:4px;background:#1e293b;color:#fde047;border:1px solid #475569;cursor:pointer;font:inherit;">Pulse SO2.RoomPcSyncSet</button>
-        <span>SO1.SystemPowerFb={$systemPowerFb ? '1' : '0'}</span>
-        <span>SO2.RoomPc={$roomPcSync ? '1' : '0'}</span>
-        <span>SO2.ExtPc={$extPcSync ? '1' : '0'}</span>
-        <span>SO2.AirMedia={$airMediaSync ? '1' : '0'}</span>
-        <span>SO2.Laptop={$laptopHdmiSync ? '1' : '0'}</span>
-      </div>
       <div class="src-row">
         {#each SOURCES as src}
           {@const s = sourceStates[src.key]}
@@ -194,9 +182,6 @@
             aria-label={`Send ${src.name} to all displays — sync ${s.state}`}
           >
             <span class="sync-dot {s.state}" aria-hidden="true"></span>
-            <span class="dbg-raw">
-              {#if src.key === 'roomPc'}r:{$roomPcSync ? '1' : '0'}{:else if src.key === 'extPc'}e:{$extPcSync ? '1' : '0'}{:else if src.key === 'airMedia'}a:{$airMediaSync ? '1' : '0'}/m:{$airMediaMiracast ? '1' : '0'}/p:{$airMediaAirPlay ? '1' : '0'}/t:{$airMediaTx3 ? '1' : '0'}{:else}h:{$laptopHdmiSync ? '1' : '0'}/u:{$laptopUsbcSync ? '1' : '0'}{/if}
-            </span>
             {#if src.value === 1}
               <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
             {:else if src.value === 2}
@@ -525,18 +510,6 @@
   .sync-dot.ready {
     background: #f59e0b;
     box-shadow: 0 0 8px rgba(245, 158, 11, 0.55), 0 0 0 1px rgba(245, 158, 11, 0.45);
-  }
-  .dbg-raw {
-    position: absolute;
-    bottom: 6px;
-    left: 8px;
-    font-size: 9px;
-    font-weight: 700;
-    color: #fde047;
-    background: rgba(0, 0, 0, 0.45);
-    padding: 1px 5px;
-    border-radius: 3px;
-    pointer-events: none;
   }
   @keyframes sync-pulse {
     0%, 100% { opacity: 1; }

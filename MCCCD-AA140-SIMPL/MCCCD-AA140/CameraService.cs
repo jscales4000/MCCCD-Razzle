@@ -21,7 +21,7 @@ namespace MCCCD_AA140
     /// </summary>
     public class CameraService
     {
-        private readonly PanelDispatcher _panel;
+        private readonly Contract _c;
         private readonly CrestronControlSystem _cs;
 
         // Camera index 1..2 → IP. Index 0 unused.
@@ -32,44 +32,45 @@ namespace MCCCD_AA140
         private int _active = 1;
         private ushort _trackingMode = 1; // 1=People, 2=Group, 3=AutoSwitch
 
-        public CameraService(PanelDispatcher panel, CrestronControlSystem cs)
+        public CameraService(Contract c, CrestronControlSystem cs)
         {
-            _panel = panel;
+            _c = c;
             _cs = cs;
         }
 
         public void Initialize()
         {
             // Camera selection
-            _panel.OnUShort(PanelJoins.UShortOut.CameraSelect, v => {
+            _c.AA140.CameraSelect += (s, a) => {
+                var v = a.SigArgs.Sig.UShortValue;
                 if (v < 1 || v > 2) {
                     ErrorLog.Warn("Cameras: ignoring CameraSelect={0} (out of range)", v);
                     return;
                 }
                 _active = v;
                 ErrorLog.Notice("Cameras: active = {0}", _active);
-            });
+            };
 
             // PTZ press-and-hold
-            _panel.OnBool(PanelJoins.BoolOut.PtzUp,    v => { if (v) StartMove("up");    else StopMove(); });
-            _panel.OnBool(PanelJoins.BoolOut.PtzDown,  v => { if (v) StartMove("down");  else StopMove(); });
-            _panel.OnBool(PanelJoins.BoolOut.PtzLeft,  v => { if (v) StartMove("left");  else StopMove(); });
-            _panel.OnBool(PanelJoins.BoolOut.PtzRight, v => { if (v) StartMove("right"); else StopMove(); });
+            _c.AA140.PtzUp    += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) StartMove("up");    else StopMove(); };
+            _c.AA140.PtzDown  += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) StartMove("down");  else StopMove(); };
+            _c.AA140.PtzLeft  += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) StartMove("left");  else StopMove(); };
+            _c.AA140.PtzRight += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) StartMove("right"); else StopMove(); };
 
             // Zoom press-and-hold
-            _panel.OnBool(PanelJoins.BoolOut.ZoomIn,  v => { if (v) StartZoom("in");  else StopZoom(); });
-            _panel.OnBool(PanelJoins.BoolOut.ZoomOut, v => { if (v) StartZoom("out"); else StopZoom(); });
+            _c.AA140.ZoomIn  += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) StartZoom("in");  else StopZoom(); };
+            _c.AA140.ZoomOut += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) StartZoom("out"); else StopZoom(); };
 
             // Single-tap actions (rising edge only)
-            _panel.OnBool(PanelJoins.BoolOut.CamSendToVtc, v => { if (v) SendActiveToVtc(); });
+            _c.AA140.CamSendToVtc += (s, a) => { var v = a.SigArgs.Sig.BoolValue; if (v) SendActiveToVtc(); };
 
             // Preset save/recall/delete — analog publish encodes preset number 1..3
-            _panel.OnUShort(PanelJoins.UShortOut.ShotPresetRecall, v => { if (v >= 1 && v <= 3) RecallPreset(v); });
-            _panel.OnUShort(PanelJoins.UShortOut.ShotPresetSave,   v => { if (v >= 1 && v <= 3) SavePreset(v);   });
-            _panel.OnUShort(PanelJoins.UShortOut.ShotPresetDelete, v => { if (v >= 1 && v <= 3) DeletePreset(v); });
+            _c.AA140.ShotPresetRecall += (s, a) => { var v = a.SigArgs.Sig.UShortValue; if (v >= 1 && v <= 3) RecallPreset(v); };
+            _c.AA140.ShotPresetSave   += (s, a) => { var v = a.SigArgs.Sig.UShortValue; if (v >= 1 && v <= 3) SavePreset(v);   };
+            _c.AA140.ShotPresetDelete += (s, a) => { var v = a.SigArgs.Sig.UShortValue; if (v >= 1 && v <= 3) DeletePreset(v); };
 
             // Tracking mode select
-            _panel.OnUShort(PanelJoins.UShortOut.CamTrackingMode, v => SetTrackingMode(v));
+            _c.AA140.CamTrackingMode += (s, a) => { var v = a.SigArgs.Sig.UShortValue; SetTrackingMode(v); };
         }
 
         // ---------------------------------------------------------------------
@@ -132,7 +133,7 @@ namespace MCCCD_AA140
             string m = mode == 1 ? "people" : mode == 2 ? "group" : "autoswitch";
             HttpFireAndForget("http://" + ip + "/cgi-bin/tracking?mode=" + m);
             _trackingMode = mode;
-            _panel.WriteUShort(PanelJoins.UShortIn.CamTrackingModeFb, mode);
+            _c.AA140.CamTrackingModeFb((sig, m) => sig.UShortValue = mode);
             ErrorLog.Notice("Cameras: cam{0} tracking={1}", _active, m);
         }
 

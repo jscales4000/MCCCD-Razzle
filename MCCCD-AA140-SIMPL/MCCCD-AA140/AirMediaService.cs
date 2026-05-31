@@ -29,7 +29,6 @@ namespace MCCCD_AA140
         private const int POLL_INTERVAL_MS = 10000;
 
         private readonly Contract _c;
-        private readonly PanelDispatcher _panel;
         private readonly CrestronControlSystem _cs;
         private CTimer _pollTimer;
         private string _host = DEFAULT_AM_HOST;
@@ -42,10 +41,9 @@ namespace MCCCD_AA140
         private bool _lastAirPlay;
         private bool _lastTx3;
 
-        public AirMediaService(Contract c, PanelDispatcher panel, CrestronControlSystem cs)
+        public AirMediaService(Contract c, CrestronControlSystem cs)
         {
             _c = c;
-            _panel = panel;
             _cs = cs;
         }
 
@@ -159,21 +157,21 @@ namespace MCCCD_AA140
         /// </summary>
         private void PublishMethodStates(bool miracast, bool airplay, bool tx3)
         {
-            if (_panel == null) return;
+            if (_c == null) return;
             if (miracast != _lastMiracast) {
-                try { _panel.WriteBoolSO2(PanelJoins.SO2BoolIn.AirMediaMiracast, miracast); }
+                try { _c.AA140.AirMediaMiracast((sig, m) => sig.BoolValue = miracast); }
                 catch (System.Exception ex) { ErrorLog.Warn("AirMedia: miracast dispatch: {0}", ex.Message); }
                 _lastMiracast = miracast;
                 ErrorLog.Notice("AirMedia: miracast={0}", miracast);
             }
             if (airplay != _lastAirPlay) {
-                try { _panel.WriteBoolSO2(PanelJoins.SO2BoolIn.AirMediaAirPlay, airplay); }
+                try { _c.AA140.AirMediaAirPlay((sig, m) => sig.BoolValue = airplay); }
                 catch (System.Exception ex) { ErrorLog.Warn("AirMedia: airplay dispatch: {0}", ex.Message); }
                 _lastAirPlay = airplay;
                 ErrorLog.Notice("AirMedia: airplay={0}", airplay);
             }
             if (tx3 != _lastTx3) {
-                try { _panel.WriteBoolSO2(PanelJoins.SO2BoolIn.AirMediaTx3, tx3); }
+                try { _c.AA140.AirMediaTx3((sig, m) => sig.BoolValue = tx3); }
                 catch (System.Exception ex) { ErrorLog.Warn("AirMedia: tx3 dispatch: {0}", ex.Message); }
                 _lastTx3 = tx3;
                 ErrorLog.Notice("AirMedia: tx3={0}", tx3);

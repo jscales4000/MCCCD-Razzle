@@ -33,7 +33,6 @@ namespace MCCCD_AA140
         private const string MCAST_VIDEO_NVX384   = "239.8.0.12";
 
         private readonly Contract _c;
-        private readonly PanelDispatcher _panel;
         private readonly CrestronControlSystem _cs;
 
         private DmNvxE30 _encRoomPc;
@@ -65,28 +64,18 @@ namespace MCCCD_AA140
         // negligible — 5 sigs × 1Hz.
         private CTimer _syncPollTimer;
         private readonly List<System.Action> _syncReaders = new List<System.Action>();
-        private readonly Dictionary<uint, bool> _lastSync = new Dictionary<uint, bool>();
+        private readonly Dictionary<string, bool> _lastSync = new Dictionary<string, bool>();
 
-        public NvxRoutingService(Contract c, PanelDispatcher panel, CrestronControlSystem cs)
+        public NvxRoutingService(Contract c, CrestronControlSystem cs)
         {
             _c = c;
-            _panel = panel;
             _cs = cs;
         }
 
         public void Initialize()
         {
-            // DIAG: hook the VideoSync incoming events so we can prove panel→SIMPL
-            // path on SmartObject 2 works (or doesn't). Each handler fires when
-            // the panel publishes its corresponding *Set command.
-            _c.VideoSync.RoomPcSync += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.RoomPcSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.ExtPcSync  += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.ExtPcSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.AirMediaSync     += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.AirMediaMiracast += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaMiracastSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.AirMediaAirPlay  += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaAirPlaySet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.AirMediaTx3      += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaTx3Set RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.LaptopHdmiSync   += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.LaptopHdmiSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
-            _c.VideoSync.LaptopUsbcSync   += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.LaptopUsbcSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            // VideoSync sync feedbacks are now plain AA140 proc->panel feedbacks
+            // (folded into Main, no SO2). Driven from the HDMI sync pollers below.
 
             // ============ Encoders (transmitters) ============
             _encRoomPc   = new DmNvxE30(IPID_E30_ROOM_PC,  _cs);
@@ -116,9 +105,9 @@ namespace MCCCD_AA140
             // call registers a reader callback (closure over a Crestron
             // BoolOutputSig); the 1Hz _syncPollTimer fires them all and
             // dispatches BoolValue changes to the panel via PanelDispatcher.
-            WireEncoderHdmiSync(_encRoomPc,   PanelJoins.SO2BoolIn.RoomPcSync,   "RoomPC");
-            WireEncoderHdmiSync(_encExtPc,    PanelJoins.SO2BoolIn.ExtPcSync,    "ExtPC");
-            WireEncoderHdmiSync(_encAirMedia, PanelJoins.SO2BoolIn.AirMediaSync, "AirMedia");
+            WireEncoderHdmiSync(_encRoomPc,   v => _c.AA140.RoomPcSync((sig, m) => sig.BoolValue = v),   "RoomPC");
+            WireEncoderHdmiSync(_encExtPc,    v => _c.AA140.ExtPcSync((sig, m) => sig.BoolValue = v),    "ExtPC");
+            WireEncoderHdmiSync(_encAirMedia, v => _c.AA140.AirMediaSync((sig, m) => sig.BoolValue = v), "AirMedia");
             WireNvx384InputSync(_encHdmiUsbc);
 
             // Start the sync poll loop after all readers are registered.
@@ -150,20 +139,17 @@ namespace MCCCD_AA140
             // TODO Stage B: wire HDMI sink-connected feedback to drive DisplayNPowerFb.
             // _decDispN.HdmiOut.SinkConnectedFeedback.OutputChange += ...
 
-            // ============ Panel commands (new Contract Editor API) ============
-            // Panel publishes source-select via Display{N}SourceFb (OUTPUT-direction
-            // signal in the .cce — see Joins.Numerics.Display1SourceFb=1, fires on
-            // panel publish). Yes the "Fb" suffix is counterintuitive but it's the
-            // Contract Editor convention for "this is the panel→SIMPL direction".
-            _c.AA140.Display1SourceFb += (sender, args) =>
+            // ============ Panel commands (name-based Contract) ============
+            // Panel publishes source-select via the Display{N}Source COMMAND event
+            // (panel->SIMPL). The processor confirms by writing Display{N}SourceFb
+            // (SIMPL->panel feedback) inside RouteSourceToDisplay.
+            _c.AA140.Display1Source += (sender, args) =>
                 RouteSourceToDisplay((ushort)args.SigArgs.Sig.UShortValue, 1);
-            _c.AA140.Display2SourceFb += (sender, args) =>
+            _c.AA140.Display2Source += (sender, args) =>
                 RouteSourceToDisplay((ushort)args.SigArgs.Sig.UShortValue, 2);
-            _c.AA140.Display3SourceFb += (sender, args) =>
+            _c.AA140.Display3Source += (sender, args) =>
                 RouteSourceToDisplay((ushort)args.SigArgs.Sig.UShortValue, 3);
-            // D4 has no Contract Editor wrapper — Main.g.cs was last regenerated
-            // before the Display4 signals were added, and the SystemPowerController
-            // OnUShort handler is the active path for D4 anyway.
+            // D4 source-select is handled by SystemPowerController.
 
             // Mirror buttons: the rebuilt .cce has D1MirrorToD3/D2MirrorToD3 only on
             // the INPUT (SIMPL→panel) direction — there's no matching OUTPUT-direction
@@ -313,7 +299,7 @@ namespace MCCCD_AA140
         // input feedback type is BoolOutputSig, which has BoolValue but no
         // OutputChange event (that's PepperDash's BoolOutput wrapper). Polling
         // is the portable path.
-        private void WireSyncFeedbackReflective(object inputWrapper, uint panelJoin, string label, params string[] candidateProps)
+        private void WireSyncFeedbackReflective(object inputWrapper, System.Action<bool> writeSync, string label, params string[] candidateProps)
         {
             if (inputWrapper == null) {
                 ErrorLog.Warn("NVX {0}: sync wire skipped — input wrapper null", label);
@@ -364,27 +350,26 @@ namespace MCCCD_AA140
                     return;
                 }
                 bool prev;
-                bool changed = !_lastSync.TryGetValue(panelJoin, out prev) || prev != v;
+                bool changed = !_lastSync.TryGetValue(label, out prev) || prev != v;
                 if (!changed) return;
-                _lastSync[panelJoin] = v;
+                _lastSync[label] = v;
                 try {
-                    _panel.WriteBoolSO2(panelJoin, v);
-                    ErrorLog.Notice("NVX {0}: sync -> {1} (join {2})", label, v, panelJoin);
+                    writeSync(v);
+                    ErrorLog.Notice("NVX {0}: sync -> {1}", label, v);
                     DebugTrace.Lifecycle("nvx_sync_change", new Dictionary<string, object> {
                         { "device", "nvx-" + label.ToLowerInvariant() },
                         { "sync", v },
-                        { "join", panelJoin },
                     });
                 } catch (System.Exception ex) {
                     ErrorLog.Warn("NVX {0}: sync dispatch: {1}", label, ex.Message);
                 }
             });
-            ErrorLog.Notice("NVX {0}: sync poller registered via {1} -> join {2}", label, foundName, panelJoin);
+            ErrorLog.Notice("NVX {0}: sync poller registered via {1}", label, foundName);
         }
 
         // E30 encoder — single HDMI input wired through the HdmiIn[1] collection
         // element. Candidate feedback property names cover SDK variants.
-        private void WireEncoderHdmiSync(DmNvxBaseClass enc, uint panelJoin, string label)
+        private void WireEncoderHdmiSync(DmNvxBaseClass enc, System.Action<bool> writeSync, string label)
         {
             try {
                 object hdmiInput = null;
@@ -393,7 +378,7 @@ namespace MCCCD_AA140
                     var en = enc.HdmiIn.GetEnumerator();
                     if (en.MoveNext()) hdmiInput = en.Current;
                 }
-                WireSyncFeedbackReflective(hdmiInput, panelJoin, label,
+                WireSyncFeedbackReflective(hdmiInput, writeSync, label,
                     "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected");
             } catch (System.Exception ex) {
                 ErrorLog.Warn("NVX {0}: HDMI sync wire setup failed: {1}", label, ex.Message);
@@ -413,7 +398,7 @@ namespace MCCCD_AA140
                     var en = enc.HdmiIn.GetEnumerator();
                     if (en.MoveNext()) hdmiInput = en.Current;
                 }
-                WireSyncFeedbackReflective(hdmiInput, PanelJoins.SO2BoolIn.LaptopHdmiSync, "NVX-384-HDMI",
+                WireSyncFeedbackReflective(hdmiInput, v => _c.AA140.LaptopHdmiSync((sig, m) => sig.BoolValue = v), "NVX-384-HDMI",
                     "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected");
             } catch (System.Exception ex) {
                 ErrorLog.Warn("NVX-384 HDMI: setup failed: {0}", ex.Message);
@@ -451,7 +436,7 @@ namespace MCCCD_AA140
                 // DmNvxUsbInput (per live log) doesn't expose SyncDetectedFeedback.
                 // Expanded candidate list — first reflection pass also logs
                 // the type's actual properties so we can learn from the warning.
-                WireSyncFeedbackReflective(usbcInput, PanelJoins.SO2BoolIn.LaptopUsbcSync, "NVX-384-USBC",
+                WireSyncFeedbackReflective(usbcInput, v => _c.AA140.LaptopUsbcSync((sig, m) => sig.BoolValue = v), "NVX-384-USBC",
                     "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected", "SourceDetectedFeedback",
                     "HpdFeedback", "ConnectedFeedback", "SignalPresentFeedback", "SourceConnectedFeedback",
                     "DeviceConnectedFeedback", "LinkActiveFeedback", "DetectedFeedback", "Detected",
@@ -524,14 +509,12 @@ namespace MCCCD_AA140
                 }
             }
 
-            // Drive the SIMPL→panel "active source" feedback. In the new Contract
-            // Editor API, the SIMPL drive is exposed as a method taking a callback.
-            // (D4 omitted — SystemPowerController writes Display4SourceFb via
-            // PanelDispatcher; Main.g.cs hasn't been regenerated to expose D4.)
+            // Drive the SIMPL->panel "active source" feedback via the name-based
+            // Display{N}SourceFb setter. (D4 feedback is written by SystemPowerController.)
             switch (displayNum) {
-                case 1: _c.AA140.Display1Source((sig, m) => sig.UShortValue = srcIndex); break;
-                case 2: _c.AA140.Display2Source((sig, m) => sig.UShortValue = srcIndex); break;
-                case 3: _c.AA140.Display3Source((sig, m) => sig.UShortValue = srcIndex); break;
+                case 1: _c.AA140.Display1SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
+                case 2: _c.AA140.Display2SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
+                case 3: _c.AA140.Display3SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
             }
         }
 
