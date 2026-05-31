@@ -1,5 +1,6 @@
 using Crestron.SimplSharp;
 using Crestron.SimplSharpPro;
+using MCCCD_AA140.Debug;
 using MCCCD_AA140.Visca;
 
 namespace MCCCD_AA140
