@@ -31,12 +31,15 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initAudioMixerSignals, teardownAudioMixerSignals,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
-  // Mic level meters (10 Hz from Shure P300 SAMPLE_IN) are subscribed lazily so
-  // they don't fire a callback storm when this page isn't mounted. Per-audit H4.
+  // Mic state (trim/lineOut/connected/mute for ceiling mics, scene preset,
+  // link toggle) + VU meters are subscribed lazily — per-audit H4 + H4-followup.
+  onMount(initAudioMixerSignals);
+  onDestroy(teardownAudioMixerSignals);
   onMount(initMicLevelSubscriptions);
   onDestroy(teardownMicLevelSubscriptions);
 
