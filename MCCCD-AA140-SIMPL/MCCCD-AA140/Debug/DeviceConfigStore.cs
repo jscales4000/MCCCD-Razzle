@@ -50,8 +50,8 @@ namespace MCCCD_AA140.Debug
             { "sony-2",   new Entry { Host = "192.168.2.192", Enabled = false } },
             { "newline",  new Entry { Host = "192.168.2.195", Enabled = false } },
             { "airmedia", new Entry { Host = "192.168.1.177", Enabled = true  } },
-            { "cam-1",    new Entry { Host = "192.168.1.174", Enabled = true  } },
-            { "cam-2",    new Entry { Host = "192.168.1.173", Enabled = true  } },
+            { "cam-1",    new Entry { Host = "192.168.2.174", Enabled = true  } },  // IV-CAM-I20 (VISCA 5500)
+            { "cam-2",    new Entry { Host = "192.168.2.173", Enabled = true  } },  // IV-CAM-I12 (VISCA 5500)
         };
 
         private readonly string _path;

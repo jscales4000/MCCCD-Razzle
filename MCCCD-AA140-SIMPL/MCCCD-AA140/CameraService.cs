@@ -42,9 +42,11 @@ namespace MCCCD_AA140
         {
             _c = c;
             _cs = cs;
-            // Defaults: real cameras live on the .1.x subnet (overridable via DeviceConfigStore).
-            _cam1 = new ViscaCameraClient("192.168.1.174", ViscaCameraClient.DefaultPort, "cam-1");
-            _cam2 = new ViscaCameraClient("192.168.1.173", ViscaCameraClient.DefaultPort, "cam-2");
+            // Defaults: cameras live on the processor's .2.x /24 so VISCA control is
+            // accepted (the IV-CAMs restrict control to their local /24). Overridable
+            // via DeviceConfigStore. Verified live: PTZ/zoom/tracking/preset all ACK.
+            _cam1 = new ViscaCameraClient("192.168.2.174", ViscaCameraClient.DefaultPort, "cam-1");
+            _cam2 = new ViscaCameraClient("192.168.2.173", ViscaCameraClient.DefaultPort, "cam-2");
         }
 
         public void Initialize()
