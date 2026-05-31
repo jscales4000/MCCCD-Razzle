@@ -88,8 +88,20 @@ export const SIGNALS = {
   shutdownCountdown:  `${ROOM_NAME}.ShutdownCountdown`,   // analog feedback (minutes)
 
   camSendToVtc:       `${ROOM_NAME}.CamSendToVtc`,        // digital pulse
-  camTrackingMode:    `${ROOM_NAME}.CamTrackingMode`,     // analog set (1/2/3)
-  camTrackingModeFb:  `${ROOM_NAME}.CamTrackingModeFb`,
+  // Camera framing / Q&A USB switch / shots / live coordinates (v2)
+  camPresenterFraming:   `${ROOM_NAME}.CamPresenterFraming`,   // digital toggle (I20 80/81)
+  camPresenterFramingFb: `${ROOM_NAME}.CamPresenterFramingFb`, // digital fb (polled)
+  camUsbOutput:          `${ROOM_NAME}.CamUsbOutput`,          // analog 1/2/3 = Presenter/Group/Auto (I12)
+  camUsbOutputFb:        `${ROOM_NAME}.CamUsbOutputFb`,
+  camPresetZone:         `${ROOM_NAME}.CamPresetZone`,         // analog 1-4 (I20 101-104)
+  camPresetZoneFb:       `${ROOM_NAME}.CamPresetZoneFb`,
+  camTrackingProfile:    `${ROOM_NAME}.CamTrackingProfile`,    // analog 1-4 (I20 105-108)
+  camTrackingProfileFb:  `${ROOM_NAME}.CamTrackingProfileFb`,
+  camHomeShot:           `${ROOM_NAME}.CamHomeShot`,           // digital pulse (recall 0)
+  camTrackingShot:       `${ROOM_NAME}.CamTrackingShot`,       // digital pulse (recall 1)
+  camPanPos:             `${ROOM_NAME}.CamPanPos`,             // analog fb (raw ushort; signed in UI)
+  camTiltPos:            `${ROOM_NAME}.CamTiltPos`,            // analog fb
+  camZoomPos:            `${ROOM_NAME}.CamZoomPos`,            // analog fb (0-16384)
 
   // (NvxAutoSwitchSrc dropped in v1.1 — HDMI/USB-C merged into single Laptop button)
 
