@@ -50,8 +50,8 @@ namespace MCCCD_AA140.Debug
             { "sony-2",   new Entry { Host = "192.168.2.192", Enabled = false } },
             { "newline",  new Entry { Host = "192.168.2.195", Enabled = false } },
             { "airmedia", new Entry { Host = "192.168.1.177", Enabled = true  } },
-            { "cam-1",    new Entry { Host = "192.168.2.172", Enabled = true  } },
-            { "cam-2",    new Entry { Host = "192.168.2.173", Enabled = true  } },
+            { "cam-1",    new Entry { Host = "192.168.1.174", Enabled = true  } },
+            { "cam-2",    new Entry { Host = "192.168.1.173", Enabled = true  } },
         };
 
         private readonly string _path;

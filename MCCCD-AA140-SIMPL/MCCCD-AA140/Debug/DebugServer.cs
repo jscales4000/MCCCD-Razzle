@@ -294,8 +294,8 @@ namespace MCCCD_AA140.Debug
                     case "p300":     _audio?.ApplyConfig(host, enabled);       break;
                     case "mxa-a":    _mxa?.ApplyConfigA(host, enabled);         break;
                     case "mxa-b":    _mxa?.ApplyConfigB(host, enabled);         break;
-                    case "cam-1":    _cameras?.SetCameraIp(1, host);            break;
-                    case "cam-2":    _cameras?.SetCameraIp(2, host);            break;
+                    case "cam-1":    _cameras?.ApplyConfig(1, host, enabled);   break;
+                    case "cam-2":    _cameras?.ApplyConfig(2, host, enabled);   break;
                     case "sony-1":   _projectors?.ApplyConfig1(host, enabled); break;
                     case "sony-2":   _projectors?.ApplyConfig2(host, enabled); break;
                     case "newline":  _newline?.ApplyConfig(host, enabled);      break;

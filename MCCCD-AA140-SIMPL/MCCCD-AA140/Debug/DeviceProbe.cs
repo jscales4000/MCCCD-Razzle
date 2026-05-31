@@ -29,11 +29,13 @@ namespace MCCCD_AA140.Debug
             { "sony-1",  53595 },
             { "sony-2",  53595 },
             { "newline", 6688 },
+            { "cam-1",   5500 },  // 1Beyond IV-CAM VISCA-over-IP
+            { "cam-2",   5500 },
         };
 
         // REST devices probed over HTTP.
         private static readonly HashSet<string> HttpKeys = new HashSet<string> {
-            "cam-1", "cam-2", "airmedia",
+            "airmedia",
         };
 
         public static Result Probe(string key, string host)
