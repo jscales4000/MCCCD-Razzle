@@ -6,315 +6,95 @@ using Crestron.SimplSharpPro;
 
 namespace MCCCD_AA140
 {
-    /// <summary>
-    /// Digital feedback - true when processor sees this panel
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - lav mic muted state
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - handheld mic muted state
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - true when system is ON (drives power-button enlarged variant)
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - D1 actually powered on (NVX D200 sink-connected)
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - D2 actually powered on
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - D3 actually powered on
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - ceiling 1 muted state
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - ceiling 2 muted state
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - ceiling 3 muted state
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - lav signal-present (mic detected)
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - handheld signal-present
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - ceiling 1 signal-present
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - ceiling 2 signal-present
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - ceiling 3 signal-present
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - D1 active source
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - D2 active source
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - D3 active source
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - 1=D1 owns audio, 2=D2 owns audio
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - current tracking mode (1/2/3)
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - 0=vacant, 1=occupied, 2=shutdown-pending
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - minutes remaining until system-off
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - lav input gain trim
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - handheld input gain trim
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 1 input gain trim
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 2 input gain trim
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 3 input gain trim
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - lav line-out level
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - handheld line-out level
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 1 line-out level
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 2 line-out level
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 3 line-out level
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - lav real-time level 0-100 (~10-30 Hz)
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - handheld real-time level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 1 real-time level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 2 real-time level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - ceiling 3 real-time level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog feedback - D4 active source
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - toggle system on/off
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - one-shot push of D1 source to D3
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - one-shot push of D2 source to D3
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - master program volume up
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - master program volume down
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - toggle master program mute
-    /// </summary>
-    /// <summary>
-    /// Digital level - lav mic mute on/off
-    /// </summary>
-    /// <summary>
-    /// Digital level - handheld mic mute on/off
-    /// </summary>
-    /// <summary>
-    /// Digital level - press-and-hold pan/tilt up
-    /// </summary>
-    /// <summary>
-    /// Digital level - press-and-hold pan/tilt down
-    /// </summary>
-    /// <summary>
-    /// Digital level - press-and-hold pan left
-    /// </summary>
-    /// <summary>
-    /// Digital level - press-and-hold pan right
-    /// </summary>
-    /// <summary>
-    /// Digital pulse - set active camera as VTC ingest source
-    /// </summary>
-    /// <summary>
-    /// Digital level - press-and-hold zoom in on active camera
-    /// </summary>
-    /// <summary>
-    /// Digital level - press-and-hold zoom out
-    /// </summary>
-    /// <summary>
-    /// Digital level - TCCM ceiling 1 mute (settings only)
-    /// </summary>
-    /// <summary>
-    /// Digital level - TCCM ceiling 2 mute
-    /// </summary>
-    /// <summary>
-    /// Digital level - TCCM ceiling 3 mute
-    /// </summary>
-    /// <summary>
-    /// Analog set - D1 source (1=RoomPC,2=ExtPC,3=AirMedia,4=Laptop)
-    /// </summary>
-    /// <summary>
-    /// Analog set - D2 source
-    /// </summary>
-    /// <summary>
-    /// Analog set - D3 source (independent after boot init)
-    /// </summary>
-    /// <summary>
-    /// Analog set - 1=D1 owns audio, 2=D2 owns audio (D3 never)
-    /// </summary>
-    /// <summary>
-    /// Analog set - 1=Front i20, 2=BackL i12, 3=BackR i12
-    /// </summary>
-    /// <summary>
-    /// Analog set - recall preset 1/2/3 on active camera (tap)
-    /// </summary>
-    /// <summary>
-    /// Analog set - save preset 1/2/3 on active camera (3s hold)
-    /// </summary>
-    /// <summary>
-    /// Analog set - delete preset (deferred to v2)
-    /// </summary>
-    /// <summary>
-    /// Analog set - 1=People, 2=Group, 3=VX AutoSwitch
-    /// </summary>
-    /// <summary>
-    /// Analog set - lav input gain trim 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - handheld input gain trim 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - ceiling 1 input gain trim 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - ceiling 2 input gain trim 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - ceiling 3 input gain trim 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - lav line-out level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - handheld line-out level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - ceiling 1 line-out level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - ceiling 2 line-out level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - ceiling 3 line-out level 0-100
-    /// </summary>
-    /// <summary>
-    /// Analog set - D4 podium confidence monitor source (default = D3 source at PowerUp; independent runtime)
-    /// </summary>
     public interface IMain
     {
         object UserObject { get; set; }
 
-        event EventHandler<UIEventArgs> PanelOnline;
-        event EventHandler<UIEventArgs> MicLavMuteFb;
-        event EventHandler<UIEventArgs> MicHandheldMuteFb;
-        event EventHandler<UIEventArgs> SystemPowerFb;
-        event EventHandler<UIEventArgs> Display1PowerFb;
-        event EventHandler<UIEventArgs> Display2PowerFb;
-        event EventHandler<UIEventArgs> Display3PowerFb;
-        event EventHandler<UIEventArgs> MicCeiling1MuteFb;
-        event EventHandler<UIEventArgs> MicCeiling2MuteFb;
-        event EventHandler<UIEventArgs> MicCeiling3MuteFb;
-        event EventHandler<UIEventArgs> MicLavConnected;
-        event EventHandler<UIEventArgs> MicHandheldConnected;
-        event EventHandler<UIEventArgs> MicCeiling1Connected;
-        event EventHandler<UIEventArgs> MicCeiling2Connected;
-        event EventHandler<UIEventArgs> MicCeiling3Connected;
-        event EventHandler<UIEventArgs> Display1SourceFb;
-        event EventHandler<UIEventArgs> Display2SourceFb;
-        event EventHandler<UIEventArgs> Display3SourceFb;
-        event EventHandler<UIEventArgs> AudioOutputSelectFb;
-        event EventHandler<UIEventArgs> CamTrackingModeFb;
-        event EventHandler<UIEventArgs> OccupancyState;
-        event EventHandler<UIEventArgs> ShutdownCountdown;
-        event EventHandler<UIEventArgs> MicLavTrimFb;
-        event EventHandler<UIEventArgs> MicHandheldTrimFb;
-        event EventHandler<UIEventArgs> MicCeiling1TrimFb;
-        event EventHandler<UIEventArgs> MicCeiling2TrimFb;
-        event EventHandler<UIEventArgs> MicCeiling3TrimFb;
-        event EventHandler<UIEventArgs> MicLavLineOutFb;
-        event EventHandler<UIEventArgs> MicHandheldLineOutFb;
-        event EventHandler<UIEventArgs> MicCeiling1LineOutFb;
-        event EventHandler<UIEventArgs> MicCeiling2LineOutFb;
-        event EventHandler<UIEventArgs> MicCeiling3LineOutFb;
-        event EventHandler<UIEventArgs> MicLavLevel;
-        event EventHandler<UIEventArgs> MicHandheldLevel;
-        event EventHandler<UIEventArgs> MicCeiling1Level;
-        event EventHandler<UIEventArgs> MicCeiling2Level;
-        event EventHandler<UIEventArgs> MicCeiling3Level;
-        event EventHandler<UIEventArgs> Display4SourceFb;
+        event EventHandler<UIEventArgs> MicLavMute;
+        event EventHandler<UIEventArgs> MicHandheldMute;
+        event EventHandler<UIEventArgs> MicCeiling1Mute;
+        event EventHandler<UIEventArgs> MicCeiling2Mute;
+        event EventHandler<UIEventArgs> MicCeiling3Mute;
+        event EventHandler<UIEventArgs> DisplayPower;
+        event EventHandler<UIEventArgs> D1MirrorToD3;
+        event EventHandler<UIEventArgs> D2MirrorToD3;
+        event EventHandler<UIEventArgs> VolumeUp;
+        event EventHandler<UIEventArgs> VolumeDown;
+        event EventHandler<UIEventArgs> MuteAll;
+        event EventHandler<UIEventArgs> PtzUp;
+        event EventHandler<UIEventArgs> PtzDown;
+        event EventHandler<UIEventArgs> PtzLeft;
+        event EventHandler<UIEventArgs> PtzRight;
+        event EventHandler<UIEventArgs> CamSendToVtc;
+        event EventHandler<UIEventArgs> ZoomIn;
+        event EventHandler<UIEventArgs> ZoomOut;
+        event EventHandler<UIEventArgs> Display1Source;
+        event EventHandler<UIEventArgs> Display2Source;
+        event EventHandler<UIEventArgs> Display3Source;
+        event EventHandler<UIEventArgs> Display4Source;
+        event EventHandler<UIEventArgs> AudioOutputSelect;
+        event EventHandler<UIEventArgs> CamTrackingMode;
+        event EventHandler<UIEventArgs> MicLavTrim;
+        event EventHandler<UIEventArgs> MicHandheldTrim;
+        event EventHandler<UIEventArgs> MicCeiling1Trim;
+        event EventHandler<UIEventArgs> MicCeiling2Trim;
+        event EventHandler<UIEventArgs> MicCeiling3Trim;
+        event EventHandler<UIEventArgs> MicLavLineOut;
+        event EventHandler<UIEventArgs> MicHandheldLineOut;
+        event EventHandler<UIEventArgs> MicCeiling1LineOut;
+        event EventHandler<UIEventArgs> MicCeiling2LineOut;
+        event EventHandler<UIEventArgs> MicCeiling3LineOut;
+        event EventHandler<UIEventArgs> CameraSelect;
+        event EventHandler<UIEventArgs> ShotPresetRecall;
+        event EventHandler<UIEventArgs> ShotPresetSave;
+        event EventHandler<UIEventArgs> ShotPresetDelete;
 
-        void DisplayPower(MainBoolInputSigDelegate callback);
-        void D1MirrorToD3(MainBoolInputSigDelegate callback);
-        void D2MirrorToD3(MainBoolInputSigDelegate callback);
-        void VolumeUp(MainBoolInputSigDelegate callback);
-        void VolumeDown(MainBoolInputSigDelegate callback);
-        void MuteAll(MainBoolInputSigDelegate callback);
-        void MicLavMute(MainBoolInputSigDelegate callback);
-        void MicHandheldMute(MainBoolInputSigDelegate callback);
-        void PtzUp(MainBoolInputSigDelegate callback);
-        void PtzDown(MainBoolInputSigDelegate callback);
-        void PtzLeft(MainBoolInputSigDelegate callback);
-        void PtzRight(MainBoolInputSigDelegate callback);
-        void CamSendToVtc(MainBoolInputSigDelegate callback);
-        void ZoomIn(MainBoolInputSigDelegate callback);
-        void ZoomOut(MainBoolInputSigDelegate callback);
-        void MicCeiling1Mute(MainBoolInputSigDelegate callback);
-        void MicCeiling2Mute(MainBoolInputSigDelegate callback);
-        void MicCeiling3Mute(MainBoolInputSigDelegate callback);
-        void Display1Source(MainUShortInputSigDelegate callback);
-        void Display2Source(MainUShortInputSigDelegate callback);
-        void Display3Source(MainUShortInputSigDelegate callback);
-        void AudioOutputSelect(MainUShortInputSigDelegate callback);
-        void CameraSelect(MainUShortInputSigDelegate callback);
-        void ShotPresetRecall(MainUShortInputSigDelegate callback);
-        void ShotPresetSave(MainUShortInputSigDelegate callback);
-        void ShotPresetDelete(MainUShortInputSigDelegate callback);
-        void CamTrackingMode(MainUShortInputSigDelegate callback);
-        void MicLavTrim(MainUShortInputSigDelegate callback);
-        void MicHandheldTrim(MainUShortInputSigDelegate callback);
-        void MicCeiling1Trim(MainUShortInputSigDelegate callback);
-        void MicCeiling2Trim(MainUShortInputSigDelegate callback);
-        void MicCeiling3Trim(MainUShortInputSigDelegate callback);
-        void MicLavLineOut(MainUShortInputSigDelegate callback);
-        void MicHandheldLineOut(MainUShortInputSigDelegate callback);
-        void MicCeiling1LineOut(MainUShortInputSigDelegate callback);
-        void MicCeiling2LineOut(MainUShortInputSigDelegate callback);
-        void MicCeiling3LineOut(MainUShortInputSigDelegate callback);
-        void Display4Source(MainUShortInputSigDelegate callback);
+        void MicLavMuteFb(MainBoolInputSigDelegate callback);
+        void MicHandheldMuteFb(MainBoolInputSigDelegate callback);
+        void MicCeiling1MuteFb(MainBoolInputSigDelegate callback);
+        void MicCeiling2MuteFb(MainBoolInputSigDelegate callback);
+        void MicCeiling3MuteFb(MainBoolInputSigDelegate callback);
+        void PanelOnline(MainBoolInputSigDelegate callback);
+        void SystemPowerFb(MainBoolInputSigDelegate callback);
+        void Display1PowerFb(MainBoolInputSigDelegate callback);
+        void Display2PowerFb(MainBoolInputSigDelegate callback);
+        void Display3PowerFb(MainBoolInputSigDelegate callback);
+        void MicLavConnected(MainBoolInputSigDelegate callback);
+        void MicHandheldConnected(MainBoolInputSigDelegate callback);
+        void MicCeiling1Connected(MainBoolInputSigDelegate callback);
+        void MicCeiling2Connected(MainBoolInputSigDelegate callback);
+        void MicCeiling3Connected(MainBoolInputSigDelegate callback);
+        void RoomPcSync(MainBoolInputSigDelegate callback);
+        void ExtPcSync(MainBoolInputSigDelegate callback);
+        void AirMediaSync(MainBoolInputSigDelegate callback);
+        void AirMediaMiracast(MainBoolInputSigDelegate callback);
+        void AirMediaAirPlay(MainBoolInputSigDelegate callback);
+        void AirMediaTx3(MainBoolInputSigDelegate callback);
+        void LaptopHdmiSync(MainBoolInputSigDelegate callback);
+        void LaptopUsbcSync(MainBoolInputSigDelegate callback);
+        void Display1SourceFb(MainUShortInputSigDelegate callback);
+        void Display2SourceFb(MainUShortInputSigDelegate callback);
+        void Display3SourceFb(MainUShortInputSigDelegate callback);
+        void Display4SourceFb(MainUShortInputSigDelegate callback);
+        void AudioOutputSelectFb(MainUShortInputSigDelegate callback);
+        void CamTrackingModeFb(MainUShortInputSigDelegate callback);
+        void MicLavTrimFb(MainUShortInputSigDelegate callback);
+        void MicHandheldTrimFb(MainUShortInputSigDelegate callback);
+        void MicCeiling1TrimFb(MainUShortInputSigDelegate callback);
+        void MicCeiling2TrimFb(MainUShortInputSigDelegate callback);
+        void MicCeiling3TrimFb(MainUShortInputSigDelegate callback);
+        void MicLavLineOutFb(MainUShortInputSigDelegate callback);
+        void MicHandheldLineOutFb(MainUShortInputSigDelegate callback);
+        void MicCeiling1LineOutFb(MainUShortInputSigDelegate callback);
+        void MicCeiling2LineOutFb(MainUShortInputSigDelegate callback);
+        void MicCeiling3LineOutFb(MainUShortInputSigDelegate callback);
+        void OccupancyState(MainUShortInputSigDelegate callback);
+        void ShutdownCountdown(MainUShortInputSigDelegate callback);
+        void MicLavLevel(MainUShortInputSigDelegate callback);
+        void MicHandheldLevel(MainUShortInputSigDelegate callback);
+        void MicCeiling1Level(MainUShortInputSigDelegate callback);
+        void MicCeiling2Level(MainUShortInputSigDelegate callback);
+        void MicCeiling3Level(MainUShortInputSigDelegate callback);
 
     }
 
@@ -342,87 +122,95 @@ namespace MCCCD_AA140
         {
             internal static class Booleans
             {
-                public const uint PanelOnline = 1;
-                public const uint MicLavMuteFb = 2;
-                public const uint MicHandheldMuteFb = 3;
-                public const uint SystemPowerFb = 4;
-                public const uint Display1PowerFb = 5;
-                public const uint Display2PowerFb = 6;
-                public const uint Display3PowerFb = 7;
-                public const uint MicCeiling1MuteFb = 8;
-                public const uint MicCeiling2MuteFb = 9;
-                public const uint MicCeiling3MuteFb = 10;
-                public const uint MicLavConnected = 11;
-                public const uint MicHandheldConnected = 12;
-                public const uint MicCeiling1Connected = 13;
-                public const uint MicCeiling2Connected = 14;
-                public const uint MicCeiling3Connected = 15;
+                public const uint MicLavMute = 1;
+                public const uint MicHandheldMute = 2;
+                public const uint MicCeiling1Mute = 3;
+                public const uint MicCeiling2Mute = 4;
+                public const uint MicCeiling3Mute = 5;
+                public const uint DisplayPower = 6;
+                public const uint D1MirrorToD3 = 7;
+                public const uint D2MirrorToD3 = 8;
+                public const uint VolumeUp = 9;
+                public const uint VolumeDown = 10;
+                public const uint MuteAll = 11;
+                public const uint PtzUp = 12;
+                public const uint PtzDown = 13;
+                public const uint PtzLeft = 14;
+                public const uint PtzRight = 15;
+                public const uint CamSendToVtc = 16;
+                public const uint ZoomIn = 17;
+                public const uint ZoomOut = 18;
 
-                public const uint DisplayPower = 1;
-                public const uint D1MirrorToD3 = 2;
-                public const uint D2MirrorToD3 = 3;
-                public const uint VolumeUp = 4;
-                public const uint VolumeDown = 5;
-                public const uint MuteAll = 6;
-                public const uint MicLavMute = 7;
-                public const uint MicHandheldMute = 8;
-                public const uint PtzUp = 9;
-                public const uint PtzDown = 10;
-                public const uint PtzLeft = 11;
-                public const uint PtzRight = 12;
-                public const uint CamSendToVtc = 13;
-                public const uint ZoomIn = 14;
-                public const uint ZoomOut = 15;
-                public const uint MicCeiling1Mute = 16;
-                public const uint MicCeiling2Mute = 17;
-                public const uint MicCeiling3Mute = 18;
+                public const uint MicLavMuteFb = 1;
+                public const uint MicHandheldMuteFb = 2;
+                public const uint MicCeiling1MuteFb = 3;
+                public const uint MicCeiling2MuteFb = 4;
+                public const uint MicCeiling3MuteFb = 5;
+                public const uint PanelOnline = 19;
+                public const uint SystemPowerFb = 20;
+                public const uint Display1PowerFb = 21;
+                public const uint Display2PowerFb = 22;
+                public const uint Display3PowerFb = 23;
+                public const uint MicLavConnected = 24;
+                public const uint MicHandheldConnected = 25;
+                public const uint MicCeiling1Connected = 26;
+                public const uint MicCeiling2Connected = 27;
+                public const uint MicCeiling3Connected = 28;
+                public const uint RoomPcSync = 29;
+                public const uint ExtPcSync = 30;
+                public const uint AirMediaSync = 31;
+                public const uint AirMediaMiracast = 32;
+                public const uint AirMediaAirPlay = 33;
+                public const uint AirMediaTx3 = 34;
+                public const uint LaptopHdmiSync = 35;
+                public const uint LaptopUsbcSync = 36;
             }
             internal static class Numerics
             {
-                public const uint Display1SourceFb = 1;
-                public const uint Display2SourceFb = 2;
-                public const uint Display3SourceFb = 3;
-                public const uint AudioOutputSelectFb = 4;
-                public const uint CamTrackingModeFb = 5;
-                public const uint OccupancyState = 6;
-                public const uint ShutdownCountdown = 7;
-                public const uint MicLavTrimFb = 8;
-                public const uint MicHandheldTrimFb = 9;
-                public const uint MicCeiling1TrimFb = 10;
-                public const uint MicCeiling2TrimFb = 11;
-                public const uint MicCeiling3TrimFb = 12;
-                public const uint MicLavLineOutFb = 13;
-                public const uint MicHandheldLineOutFb = 14;
-                public const uint MicCeiling1LineOutFb = 15;
-                public const uint MicCeiling2LineOutFb = 16;
-                public const uint MicCeiling3LineOutFb = 17;
-                public const uint MicLavLevel = 18;
-                public const uint MicHandheldLevel = 19;
-                public const uint MicCeiling1Level = 20;
-                public const uint MicCeiling2Level = 21;
-                public const uint MicCeiling3Level = 22;
-                public const uint Display4SourceFb = 23;
-
                 public const uint Display1Source = 1;
                 public const uint Display2Source = 2;
                 public const uint Display3Source = 3;
-                public const uint AudioOutputSelect = 4;
-                public const uint CameraSelect = 5;
-                public const uint ShotPresetRecall = 6;
-                public const uint ShotPresetSave = 7;
-                public const uint ShotPresetDelete = 8;
-                public const uint CamTrackingMode = 9;
-                public const uint MicLavTrim = 10;
-                public const uint MicHandheldTrim = 11;
-                public const uint MicCeiling1Trim = 12;
-                public const uint MicCeiling2Trim = 13;
-                public const uint MicCeiling3Trim = 14;
-                public const uint MicLavLineOut = 15;
-                public const uint MicHandheldLineOut = 16;
-                public const uint MicCeiling1LineOut = 17;
-                public const uint MicCeiling2LineOut = 18;
-                public const uint MicCeiling3LineOut = 19;
-                public const uint Display4Source = 20;
+                public const uint Display4Source = 4;
+                public const uint AudioOutputSelect = 5;
+                public const uint CamTrackingMode = 6;
+                public const uint MicLavTrim = 7;
+                public const uint MicHandheldTrim = 8;
+                public const uint MicCeiling1Trim = 9;
+                public const uint MicCeiling2Trim = 10;
+                public const uint MicCeiling3Trim = 11;
+                public const uint MicLavLineOut = 12;
+                public const uint MicHandheldLineOut = 13;
+                public const uint MicCeiling1LineOut = 14;
+                public const uint MicCeiling2LineOut = 15;
+                public const uint MicCeiling3LineOut = 16;
+                public const uint CameraSelect = 17;
+                public const uint ShotPresetRecall = 18;
+                public const uint ShotPresetSave = 19;
+                public const uint ShotPresetDelete = 20;
+
+                public const uint Display1SourceFb = 1;
+                public const uint Display2SourceFb = 2;
+                public const uint Display3SourceFb = 3;
+                public const uint Display4SourceFb = 4;
+                public const uint AudioOutputSelectFb = 5;
+                public const uint CamTrackingModeFb = 6;
+                public const uint MicLavTrimFb = 7;
+                public const uint MicHandheldTrimFb = 8;
+                public const uint MicCeiling1TrimFb = 9;
+                public const uint MicCeiling2TrimFb = 10;
+                public const uint MicCeiling3TrimFb = 11;
+                public const uint MicLavLineOutFb = 12;
+                public const uint MicHandheldLineOutFb = 13;
+                public const uint MicCeiling1LineOutFb = 14;
+                public const uint MicCeiling2LineOutFb = 15;
+                public const uint MicCeiling3LineOutFb = 16;
+                public const uint OccupancyState = 21;
+                public const uint ShutdownCountdown = 22;
+                public const uint MicLavLevel = 23;
+                public const uint MicHandheldLevel = 24;
+                public const uint MicCeiling1Level = 25;
+                public const uint MicCeiling2Level = 26;
+                public const uint MicCeiling3Level = 27;
             }
         }
 
@@ -442,44 +230,44 @@ namespace MCCCD_AA140
  
             _devices = new List<BasicTriListWithSmartObject>(); 
  
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.PanelOnline, onPanelOnline);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicLavMuteFb, onMicLavMuteFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicHandheldMuteFb, onMicHandheldMuteFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.SystemPowerFb, onSystemPowerFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.Display1PowerFb, onDisplay1PowerFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.Display2PowerFb, onDisplay2PowerFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.Display3PowerFb, onDisplay3PowerFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling1MuteFb, onMicCeiling1MuteFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling2MuteFb, onMicCeiling2MuteFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling3MuteFb, onMicCeiling3MuteFb);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicLavConnected, onMicLavConnected);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicHandheldConnected, onMicHandheldConnected);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling1Connected, onMicCeiling1Connected);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling2Connected, onMicCeiling2Connected);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling3Connected, onMicCeiling3Connected);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display1SourceFb, onDisplay1SourceFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display2SourceFb, onDisplay2SourceFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display3SourceFb, onDisplay3SourceFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.AudioOutputSelectFb, onAudioOutputSelectFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamTrackingModeFb, onCamTrackingModeFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.OccupancyState, onOccupancyState);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.ShutdownCountdown, onShutdownCountdown);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavTrimFb, onMicLavTrimFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicHandheldTrimFb, onMicHandheldTrimFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling1TrimFb, onMicCeiling1TrimFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling2TrimFb, onMicCeiling2TrimFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling3TrimFb, onMicCeiling3TrimFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavLineOutFb, onMicLavLineOutFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicHandheldLineOutFb, onMicHandheldLineOutFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling1LineOutFb, onMicCeiling1LineOutFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling2LineOutFb, onMicCeiling2LineOutFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling3LineOutFb, onMicCeiling3LineOutFb);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavLevel, onMicLavLevel);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicHandheldLevel, onMicHandheldLevel);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling1Level, onMicCeiling1Level);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling2Level, onMicCeiling2Level);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling3Level, onMicCeiling3Level);
-            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display4SourceFb, onDisplay4SourceFb);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicLavMute, onMicLavMute);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicHandheldMute, onMicHandheldMute);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling1Mute, onMicCeiling1Mute);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling2Mute, onMicCeiling2Mute);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling3Mute, onMicCeiling3Mute);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.DisplayPower, onDisplayPower);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.D1MirrorToD3, onD1MirrorToD3);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.D2MirrorToD3, onD2MirrorToD3);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.VolumeUp, onVolumeUp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.VolumeDown, onVolumeDown);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MuteAll, onMuteAll);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.PtzUp, onPtzUp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.PtzDown, onPtzDown);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.PtzLeft, onPtzLeft);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.PtzRight, onPtzRight);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.CamSendToVtc, onCamSendToVtc);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ZoomIn, onZoomIn);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ZoomOut, onZoomOut);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display1Source, onDisplay1Source);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display2Source, onDisplay2Source);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display3Source, onDisplay3Source);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display4Source, onDisplay4Source);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.AudioOutputSelect, onAudioOutputSelect);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamTrackingMode, onCamTrackingMode);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavTrim, onMicLavTrim);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicHandheldTrim, onMicHandheldTrim);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling1Trim, onMicCeiling1Trim);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling2Trim, onMicCeiling2Trim);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling3Trim, onMicCeiling3Trim);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavLineOut, onMicLavLineOut);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicHandheldLineOut, onMicHandheldLineOut);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling1LineOut, onMicCeiling1LineOut);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling2LineOut, onMicCeiling2LineOut);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicCeiling3LineOut, onMicCeiling3LineOut);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CameraSelect, onCameraSelect);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.ShotPresetRecall, onShotPresetRecall);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.ShotPresetSave, onShotPresetSave);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.ShotPresetDelete, onShotPresetDelete);
 
         }
 
@@ -499,613 +287,677 @@ namespace MCCCD_AA140
 
         #region CH5 Contract
 
-        public event EventHandler<UIEventArgs> PanelOnline;
-        private void onPanelOnline(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicLavMute;
+        private void onMicLavMute(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = PanelOnline;
+            EventHandler<UIEventArgs> handler = MicLavMute;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicLavMuteFb;
-        private void onMicLavMuteFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicHandheldMute;
+        private void onMicHandheldMute(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicLavMuteFb;
+            EventHandler<UIEventArgs> handler = MicHandheldMute;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicHandheldMuteFb;
-        private void onMicHandheldMuteFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling1Mute;
+        private void onMicCeiling1Mute(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicHandheldMuteFb;
+            EventHandler<UIEventArgs> handler = MicCeiling1Mute;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> SystemPowerFb;
-        private void onSystemPowerFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling2Mute;
+        private void onMicCeiling2Mute(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = SystemPowerFb;
+            EventHandler<UIEventArgs> handler = MicCeiling2Mute;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> Display1PowerFb;
-        private void onDisplay1PowerFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling3Mute;
+        private void onMicCeiling3Mute(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = Display1PowerFb;
+            EventHandler<UIEventArgs> handler = MicCeiling3Mute;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> Display2PowerFb;
-        private void onDisplay2PowerFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> DisplayPower;
+        private void onDisplayPower(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = Display2PowerFb;
+            EventHandler<UIEventArgs> handler = DisplayPower;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> Display3PowerFb;
-        private void onDisplay3PowerFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> D1MirrorToD3;
+        private void onD1MirrorToD3(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = Display3PowerFb;
+            EventHandler<UIEventArgs> handler = D1MirrorToD3;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling1MuteFb;
-        private void onMicCeiling1MuteFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> D2MirrorToD3;
+        private void onD2MirrorToD3(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling1MuteFb;
+            EventHandler<UIEventArgs> handler = D2MirrorToD3;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling2MuteFb;
-        private void onMicCeiling2MuteFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> VolumeUp;
+        private void onVolumeUp(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling2MuteFb;
+            EventHandler<UIEventArgs> handler = VolumeUp;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling3MuteFb;
-        private void onMicCeiling3MuteFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> VolumeDown;
+        private void onVolumeDown(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling3MuteFb;
+            EventHandler<UIEventArgs> handler = VolumeDown;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicLavConnected;
-        private void onMicLavConnected(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MuteAll;
+        private void onMuteAll(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicLavConnected;
+            EventHandler<UIEventArgs> handler = MuteAll;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicHandheldConnected;
-        private void onMicHandheldConnected(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> PtzUp;
+        private void onPtzUp(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicHandheldConnected;
+            EventHandler<UIEventArgs> handler = PtzUp;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling1Connected;
-        private void onMicCeiling1Connected(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> PtzDown;
+        private void onPtzDown(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling1Connected;
+            EventHandler<UIEventArgs> handler = PtzDown;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling2Connected;
-        private void onMicCeiling2Connected(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> PtzLeft;
+        private void onPtzLeft(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling2Connected;
+            EventHandler<UIEventArgs> handler = PtzLeft;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling3Connected;
-        private void onMicCeiling3Connected(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> PtzRight;
+        private void onPtzRight(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling3Connected;
+            EventHandler<UIEventArgs> handler = PtzRight;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> CamSendToVtc;
+        private void onCamSendToVtc(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = CamSendToVtc;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> ZoomIn;
+        private void onZoomIn(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = ZoomIn;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> ZoomOut;
+        private void onZoomOut(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = ZoomOut;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
 
-        public void DisplayPower(MainBoolInputSigDelegate callback)
+        public void MicLavMuteFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.DisplayPower], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicLavMuteFb], this);
             }
         }
 
-        public void D1MirrorToD3(MainBoolInputSigDelegate callback)
+        public void MicHandheldMuteFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.D1MirrorToD3], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicHandheldMuteFb], this);
             }
         }
 
-        public void D2MirrorToD3(MainBoolInputSigDelegate callback)
+        public void MicCeiling1MuteFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.D2MirrorToD3], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling1MuteFb], this);
             }
         }
 
-        public void VolumeUp(MainBoolInputSigDelegate callback)
+        public void MicCeiling2MuteFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.VolumeUp], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling2MuteFb], this);
             }
         }
 
-        public void VolumeDown(MainBoolInputSigDelegate callback)
+        public void MicCeiling3MuteFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.VolumeDown], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling3MuteFb], this);
             }
         }
 
-        public void MuteAll(MainBoolInputSigDelegate callback)
+        public void PanelOnline(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MuteAll], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.PanelOnline], this);
             }
         }
 
-        public void MicLavMute(MainBoolInputSigDelegate callback)
+        public void SystemPowerFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicLavMute], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.SystemPowerFb], this);
             }
         }
 
-        public void MicHandheldMute(MainBoolInputSigDelegate callback)
+        public void Display1PowerFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicHandheldMute], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.Display1PowerFb], this);
             }
         }
 
-        public void PtzUp(MainBoolInputSigDelegate callback)
+        public void Display2PowerFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.PtzUp], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.Display2PowerFb], this);
             }
         }
 
-        public void PtzDown(MainBoolInputSigDelegate callback)
+        public void Display3PowerFb(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.PtzDown], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.Display3PowerFb], this);
             }
         }
 
-        public void PtzLeft(MainBoolInputSigDelegate callback)
+        public void MicLavConnected(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.PtzLeft], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicLavConnected], this);
             }
         }
 
-        public void PtzRight(MainBoolInputSigDelegate callback)
+        public void MicHandheldConnected(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.PtzRight], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicHandheldConnected], this);
             }
         }
 
-        public void CamSendToVtc(MainBoolInputSigDelegate callback)
+        public void MicCeiling1Connected(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.CamSendToVtc], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling1Connected], this);
             }
         }
 
-        public void ZoomIn(MainBoolInputSigDelegate callback)
+        public void MicCeiling2Connected(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.ZoomIn], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling2Connected], this);
             }
         }
 
-        public void ZoomOut(MainBoolInputSigDelegate callback)
+        public void MicCeiling3Connected(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.ZoomOut], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling3Connected], this);
             }
         }
 
-        public void MicCeiling1Mute(MainBoolInputSigDelegate callback)
+        public void RoomPcSync(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling1Mute], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.RoomPcSync], this);
             }
         }
 
-        public void MicCeiling2Mute(MainBoolInputSigDelegate callback)
+        public void ExtPcSync(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling2Mute], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.ExtPcSync], this);
             }
         }
 
-        public void MicCeiling3Mute(MainBoolInputSigDelegate callback)
+        public void AirMediaSync(MainBoolInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.MicCeiling3Mute], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.AirMediaSync], this);
             }
         }
 
-        public event EventHandler<UIEventArgs> Display1SourceFb;
-        private void onDisplay1SourceFb(SmartObjectEventArgs eventArgs)
+        public void AirMediaMiracast(MainBoolInputSigDelegate callback)
         {
-            EventHandler<UIEventArgs> handler = Display1SourceFb;
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.AirMediaMiracast], this);
+            }
+        }
+
+        public void AirMediaAirPlay(MainBoolInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.AirMediaAirPlay], this);
+            }
+        }
+
+        public void AirMediaTx3(MainBoolInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.AirMediaTx3], this);
+            }
+        }
+
+        public void LaptopHdmiSync(MainBoolInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.LaptopHdmiSync], this);
+            }
+        }
+
+        public void LaptopUsbcSync(MainBoolInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.LaptopUsbcSync], this);
+            }
+        }
+
+        public event EventHandler<UIEventArgs> Display1Source;
+        private void onDisplay1Source(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = Display1Source;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> Display2SourceFb;
-        private void onDisplay2SourceFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> Display2Source;
+        private void onDisplay2Source(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = Display2SourceFb;
+            EventHandler<UIEventArgs> handler = Display2Source;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> Display3SourceFb;
-        private void onDisplay3SourceFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> Display3Source;
+        private void onDisplay3Source(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = Display3SourceFb;
+            EventHandler<UIEventArgs> handler = Display3Source;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> AudioOutputSelectFb;
-        private void onAudioOutputSelectFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> Display4Source;
+        private void onDisplay4Source(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = AudioOutputSelectFb;
+            EventHandler<UIEventArgs> handler = Display4Source;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> CamTrackingModeFb;
-        private void onCamTrackingModeFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> AudioOutputSelect;
+        private void onAudioOutputSelect(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = CamTrackingModeFb;
+            EventHandler<UIEventArgs> handler = AudioOutputSelect;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> OccupancyState;
-        private void onOccupancyState(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> CamTrackingMode;
+        private void onCamTrackingMode(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = OccupancyState;
+            EventHandler<UIEventArgs> handler = CamTrackingMode;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> ShutdownCountdown;
-        private void onShutdownCountdown(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicLavTrim;
+        private void onMicLavTrim(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = ShutdownCountdown;
+            EventHandler<UIEventArgs> handler = MicLavTrim;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicLavTrimFb;
-        private void onMicLavTrimFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicHandheldTrim;
+        private void onMicHandheldTrim(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicLavTrimFb;
+            EventHandler<UIEventArgs> handler = MicHandheldTrim;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicHandheldTrimFb;
-        private void onMicHandheldTrimFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling1Trim;
+        private void onMicCeiling1Trim(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicHandheldTrimFb;
+            EventHandler<UIEventArgs> handler = MicCeiling1Trim;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling1TrimFb;
-        private void onMicCeiling1TrimFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling2Trim;
+        private void onMicCeiling2Trim(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling1TrimFb;
+            EventHandler<UIEventArgs> handler = MicCeiling2Trim;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling2TrimFb;
-        private void onMicCeiling2TrimFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling3Trim;
+        private void onMicCeiling3Trim(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling2TrimFb;
+            EventHandler<UIEventArgs> handler = MicCeiling3Trim;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling3TrimFb;
-        private void onMicCeiling3TrimFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicLavLineOut;
+        private void onMicLavLineOut(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling3TrimFb;
+            EventHandler<UIEventArgs> handler = MicLavLineOut;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicLavLineOutFb;
-        private void onMicLavLineOutFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicHandheldLineOut;
+        private void onMicHandheldLineOut(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicLavLineOutFb;
+            EventHandler<UIEventArgs> handler = MicHandheldLineOut;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicHandheldLineOutFb;
-        private void onMicHandheldLineOutFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling1LineOut;
+        private void onMicCeiling1LineOut(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicHandheldLineOutFb;
+            EventHandler<UIEventArgs> handler = MicCeiling1LineOut;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling1LineOutFb;
-        private void onMicCeiling1LineOutFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling2LineOut;
+        private void onMicCeiling2LineOut(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling1LineOutFb;
+            EventHandler<UIEventArgs> handler = MicCeiling2LineOut;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling2LineOutFb;
-        private void onMicCeiling2LineOutFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> MicCeiling3LineOut;
+        private void onMicCeiling3LineOut(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling2LineOutFb;
+            EventHandler<UIEventArgs> handler = MicCeiling3LineOut;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling3LineOutFb;
-        private void onMicCeiling3LineOutFb(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> CameraSelect;
+        private void onCameraSelect(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling3LineOutFb;
+            EventHandler<UIEventArgs> handler = CameraSelect;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicLavLevel;
-        private void onMicLavLevel(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> ShotPresetRecall;
+        private void onShotPresetRecall(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicLavLevel;
+            EventHandler<UIEventArgs> handler = ShotPresetRecall;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicHandheldLevel;
-        private void onMicHandheldLevel(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> ShotPresetSave;
+        private void onShotPresetSave(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicHandheldLevel;
+            EventHandler<UIEventArgs> handler = ShotPresetSave;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
-        public event EventHandler<UIEventArgs> MicCeiling1Level;
-        private void onMicCeiling1Level(SmartObjectEventArgs eventArgs)
+        public event EventHandler<UIEventArgs> ShotPresetDelete;
+        private void onShotPresetDelete(SmartObjectEventArgs eventArgs)
         {
-            EventHandler<UIEventArgs> handler = MicCeiling1Level;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> MicCeiling2Level;
-        private void onMicCeiling2Level(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = MicCeiling2Level;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> MicCeiling3Level;
-        private void onMicCeiling3Level(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = MicCeiling3Level;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> Display4SourceFb;
-        private void onDisplay4SourceFb(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = Display4SourceFb;
+            EventHandler<UIEventArgs> handler = ShotPresetDelete;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
 
-        public void Display1Source(MainUShortInputSigDelegate callback)
+        public void Display1SourceFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display1Source], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display1SourceFb], this);
             }
         }
 
-        public void Display2Source(MainUShortInputSigDelegate callback)
+        public void Display2SourceFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display2Source], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display2SourceFb], this);
             }
         }
 
-        public void Display3Source(MainUShortInputSigDelegate callback)
+        public void Display3SourceFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display3Source], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display3SourceFb], this);
             }
         }
 
-        public void AudioOutputSelect(MainUShortInputSigDelegate callback)
+        public void Display4SourceFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.AudioOutputSelect], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display4SourceFb], this);
             }
         }
 
-        public void CameraSelect(MainUShortInputSigDelegate callback)
+        public void AudioOutputSelectFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CameraSelect], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.AudioOutputSelectFb], this);
             }
         }
 
-        public void ShotPresetRecall(MainUShortInputSigDelegate callback)
+        public void CamTrackingModeFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.ShotPresetRecall], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamTrackingModeFb], this);
             }
         }
 
-        public void ShotPresetSave(MainUShortInputSigDelegate callback)
+        public void MicLavTrimFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.ShotPresetSave], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicLavTrimFb], this);
             }
         }
 
-        public void ShotPresetDelete(MainUShortInputSigDelegate callback)
+        public void MicHandheldTrimFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.ShotPresetDelete], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicHandheldTrimFb], this);
             }
         }
 
-        public void CamTrackingMode(MainUShortInputSigDelegate callback)
+        public void MicCeiling1TrimFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamTrackingMode], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling1TrimFb], this);
             }
         }
 
-        public void MicLavTrim(MainUShortInputSigDelegate callback)
+        public void MicCeiling2TrimFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicLavTrim], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling2TrimFb], this);
             }
         }
 
-        public void MicHandheldTrim(MainUShortInputSigDelegate callback)
+        public void MicCeiling3TrimFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicHandheldTrim], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling3TrimFb], this);
             }
         }
 
-        public void MicCeiling1Trim(MainUShortInputSigDelegate callback)
+        public void MicLavLineOutFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling1Trim], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicLavLineOutFb], this);
             }
         }
 
-        public void MicCeiling2Trim(MainUShortInputSigDelegate callback)
+        public void MicHandheldLineOutFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling2Trim], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicHandheldLineOutFb], this);
             }
         }
 
-        public void MicCeiling3Trim(MainUShortInputSigDelegate callback)
+        public void MicCeiling1LineOutFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling3Trim], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling1LineOutFb], this);
             }
         }
 
-        public void MicLavLineOut(MainUShortInputSigDelegate callback)
+        public void MicCeiling2LineOutFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicLavLineOut], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling2LineOutFb], this);
             }
         }
 
-        public void MicHandheldLineOut(MainUShortInputSigDelegate callback)
+        public void MicCeiling3LineOutFb(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicHandheldLineOut], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling3LineOutFb], this);
             }
         }
 
-        public void MicCeiling1LineOut(MainUShortInputSigDelegate callback)
+        public void OccupancyState(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling1LineOut], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.OccupancyState], this);
             }
         }
 
-        public void MicCeiling2LineOut(MainUShortInputSigDelegate callback)
+        public void ShutdownCountdown(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling2LineOut], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.ShutdownCountdown], this);
             }
         }
 
-        public void MicCeiling3LineOut(MainUShortInputSigDelegate callback)
+        public void MicLavLevel(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling3LineOut], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicLavLevel], this);
             }
         }
 
-        public void Display4Source(MainUShortInputSigDelegate callback)
+        public void MicHandheldLevel(MainUShortInputSigDelegate callback)
         {
             for (int index = 0; index < Devices.Count; index++)
             {
-                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display4Source], this);
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicHandheldLevel], this);
+            }
+        }
+
+        public void MicCeiling1Level(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling1Level], this);
+            }
+        }
+
+        public void MicCeiling2Level(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling2Level], this);
+            }
+        }
+
+        public void MicCeiling3Level(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.MicCeiling3Level], this);
             }
         }
 
@@ -1136,44 +988,44 @@ namespace MCCCD_AA140
 
             IsDisposed = true;
 
-            PanelOnline = null;
-            MicLavMuteFb = null;
-            MicHandheldMuteFb = null;
-            SystemPowerFb = null;
-            Display1PowerFb = null;
-            Display2PowerFb = null;
-            Display3PowerFb = null;
-            MicCeiling1MuteFb = null;
-            MicCeiling2MuteFb = null;
-            MicCeiling3MuteFb = null;
-            MicLavConnected = null;
-            MicHandheldConnected = null;
-            MicCeiling1Connected = null;
-            MicCeiling2Connected = null;
-            MicCeiling3Connected = null;
-            Display1SourceFb = null;
-            Display2SourceFb = null;
-            Display3SourceFb = null;
-            AudioOutputSelectFb = null;
-            CamTrackingModeFb = null;
-            OccupancyState = null;
-            ShutdownCountdown = null;
-            MicLavTrimFb = null;
-            MicHandheldTrimFb = null;
-            MicCeiling1TrimFb = null;
-            MicCeiling2TrimFb = null;
-            MicCeiling3TrimFb = null;
-            MicLavLineOutFb = null;
-            MicHandheldLineOutFb = null;
-            MicCeiling1LineOutFb = null;
-            MicCeiling2LineOutFb = null;
-            MicCeiling3LineOutFb = null;
-            MicLavLevel = null;
-            MicHandheldLevel = null;
-            MicCeiling1Level = null;
-            MicCeiling2Level = null;
-            MicCeiling3Level = null;
-            Display4SourceFb = null;
+            MicLavMute = null;
+            MicHandheldMute = null;
+            MicCeiling1Mute = null;
+            MicCeiling2Mute = null;
+            MicCeiling3Mute = null;
+            DisplayPower = null;
+            D1MirrorToD3 = null;
+            D2MirrorToD3 = null;
+            VolumeUp = null;
+            VolumeDown = null;
+            MuteAll = null;
+            PtzUp = null;
+            PtzDown = null;
+            PtzLeft = null;
+            PtzRight = null;
+            CamSendToVtc = null;
+            ZoomIn = null;
+            ZoomOut = null;
+            Display1Source = null;
+            Display2Source = null;
+            Display3Source = null;
+            Display4Source = null;
+            AudioOutputSelect = null;
+            CamTrackingMode = null;
+            MicLavTrim = null;
+            MicHandheldTrim = null;
+            MicCeiling1Trim = null;
+            MicCeiling2Trim = null;
+            MicCeiling3Trim = null;
+            MicLavLineOut = null;
+            MicHandheldLineOut = null;
+            MicCeiling1LineOut = null;
+            MicCeiling2LineOut = null;
+            MicCeiling3LineOut = null;
+            CameraSelect = null;
+            ShotPresetRecall = null;
+            ShotPresetSave = null;
+            ShotPresetDelete = null;
         }
 
         #endregion

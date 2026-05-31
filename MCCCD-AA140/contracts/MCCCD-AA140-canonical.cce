@@ -1,0 +1,1297 @@
+{
+  "Errors": [],
+  "id": "_aa140root",
+  "name": "MCCCD_AA140",
+  "description": "AA140 panel: 3 displays, 4 sources, 3 cameras, Shure audio. Canonical direction encoding.",
+  "company": "MCCCD",
+  "client": "MCCCD",
+  "author": "Jordan Scales",
+  "version": "2.0.0.0",
+  "schemaVersion": 1,
+  "subContractLinks": [],
+  "subContracts": [],
+  "specifications": [
+    {
+      "Errors": [],
+      "parentId": "_aa140root",
+      "id": "_aa140spec",
+      "componentId": "_aa140main",
+      "instanceName": "AA140",
+      "numberOfInstances": 1
+    }
+  ],
+  "components": [
+    {
+      "Errors": [],
+      "parentId": "_aa140root",
+      "id": "_aa140main",
+      "name": "Main",
+      "specifications": [],
+      "commands": [
+        {
+          "Errors": [],
+          "name": "Display1SourceFb",
+          "siblingId": "_e001",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s001",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "Display2SourceFb",
+          "siblingId": "_e002",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s002",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "Display3SourceFb",
+          "siblingId": "_e003",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s003",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "Display4SourceFb",
+          "siblingId": "_e004",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s004",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "AudioOutputSelectFb",
+          "siblingId": "_e005",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s005",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "CamTrackingModeFb",
+          "siblingId": "_e006",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s006",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicLavMuteFb",
+          "siblingId": "_e007",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s007",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldMuteFb",
+          "siblingId": "_e008",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s008",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1MuteFb",
+          "siblingId": "_e009",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s009",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2MuteFb",
+          "siblingId": "_e010",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s010",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3MuteFb",
+          "siblingId": "_e011",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s011",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicLavTrimFb",
+          "siblingId": "_e012",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s012",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldTrimFb",
+          "siblingId": "_e013",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s013",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1TrimFb",
+          "siblingId": "_e014",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s014",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2TrimFb",
+          "siblingId": "_e015",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s015",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3TrimFb",
+          "siblingId": "_e016",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s016",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicLavLineOutFb",
+          "siblingId": "_e017",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s017",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldLineOutFb",
+          "siblingId": "_e018",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s018",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1LineOutFb",
+          "siblingId": "_e019",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s019",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2LineOutFb",
+          "siblingId": "_e020",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s020",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3LineOutFb",
+          "siblingId": "_e021",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s021",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e022",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s022",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e023",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s023",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e024",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s024",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e025",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s025",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e026",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s026",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e027",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s027",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e028",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s028",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e029",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s029",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e030",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s030",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e031",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s031",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e032",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s032",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e033",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s033",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e034",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s034",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e035",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s035",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e036",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s036",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e037",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s037",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_e038",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s038",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "PanelOnline",
+          "siblingId": "_e039",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s039",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "SystemPowerFb",
+          "siblingId": "_e040",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s040",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "Display1PowerFb",
+          "siblingId": "_e041",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s041",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "Display2PowerFb",
+          "siblingId": "_e042",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s042",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "Display3PowerFb",
+          "siblingId": "_e043",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s043",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicLavConnected",
+          "siblingId": "_e044",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s044",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldConnected",
+          "siblingId": "_e045",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s045",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1Connected",
+          "siblingId": "_e046",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s046",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2Connected",
+          "siblingId": "_e047",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s047",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3Connected",
+          "siblingId": "_e048",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s048",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "OccupancyState",
+          "siblingId": "_e049",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s049",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "ShutdownCountdown",
+          "siblingId": "_e050",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s050",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicLavLevel",
+          "siblingId": "_e051",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s051",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldLevel",
+          "siblingId": "_e052",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s052",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1Level",
+          "siblingId": "_e053",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s053",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2Level",
+          "siblingId": "_e054",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s054",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3Level",
+          "siblingId": "_e055",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s055",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "RoomPcSync",
+          "siblingId": "_e056",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s056",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "ExtPcSync",
+          "siblingId": "_e057",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s057",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "AirMediaSync",
+          "siblingId": "_e058",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s058",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "AirMediaMiracast",
+          "siblingId": "_e059",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s059",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "AirMediaAirPlay",
+          "siblingId": "_e060",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s060",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "AirMediaTx3",
+          "siblingId": "_e061",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s061",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "LaptopHdmiSync",
+          "siblingId": "_e062",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s062",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "LaptopUsbcSync",
+          "siblingId": "_e063",
+          "dataType": 1,
+          "notes": "",
+          "id": "_s063",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        }
+      ],
+      "feedbacks": [
+        {
+          "Errors": [],
+          "name": "Display1Source",
+          "siblingId": "_s001",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e001",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "Display2Source",
+          "siblingId": "_s002",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e002",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "Display3Source",
+          "siblingId": "_s003",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e003",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "Display4Source",
+          "siblingId": "_s004",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e004",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "AudioOutputSelect",
+          "siblingId": "_s005",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e005",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "CamTrackingMode",
+          "siblingId": "_s006",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e006",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicLavMute",
+          "siblingId": "_s007",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e007",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldMute",
+          "siblingId": "_s008",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e008",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1Mute",
+          "siblingId": "_s009",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e009",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2Mute",
+          "siblingId": "_s010",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e010",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3Mute",
+          "siblingId": "_s011",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e011",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicLavTrim",
+          "siblingId": "_s012",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e012",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldTrim",
+          "siblingId": "_s013",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e013",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1Trim",
+          "siblingId": "_s014",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e014",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2Trim",
+          "siblingId": "_s015",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e015",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3Trim",
+          "siblingId": "_s016",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e016",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicLavLineOut",
+          "siblingId": "_s017",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e017",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicHandheldLineOut",
+          "siblingId": "_s018",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e018",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling1LineOut",
+          "siblingId": "_s019",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e019",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling2LineOut",
+          "siblingId": "_s020",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e020",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MicCeiling3LineOut",
+          "siblingId": "_s021",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e021",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "DisplayPower",
+          "siblingId": "_s022",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e022",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "D1MirrorToD3",
+          "siblingId": "_s023",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e023",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "D2MirrorToD3",
+          "siblingId": "_s024",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e024",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "VolumeUp",
+          "siblingId": "_s025",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e025",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "VolumeDown",
+          "siblingId": "_s026",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e026",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "MuteAll",
+          "siblingId": "_s027",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e027",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "PtzUp",
+          "siblingId": "_s028",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e028",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "PtzDown",
+          "siblingId": "_s029",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e029",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "PtzLeft",
+          "siblingId": "_s030",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e030",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "PtzRight",
+          "siblingId": "_s031",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e031",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "CamSendToVtc",
+          "siblingId": "_s032",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e032",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "ZoomIn",
+          "siblingId": "_s033",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e033",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "ZoomOut",
+          "siblingId": "_s034",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e034",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "CameraSelect",
+          "siblingId": "_s035",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e035",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "ShotPresetRecall",
+          "siblingId": "_s036",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e036",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "ShotPresetSave",
+          "siblingId": "_s037",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e037",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "ShotPresetDelete",
+          "siblingId": "_s038",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e038",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s039",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e039",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s040",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e040",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s041",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e041",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s042",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e042",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s043",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e043",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s044",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e044",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s045",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e045",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s046",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e046",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s047",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e047",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s048",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e048",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s049",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e049",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s050",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e050",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s051",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e051",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s052",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e052",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s053",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e053",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s054",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e054",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s055",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e055",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s056",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e056",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s057",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e057",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s058",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e058",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s059",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e059",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s060",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e060",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s061",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e061",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s062",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e062",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s063",
+          "dataType": 1,
+          "notes": "",
+          "id": "_e063",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        }
+      ]
+    }
+  ],
+  "allComponentsForAllContracts": []
+}

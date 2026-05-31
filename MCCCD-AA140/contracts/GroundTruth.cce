@@ -1,0 +1,77 @@
+{
+  "Errors": [],
+  "id": "_gtroot01",
+  "name": "GroundTruth",
+  "description": "Phase 0 ground-truth v2: feedback on State (attributeType 0), command on Event (attributeType 1).",
+  "company": "MCCCD",
+  "client": "MCCCD",
+  "author": "Jordan Scales",
+  "version": "1.0.0.0",
+  "schemaVersion": 1,
+  "subContractLinks": [],
+  "subContracts": [],
+  "specifications": [
+    {
+      "Errors": [],
+      "parentId": "_gtroot01",
+      "id": "_gtspec01",
+      "componentId": "_gtcomp01",
+      "instanceName": "GT",
+      "numberOfInstances": 1
+    }
+  ],
+  "components": [
+    {
+      "Errors": [],
+      "parentId": "_gtroot01",
+      "id": "_gtcomp01",
+      "name": "Main",
+      "specifications": [],
+      "commands": [
+        {
+          "Errors": [],
+          "name": "ToggleFb",
+          "siblingId": "_gte01",
+          "dataType": 1,
+          "notes": "bool: State=feedback proc->panel; Event=press panel->proc",
+          "id": "_gts01",
+          "parentId": "_gtcomp01",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "LevelFb",
+          "siblingId": "_gte02",
+          "dataType": 2,
+          "notes": "numeric: State=feedback proc->panel; Event=set panel->proc",
+          "id": "_gts02",
+          "parentId": "_gtcomp01",
+          "attributeType": 0
+        }
+      ],
+      "feedbacks": [
+        {
+          "Errors": [],
+          "name": "TogglePress",
+          "siblingId": "_gts01",
+          "dataType": 1,
+          "notes": "bool: State=feedback proc->panel; Event=press panel->proc",
+          "id": "_gte01",
+          "parentId": "_gtcomp01",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "LevelSet",
+          "siblingId": "_gts02",
+          "dataType": 2,
+          "notes": "numeric: State=feedback proc->panel; Event=set panel->proc",
+          "id": "_gte02",
+          "parentId": "_gtcomp01",
+          "attributeType": 1
+        }
+      ]
+    }
+  ],
+  "allComponentsForAllContracts": []
+}
