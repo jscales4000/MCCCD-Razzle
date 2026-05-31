@@ -95,14 +95,14 @@
     <!-- camera select -->
     <aside class="card camside">
       <div class="lbl">Cameras</div>
-      <button class="cam-btn active"><span class="nm">Front</span><span class="md">IV-CAM-I20 · .2.174</span><span class="st"><span class="dot"></span>online</span></button>
-      <button class="cam-btn"><span class="nm">Rear</span><span class="md">IV-CAM-I12 · .2.173 · host</span><span class="st"><span class="dot"></span>online</span></button>
+      <button class="cam-btn active"><span class="nm">Presenter</span><span class="md">IV-CAM-I20 · .2.174</span><span class="st"><span class="dot"></span>online · tracking</span></button>
+      <button class="cam-btn"><span class="nm">Group</span><span class="md">IV-CAM-I12 · .2.173 · USB host</span><span class="st"><span class="dot"></span>online</span></button>
       <div class="hint">Selecting a camera drives PTZ / zoom / presets &amp; coordinates for that camera.</div>
     </aside>
 
     <!-- preview + coords -->
     <section class="card preview">
-      <div class="lbl">Preview — Front (IV-CAM-I20)</div>
+      <div class="lbl">Preview — Presenter (IV-CAM-I20)</div>
       <div class="video">
         <span class="ph">▶ live RTSP stream</span>
         <div class="ptz">
@@ -128,17 +128,16 @@
       </div>
 
       <div class="sec room">
-        <div class="lbl">Framing</div>
-        <div class="tog on"><span class="t">Presenter <span class="fb">● live</span></span><span class="sw"></span></div>
-        <div class="tog"><span class="t">Group <span class="fbc">cached · I20</span></span><span class="sw"></span></div>
+        <div class="lbl">Presenter Tracking · I20</div>
+        <div class="tog on"><span class="t">Auto-track presenter <span class="fb">● live</span></span><span class="sw"></span></div>
       </div>
 
       <div class="sec room">
-        <div class="lbl">USB Output (Q&amp;A switch · I12 host)</div>
+        <div class="lbl">USB Output — Q&amp;A switch · I12 host</div>
         <div class="seg">
           <button class="active">Presenter</button><button>Group</button><button>Auto</button>
         </div>
-        <div class="hint">What the room PC / codec sees. Auto = Intelligent Switching (Day 2: audio-driven).</div>
+        <div class="hint">What the room PC / codec sees. Presenter = I20 view · Group = I12 participant framing · Auto = Intelligent Switching (Day 2: audio-driven).</div>
       </div>
     </aside>
   </div>
