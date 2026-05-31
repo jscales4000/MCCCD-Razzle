@@ -1,16 +1,28 @@
-# 2026-05-30 — CH5 Contract Troubleshooting: Lessons Learned
+# 2026-05-30 — CH5 Contract Troubleshooting: Investigation Log (UNRESOLVED)
 
-> **Scope:** This document captures the full debugging journey of adding 8 new feedback signals to a CH5 panel contract in an existing project, and the structural rules that govern Crestron CH5 + Contract Editor + CrComLib interaction. Several hard-won lessons here are not visible from the Crestron tooling itself — they were extracted from ~6 hours of empirical iteration with the live RMC4 + TS-1070/TSW-1070 panels.
+> **Status: OPEN ISSUE — investigation incomplete.** The core goal (8 video-sync feedback signals delivering from SIMPL to the panel) is **NOT** achieved. SIMPL writes succeed; panel never receives. Treat any "rules" or "lessons" below as tentative pending root-cause confirmation.
 >
-> **Target audience:** Future agents (and humans) adding signals to an existing AA140-class CH5 project; CH5 Extended Developer persona maintainers.
+> **Scope:** This document captures the debugging journey of adding 8 new feedback signals to an existing CH5 panel contract. Useful as a record of what was tried + what was ruled out — NOT as a closed playbook.
+>
+> **Target audience:** Future agents (and humans) picking up this debugging. Companion to [2026-05-30-handoff-so2-open-issue.md](./2026-05-30-handoff-so2-open-issue.md).
+>
+> **Off-limits pivots** (per user, do not re-investigate without explicit re-approval):
+> - **Switching from `@crestron/ch5-utilities-cli` to `@crestron/ch5-shell-utilities-cli` for archiving.** The shell-utilities-cli path was ruled out — this project must build CH5z via `ch5-utilities-cli` per project standards. The fact that 1Beyond's deployed bundle contains shell-template artifacts (`project-config.json`, `component.js`) is a SIDE OBSERVATION, NOT a prescribed fix.
 
-## TL;DR — must-do rules
+## TL;DR — tentative observations (NOT yet root-cause-confirmed)
 
-1. **Never hand-author the JSON in a `.cce` and expect Contract Editor's GUI to surface it.** Hand-edits persist in the file but the GUI silently filters them out, and the generated `.cse2j` / `.chd` / `.g.cs` drop them. The .cce JSON is the source of truth ONLY when written by Contract Editor.
-2. **Every feedback signal MUST be paired with a sibling command via `siblingId`.** Unpaired feedbacks land in the cse2j but **do not deliver to the panel** through CrComLib subscriptions. If a feedback has no logical command counterpart, create a dummy `*Set` command and pair them anyway. This is non-obvious and not documented in the Crestron tools.
-3. **SmartObject 1's boolean-input capacity is bounded.** On this contract/panel we proved slots 11+ silently swallow writes. Pairing helps Contract Editor accept the signal — but doesn't fix the slot cap. Reserve SmartObject 1 for the first ~10 paired boolean feedbacks. Add a second component (= second SmartObject) for additional feedback groups.
-4. **Use multi-component, NOT sub-contracts.** Per the 1Beyond ISMI reference contract and the CH5 boilerplate template, additional SmartObjects come from declaring **additional components in the same `.cce`** (each with its own `specifications[]` entry), not from a separate sub-contract file. We tried sub-contracts; the panel saw SO2 in `panel.SmartObjects` but no actual sig delivery — likely a CrComLib limitation.
-5. **After any `.cce` change: rebuild `.cpz` AND redeploy `.ch5z`.** Both sides must be in sync — old `.ch5z` on the panel + new `.cpz` on the processor = silent signal mismatch.
+These are EMPIRICAL findings from this session. They MAY be true rules, OR they may be symptoms of an underlying issue we haven't found yet. Don't elevate to persona-doctrine until the core SO2-delivery issue is solved and these patterns are reconfirmed in the working state.
+
+1. **Hand-edited `.cce` JSON entries can be silently filtered by Contract Editor's GUI** — observed in this session. Worked around by pairing with siblings, but the deeper reason isn't confirmed.
+2. **Unpaired feedbacks (`siblingId: ""`) appeared in our `.cse2j` but didn't deliver values** — observed for slots 11-15 (`Mic*Connected`). HOWEVER, `Display1-3PowerFb` are ALSO unpaired and presumed-working in production. So the rule isn't simply "unpaired = broken." More investigation needed.
+3. **SmartObject 1 writes to slots past ~10 silently failed** — observed empirically. Could be a real cap, could be a symptom of a different issue (e.g., the broader thing that's also blocking SO2 sigs).
+4. **Multi-component pattern in one `.cce` is what 1Beyond uses** — and per the FRED boilerplate template. Our rev3 uses this pattern. The structure is correct but the panel STILL doesn't receive SO2 sigs, so something else is wrong.
+5. **Both sides (`.cpz` and `.ch5z`) must be rebuilt and redeployed after `.cce` changes** — this rule is confirmed.
+
+## What is REQUIRED, locked in, and NOT up for debate
+
+- **CH5z archive MUST use `@crestron/ch5-utilities-cli` (`ch5-cli archive`).** Do not investigate or pivot to `ch5-shell-utilities-cli` or any shell-template tooling.
+- Anything described below that touches the archiver MUST stay on `ch5-utilities-cli`.
 
 ## The full session journey
 
@@ -85,21 +97,19 @@ After this session, on `main` commit `755e5e9`:
 
 3. **Does the `Display1-3PowerFb` unpaired-feedback exception actually work?** We didn't verify those deliver — they may be in the same silently-failing bucket as everything past slot 10, but no UI element exercises them so nobody noticed. Worth confirming.
 
-## Recommended additions to the CH5 Extended Developer persona
+## Candidate persona additions — HOLD until root cause confirmed
 
-These rules generalize from the AA140 session and apply to any CH5 project where signals need to be added to an existing contract:
+These are draft additions to the CH5 Extended Developer persona. **Do NOT promote to persona doctrine yet** — the underlying SO2 issue is unresolved, so what we think we've learned may need revising once the real cause is known. Use these as a starting point for the rewrite after the issue is closed.
 
-### Add to MUST DO list
-- **MUST DO #19:** When adding feedback signals to an existing CH5 contract, pair EVERY feedback with a sibling command (use a dummy `*Set` command if no logical counterpart exists). Unpaired feedbacks may land in the `.cse2j` but will NOT deliver values to the panel through CrComLib subscriptions.
-- **MUST DO #20:** Treat the SmartObject 1 boolean-input capacity as bounded (~10 paired feedbacks empirically on AA140 — may vary by contract age/template). For additional feedback groups, add a SECOND COMPONENT to the same `.cce` with its own specification — this allocates a fresh SmartObject 2.
-- **MUST DO #21:** When hand-editing a `.cce` JSON file is unavoidable (e.g., scripted bulk additions), the user MUST re-open in Contract Editor's GUI to verify the added entries appear in the component tree BEFORE regen. Contract Editor's GUI silently filters entries it doesn't recognize, and the Build step drops them. Pairing entries with siblings improves acceptance.
+### Draft MUST DO additions
+- **(Draft) MUST DO #19:** When adding feedback signals to an existing CH5 contract, pair every new feedback with a sibling command via `siblingId` (use a dummy `*Set` command if no logical counterpart exists). Observed: unpaired feedbacks may not surface in Contract Editor's GUI. *Status: tentative — Display1-3PowerFb are unpaired and presumed-working, so the rule isn't absolute.*
+- **(Draft) MUST DO #20:** After any signal addition via JSON or Contract Editor, open the `.cce` in Contract Editor's GUI to visually confirm the added entries appear in the component tree BEFORE running Build. Hand-edited entries that Contract Editor's GUI doesn't display will be dropped from the cse2j on Build.
 
-### Add to NEVER DO list
-- **NEVER DO #21:** Don't add multi-SmartObject signal groups via the sub-contract mechanism (`subContractLinks` / `subContracts`). Use multi-component instead (multiple entries in `components[]` and `specifications[]` of one `.cce`). Sub-contracts produce technically valid output but the panel-side CrComLib doesn't reliably route signals through sub-contract-derived SmartObjects (verified failure on AA140 / cr-com-lib ^2.17.2 / TSW-1070 + TS-1070).
-- **NEVER DO #22:** Don't assume "the cse2j has the signal, therefore the panel receives writes." Verify with a runtime diagnostic on the panel (a temporary debug overlay showing `$store ? '1' : '0'` for each new signal). Slot caps and CrComLib silent failures are real and undetectable from build output alone.
+### Draft NEVER DO additions
+- **(Draft) NEVER DO #21:** Don't assume "the cse2j has the signal, therefore the panel receives writes." Always verify with a runtime diagnostic on the panel (temporary overlay showing `$store ? '1' : '0'` for each new signal) before claiming a wiring is complete.
 
-### Add to failure-mode catalog
-- **Failure mode: Signals visible in `.cse2j` but panel stores never update.** Diagnosis: (1) check `siblingId` pairing on the feedback — must reference a command's `id`; (2) check the SmartObject ID — past slot ~10 on SO1, move to a new component (SO2); (3) confirm panel device exposes the target SmartObject via processor log enumeration of `panel.SmartObjects`; (4) verify both `.cpz` (processor) and `.ch5z` (panel) were rebuilt and redeployed after the cce change.
+### Draft failure-mode catalog entry
+- **(Draft) Failure mode: Signals visible in `.cse2j` but panel stores never update.** Diagnosis checklist: (1) `siblingId` paired? (2) check the SmartObject ID in cse2j; (3) confirm panel device exposes the target SmartObject at runtime via processor-side `panel.SmartObjects` enumeration; (4) verify both `.cpz` and `.ch5z` were rebuilt+redeployed after the .cce change. *Note: even with all four checks passing, SO2 delivery is currently broken in this project — root cause TBD.*
 
 ## Files of interest from this session
 
