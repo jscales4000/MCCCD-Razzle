@@ -74,6 +74,11 @@ namespace MCCCD_AA140.Visca
         public static byte[] StartGroupTracking() => PresetRecall(82);
         public static byte[] IntelligentSwitch()  => PresetRecall(84); // IS mode Active (VX AutoSwitch analog)
 
+        // ─── Inquiries ─────────────────────────────────────────────────────
+        public static byte[] PanTiltPosInq() => new byte[] { CamAddress, 0x09, 0x06, 0x12, FrameEnd };
+        public static byte[] ZoomPosInq()    => new byte[] { CamAddress, 0x09, 0x04, 0x47, FrameEnd };
+        public static byte[] TrackingInq()   => new byte[] { CamAddress, 0x09, 0x08, 0x01, FrameEnd };
+
         // ─── Reply categorization (for debug logging only) ─────────────────
         public static string ReplyKind(byte[] frame)
         {
@@ -87,6 +92,54 @@ namespace MCCCD_AA140.Visca
                 default:  return "?";
             }
         }
+
+        // ─── Reply parsing (for inquiry replies) ───────────────────────────
+        public enum Kind { Unknown, Ack, Completion, InquiryResponse, Error }
+
+        /// <summary>Categorize a complete reply frame; for InquiryResponse, payload = bytes between 0x50 and 0xFF.</summary>
+        public static Kind Categorize(byte[] frame, out byte[] payload)
+        {
+            payload = null;
+            if (frame == null || frame.Length < 3 || frame[0] != 0x90 || frame[frame.Length - 1] != FrameEnd)
+                return Kind.Unknown;
+            byte hi = (byte)(frame[1] >> 4);
+            switch (hi) {
+                case 0x4: return Kind.Ack;
+                case 0x5:
+                    if (frame.Length == 3) return Kind.Completion;
+                    int n = frame.Length - 3;
+                    payload = new byte[n];
+                    System.Array.Copy(frame, 2, payload, 0, n);
+                    return Kind.InquiryResponse;
+                case 0x6: return Kind.Error;
+                default:  return Kind.Unknown;
+            }
+        }
+
+        private static ushort Unpack4(byte[] d, int i) =>
+            (ushort)(((d[i] & 0x0F) << 12) | ((d[i + 1] & 0x0F) << 8) | ((d[i + 2] & 0x0F) << 4) | (d[i + 3] & 0x0F));
+
+        /// <summary>PanTilt position payload (8 bytes) -> signed pan, tilt. False if malformed.</summary>
+        public static bool ParsePanTilt(byte[] p, out short pan, out short tilt)
+        {
+            pan = 0; tilt = 0;
+            if (p == null || p.Length != 8) return false;
+            pan = unchecked((short)Unpack4(p, 0));
+            tilt = unchecked((short)Unpack4(p, 4));
+            return true;
+        }
+
+        /// <summary>Zoom position payload (4 bytes) -> unsigned zoom. False if malformed.</summary>
+        public static bool ParseZoom(byte[] p, out ushort zoom)
+        {
+            zoom = 0;
+            if (p == null || p.Length != 4) return false;
+            zoom = Unpack4(p, 0);
+            return true;
+        }
+
+        /// <summary>Tracking inquiry payload -> true if active (0x02).</summary>
+        public static bool ParseTrackingActive(byte[] p) => p != null && p.Length == 1 && p[0] == 0x02;
 
         public static string Hex(byte[] data)
         {
