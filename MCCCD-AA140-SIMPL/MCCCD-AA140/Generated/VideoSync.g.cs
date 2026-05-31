@@ -4,7 +4,7 @@ using System.Linq;
 using Crestron.SimplSharpPro.DeviceSupport;
 using Crestron.SimplSharpPro;
 
-namespace MCCCD_AA140.VideoSync
+namespace MCCCD_AA140
 {
     /// <summary>
     /// Digital feedback - NVX E30 (Room PC) HDMI sync detect
@@ -31,28 +31,28 @@ namespace MCCCD_AA140.VideoSync
     /// Digital feedback - NVX-384 input 3 (BYOD USB-C) sync detect
     /// </summary>
     /// <summary>
-    /// Dummy pair for RoomPcSync feedback - unused at runtime
+    /// Dummy pair for RoomPcSync - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for ExtPcSync feedback - unused at runtime
+    /// Dummy pair for ExtPcSync - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for AirMediaSync feedback - unused at runtime
+    /// Dummy pair for AirMediaSync - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for AirMediaMiracast feedback - unused at runtime
+    /// Dummy pair for AirMediaMiracast - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for AirMediaAirPlay feedback - unused at runtime
+    /// Dummy pair for AirMediaAirPlay - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for AirMediaTx3 feedback - unused at runtime
+    /// Dummy pair for AirMediaTx3 - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for LaptopHdmiSync feedback - unused at runtime
+    /// Dummy pair for LaptopHdmiSync - unused at runtime
     /// </summary>
     /// <summary>
-    /// Dummy pair for LaptopUsbcSync feedback - unused at runtime
+    /// Dummy pair for LaptopUsbcSync - unused at runtime
     /// </summary>
     public interface IVideoSync
     {

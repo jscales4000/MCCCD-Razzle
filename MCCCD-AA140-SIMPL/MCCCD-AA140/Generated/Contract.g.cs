@@ -28,8 +28,8 @@ namespace MCCCD_AA140
         public MCCCD_AA140.IMain AA140 { get { return (MCCCD_AA140.IMain)InternalAA140; } }
         private MCCCD_AA140.Main InternalAA140 { get; set; }
 
-        public MCCCD_AA140.VideoSync.IVideoSync VideoSync { get { return (MCCCD_AA140.VideoSync.IVideoSync)InternalVideoSync; } }
-        private MCCCD_AA140.VideoSync.VideoSync InternalVideoSync { get; set; }
+        public MCCCD_AA140.IVideoSync VideoSync { get { return (MCCCD_AA140.IVideoSync)InternalVideoSync; } }
+        private MCCCD_AA140.VideoSync InternalVideoSync { get; set; }
 
         #endregion
 
@@ -53,7 +53,7 @@ namespace MCCCD_AA140
             ComponentMediator = new ComponentMediator();
 
             InternalAA140 = new MCCCD_AA140.Main(ComponentMediator, 1);
-            InternalVideoSync = new MCCCD_AA140.VideoSync.VideoSync(ComponentMediator, 2);
+            InternalVideoSync = new MCCCD_AA140.VideoSync(ComponentMediator, 2);
 
             for (int index = 0; index < devices.Length; index++)
             {

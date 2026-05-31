@@ -1,6 +1,6 @@
 {
 	"name": "MCCCD_AA140",
-	"timestamp": "2026-05-30 16:17:38.688",
+	"timestamp": "2026-05-30 21:13:57.477",
 	"version": "1.1.0.0",
 	"schema_version": 1,
 	"extra_value": "AA140 panel: 3 displays, 4 sources, 3 cameras, Q-SYS audio.",
@@ -123,38 +123,6 @@
 				},
 				"AA140.MicCeiling3Connected": {
 					"joinId": 15,
-					"smartObjectId": 1
-				},
-				"AA140.RoomPcSync": {
-					"joinId": 16,
-					"smartObjectId": 1
-				},
-				"AA140.ExtPcSync": {
-					"joinId": 17,
-					"smartObjectId": 1
-				},
-				"AA140.AirMediaSync": {
-					"joinId": 18,
-					"smartObjectId": 1
-				},
-				"AA140.AirMediaMiracast": {
-					"joinId": 19,
-					"smartObjectId": 1
-				},
-				"AA140.AirMediaAirPlay": {
-					"joinId": 20,
-					"smartObjectId": 1
-				},
-				"AA140.AirMediaTx3": {
-					"joinId": 21,
-					"smartObjectId": 1
-				},
-				"AA140.LaptopHdmiSync": {
-					"joinId": 22,
-					"smartObjectId": 1
-				},
-				"AA140.LaptopUsbcSync": {
-					"joinId": 23,
 					"smartObjectId": 1
 				},
 				"VideoSync.RoomPcSync": {

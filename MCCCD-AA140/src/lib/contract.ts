@@ -173,5 +173,9 @@ export const SIGNALS = {
   airMediaTx3:          'VideoSync.AirMediaTx3',
   laptopHdmiSync:       'VideoSync.LaptopHdmiSync',
   laptopUsbcSync:       'VideoSync.LaptopUsbcSync',
+  // Test commands (panel publishes; SIMPL receives + logs) for the
+  // bidirectional contract diagnostic. RoomPcSyncSet is the dummy sibling
+  // on the VideoSync sub-contract (SmartObject 2).
+  roomPcSyncSet:        'VideoSync.RoomPcSyncSet',
 } as const;
 

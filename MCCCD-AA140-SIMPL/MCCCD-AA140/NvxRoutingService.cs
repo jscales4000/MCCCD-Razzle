@@ -76,6 +76,18 @@ namespace MCCCD_AA140
 
         public void Initialize()
         {
+            // DIAG: hook the VideoSync incoming events so we can prove panel→SIMPL
+            // path on SmartObject 2 works (or doesn't). Each handler fires when
+            // the panel publishes its corresponding *Set command.
+            _c.VideoSync.RoomPcSync += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.RoomPcSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.ExtPcSync  += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.ExtPcSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.AirMediaSync     += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.AirMediaMiracast += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaMiracastSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.AirMediaAirPlay  += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaAirPlaySet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.AirMediaTx3      += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.AirMediaTx3Set RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.LaptopHdmiSync   += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.LaptopHdmiSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+            _c.VideoSync.LaptopUsbcSync   += (s, args) => ErrorLog.Notice("DIAG SO2 IN: VideoSync.LaptopUsbcSyncSet RECEIVED FROM PANEL (val={0})", args.SigArgs.Sig.BoolValue);
+
             // ============ Encoders (transmitters) ============
             _encRoomPc   = new DmNvxE30(IPID_E30_ROOM_PC,  _cs);
             _encExtPc    = new DmNvxE30(IPID_E30_EXT_PC,   _cs);

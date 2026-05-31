@@ -52,30 +52,6 @@ namespace MCCCD_AA140
     /// Digital feedback - ceiling 3 signal-present
     /// </summary>
     /// <summary>
-    /// Digital feedback - NVX E30 (Room PC) HDMI sync detect
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - NVX E30 (Ext PC) HDMI sync detect
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - NVX E30 (AirMedia output) HDMI sync detect
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - AM-3200 Miracast session active
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - AM-3200 AirPlay session active
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - AM-3200 AM-TX3-200 wired transmitter session active
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - NVX-384 input 1 (BYOD HDMI) sync detect
-    /// </summary>
-    /// <summary>
-    /// Digital feedback - NVX-384 input 3 (BYOD USB-C) sync detect
-    /// </summary>
-    /// <summary>
     /// Analog feedback - D1 active source
     /// </summary>
     /// <summary>
@@ -277,14 +253,6 @@ namespace MCCCD_AA140
         event EventHandler<UIEventArgs> MicCeiling1Connected;
         event EventHandler<UIEventArgs> MicCeiling2Connected;
         event EventHandler<UIEventArgs> MicCeiling3Connected;
-        event EventHandler<UIEventArgs> RoomPcSync;
-        event EventHandler<UIEventArgs> ExtPcSync;
-        event EventHandler<UIEventArgs> AirMediaSync;
-        event EventHandler<UIEventArgs> AirMediaMiracast;
-        event EventHandler<UIEventArgs> AirMediaAirPlay;
-        event EventHandler<UIEventArgs> AirMediaTx3;
-        event EventHandler<UIEventArgs> LaptopHdmiSync;
-        event EventHandler<UIEventArgs> LaptopUsbcSync;
         event EventHandler<UIEventArgs> Display1SourceFb;
         event EventHandler<UIEventArgs> Display2SourceFb;
         event EventHandler<UIEventArgs> Display3SourceFb;
@@ -389,14 +357,6 @@ namespace MCCCD_AA140
                 public const uint MicCeiling1Connected = 13;
                 public const uint MicCeiling2Connected = 14;
                 public const uint MicCeiling3Connected = 15;
-                public const uint RoomPcSync = 16;
-                public const uint ExtPcSync = 17;
-                public const uint AirMediaSync = 18;
-                public const uint AirMediaMiracast = 19;
-                public const uint AirMediaAirPlay = 20;
-                public const uint AirMediaTx3 = 21;
-                public const uint LaptopHdmiSync = 22;
-                public const uint LaptopUsbcSync = 23;
 
                 public const uint DisplayPower = 1;
                 public const uint D1MirrorToD3 = 2;
@@ -497,14 +457,6 @@ namespace MCCCD_AA140
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling1Connected, onMicCeiling1Connected);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling2Connected, onMicCeiling2Connected);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling3Connected, onMicCeiling3Connected);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.RoomPcSync, onRoomPcSync);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ExtPcSync, onExtPcSync);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaSync, onAirMediaSync);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaMiracast, onAirMediaMiracast);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaAirPlay, onAirMediaAirPlay);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.AirMediaTx3, onAirMediaTx3);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.LaptopHdmiSync, onLaptopHdmiSync);
-            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.LaptopUsbcSync, onLaptopUsbcSync);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display1SourceFb, onDisplay1SourceFb);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display2SourceFb, onDisplay2SourceFb);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display3SourceFb, onDisplay3SourceFb);
@@ -663,70 +615,6 @@ namespace MCCCD_AA140
         private void onMicCeiling3Connected(SmartObjectEventArgs eventArgs)
         {
             EventHandler<UIEventArgs> handler = MicCeiling3Connected;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> RoomPcSync;
-        private void onRoomPcSync(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = RoomPcSync;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> ExtPcSync;
-        private void onExtPcSync(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = ExtPcSync;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> AirMediaSync;
-        private void onAirMediaSync(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = AirMediaSync;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> AirMediaMiracast;
-        private void onAirMediaMiracast(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = AirMediaMiracast;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> AirMediaAirPlay;
-        private void onAirMediaAirPlay(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = AirMediaAirPlay;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> AirMediaTx3;
-        private void onAirMediaTx3(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = AirMediaTx3;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> LaptopHdmiSync;
-        private void onLaptopHdmiSync(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = LaptopHdmiSync;
-            if (handler != null)
-                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
-        }
-
-        public event EventHandler<UIEventArgs> LaptopUsbcSync;
-        private void onLaptopUsbcSync(SmartObjectEventArgs eventArgs)
-        {
-            EventHandler<UIEventArgs> handler = LaptopUsbcSync;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
@@ -1263,14 +1151,6 @@ namespace MCCCD_AA140
             MicCeiling1Connected = null;
             MicCeiling2Connected = null;
             MicCeiling3Connected = null;
-            RoomPcSync = null;
-            ExtPcSync = null;
-            AirMediaSync = null;
-            AirMediaMiracast = null;
-            AirMediaAirPlay = null;
-            AirMediaTx3 = null;
-            LaptopHdmiSync = null;
-            LaptopUsbcSync = null;
             Display1SourceFb = null;
             Display2SourceFb = null;
             Display3SourceFb = null;

@@ -1,0 +1,986 @@
+{
+    "Errors": [],
+    "id": "_jsw9gauhu",
+    "name": "MCCCD_AA140",
+    "description": "AA140 panel: 3 displays, 4 sources, 3 cameras, Q-SYS audio.",
+    "company": "MCCCD",
+    "client": "MCCCD",
+    "author": "Jordan Scales",
+    "version": "1.1.0.0",
+    "schemaVersion": 1,
+    "subContractLinks": [],
+    "subContracts": [],
+    "specifications": [
+        {
+            "Errors": [],
+            "parentId": "_jsw9gauhu",
+            "id": "_geqop2xl6",
+            "componentId": "_0bnxx3lcs",
+            "instanceName": "AA140",
+            "numberOfInstances": 1
+        },
+        {
+            "Errors": [],
+            "parentId": "_jsw9gauhu",
+            "id": "_vidsync002y",
+            "componentId": "_vidsync001x",
+            "instanceName": "VideoSync",
+            "numberOfInstances": 1
+        }
+    ],
+    "components": [
+        {
+            "Errors": [],
+            "parentId": "_jsw9gauhu",
+            "id": "_0bnxx3lcs",
+            "name": "Main",
+            "commands": [
+                {
+                    "Errors": [],
+                    "name": "DisplayPower",
+                    "siblingId": "_b012",
+                    "dataType": 1,
+                    "notes": "Digital pulse - toggle system on/off",
+                    "id": "_a001",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "Display1Source",
+                    "siblingId": "_b002",
+                    "dataType": 2,
+                    "notes": "Analog set - D1 source (1=RoomPC,2=ExtPC,3=AirMedia,4=Laptop)",
+                    "id": "_a002",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "Display2Source",
+                    "siblingId": "_b003",
+                    "dataType": 2,
+                    "notes": "Analog set - D2 source",
+                    "id": "_a003",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "Display3Source",
+                    "siblingId": "_b004",
+                    "dataType": 2,
+                    "notes": "Analog set - D3 source (independent after boot init)",
+                    "id": "_a004",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "D1MirrorToD3",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital pulse - one-shot push of D1 source to D3",
+                    "id": "_a005",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "D2MirrorToD3",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital pulse - one-shot push of D2 source to D3",
+                    "id": "_a006",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AudioOutputSelect",
+                    "siblingId": "_b005",
+                    "dataType": 2,
+                    "notes": "Analog set - 1=D1 owns audio, 2=D2 owns audio (D3 never)",
+                    "id": "_a007",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "VolumeUp",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital pulse - master program volume up",
+                    "id": "_a008",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "VolumeDown",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital pulse - master program volume down",
+                    "id": "_a009",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MuteAll",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital pulse - toggle master program mute",
+                    "id": "_a010",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavMute",
+                    "siblingId": "_b006",
+                    "dataType": 1,
+                    "notes": "Digital level - lav mic mute on/off",
+                    "id": "_a011",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldMute",
+                    "siblingId": "_b007",
+                    "dataType": 1,
+                    "notes": "Digital level - handheld mic mute on/off",
+                    "id": "_a012",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "CameraSelect",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog set - 1=Front i20, 2=BackL i12, 3=BackR i12",
+                    "id": "_a013",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "PtzUp",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital level - press-and-hold pan/tilt up",
+                    "id": "_a014",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "PtzDown",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital level - press-and-hold pan/tilt down",
+                    "id": "_a015",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "PtzLeft",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital level - press-and-hold pan left",
+                    "id": "_a016",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "PtzRight",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital level - press-and-hold pan right",
+                    "id": "_a017",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ShotPresetRecall",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog set - recall preset 1/2/3 on active camera (tap)",
+                    "id": "_a018",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ShotPresetSave",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog set - save preset 1/2/3 on active camera (3s hold)",
+                    "id": "_a019",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ShotPresetDelete",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog set - delete preset (deferred to v2)",
+                    "id": "_a020",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "CamSendToVtc",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital pulse - set active camera as VTC ingest source",
+                    "id": "_a021",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "CamTrackingMode",
+                    "siblingId": "_b008",
+                    "dataType": 2,
+                    "notes": "Analog set - 1=People, 2=Group, 3=VX AutoSwitch",
+                    "id": "_a022",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ZoomIn",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital level - press-and-hold zoom in on active camera",
+                    "id": "_a023",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ZoomOut",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital level - press-and-hold zoom out",
+                    "id": "_a024",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1Mute",
+                    "siblingId": "_b016",
+                    "dataType": 1,
+                    "notes": "Digital level - TCCM ceiling 1 mute (settings only)",
+                    "id": "_a025",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2Mute",
+                    "siblingId": "_b017",
+                    "dataType": 1,
+                    "notes": "Digital level - TCCM ceiling 2 mute",
+                    "id": "_a026",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3Mute",
+                    "siblingId": "_b018",
+                    "dataType": 1,
+                    "notes": "Digital level - TCCM ceiling 3 mute",
+                    "id": "_a027",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavTrim",
+                    "siblingId": "_b019",
+                    "dataType": 2,
+                    "notes": "Analog set - lav input gain trim 0-100",
+                    "id": "_a028",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldTrim",
+                    "siblingId": "_b020",
+                    "dataType": 2,
+                    "notes": "Analog set - handheld input gain trim 0-100",
+                    "id": "_a029",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1Trim",
+                    "siblingId": "_b021",
+                    "dataType": 2,
+                    "notes": "Analog set - ceiling 1 input gain trim 0-100",
+                    "id": "_a030",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2Trim",
+                    "siblingId": "_b022",
+                    "dataType": 2,
+                    "notes": "Analog set - ceiling 2 input gain trim 0-100",
+                    "id": "_a031",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3Trim",
+                    "siblingId": "_b023",
+                    "dataType": 2,
+                    "notes": "Analog set - ceiling 3 input gain trim 0-100",
+                    "id": "_a032",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavLineOut",
+                    "siblingId": "_b024",
+                    "dataType": 2,
+                    "notes": "Analog set - lav line-out level 0-100",
+                    "id": "_a033",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldLineOut",
+                    "siblingId": "_b025",
+                    "dataType": 2,
+                    "notes": "Analog set - handheld line-out level 0-100",
+                    "id": "_a034",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1LineOut",
+                    "siblingId": "_b026",
+                    "dataType": 2,
+                    "notes": "Analog set - ceiling 1 line-out level 0-100",
+                    "id": "_a035",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2LineOut",
+                    "siblingId": "_b027",
+                    "dataType": 2,
+                    "notes": "Analog set - ceiling 2 line-out level 0-100",
+                    "id": "_a036",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3LineOut",
+                    "siblingId": "_b028",
+                    "dataType": 2,
+                    "notes": "Analog set - ceiling 3 line-out level 0-100",
+                    "id": "_a037",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "Display4Source",
+                    "siblingId": "_b040",
+                    "dataType": 2,
+                    "notes": "Analog set - D4 podium confidence monitor source (default = D3 source at PowerUp; independent runtime)",
+                    "id": "_a040",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 0
+                }
+            ],
+            "feedbacks": [
+                {
+                    "Errors": [],
+                    "name": "PanelOnline",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - true when processor sees this panel",
+                    "id": "_b001",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display1SourceFb",
+                    "siblingId": "_a002",
+                    "dataType": 2,
+                    "notes": "Analog feedback - D1 active source",
+                    "id": "_b002",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display2SourceFb",
+                    "siblingId": "_a003",
+                    "dataType": 2,
+                    "notes": "Analog feedback - D2 active source",
+                    "id": "_b003",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display3SourceFb",
+                    "siblingId": "_a004",
+                    "dataType": 2,
+                    "notes": "Analog feedback - D3 active source",
+                    "id": "_b004",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AudioOutputSelectFb",
+                    "siblingId": "_a007",
+                    "dataType": 2,
+                    "notes": "Analog feedback - 1=D1 owns audio, 2=D2 owns audio",
+                    "id": "_b005",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavMuteFb",
+                    "siblingId": "_a011",
+                    "dataType": 1,
+                    "notes": "Digital feedback - lav mic muted state",
+                    "id": "_b006",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldMuteFb",
+                    "siblingId": "_a012",
+                    "dataType": 1,
+                    "notes": "Digital feedback - handheld mic muted state",
+                    "id": "_b007",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "CamTrackingModeFb",
+                    "siblingId": "_a022",
+                    "dataType": 2,
+                    "notes": "Analog feedback - current tracking mode (1/2/3)",
+                    "id": "_b008",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "OccupancyState",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - 0=vacant, 1=occupied, 2=shutdown-pending",
+                    "id": "_b009",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "ShutdownCountdown",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - minutes remaining until system-off",
+                    "id": "_b010",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "SystemPowerFb",
+                    "siblingId": "_a001",
+                    "dataType": 1,
+                    "notes": "Digital feedback - true when system is ON (drives power-button enlarged variant)",
+                    "id": "_b012",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display1PowerFb",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - D1 actually powered on (NVX D200 sink-connected)",
+                    "id": "_b013",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display2PowerFb",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - D2 actually powered on",
+                    "id": "_b014",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display3PowerFb",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - D3 actually powered on",
+                    "id": "_b015",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1MuteFb",
+                    "siblingId": "_a025",
+                    "dataType": 1,
+                    "notes": "Digital feedback - ceiling 1 muted state",
+                    "id": "_b016",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2MuteFb",
+                    "siblingId": "_a026",
+                    "dataType": 1,
+                    "notes": "Digital feedback - ceiling 2 muted state",
+                    "id": "_b017",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3MuteFb",
+                    "siblingId": "_a027",
+                    "dataType": 1,
+                    "notes": "Digital feedback - ceiling 3 muted state",
+                    "id": "_b018",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavTrimFb",
+                    "siblingId": "_a028",
+                    "dataType": 2,
+                    "notes": "Analog feedback - lav input gain trim",
+                    "id": "_b019",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldTrimFb",
+                    "siblingId": "_a029",
+                    "dataType": 2,
+                    "notes": "Analog feedback - handheld input gain trim",
+                    "id": "_b020",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1TrimFb",
+                    "siblingId": "_a030",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 1 input gain trim",
+                    "id": "_b021",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2TrimFb",
+                    "siblingId": "_a031",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 2 input gain trim",
+                    "id": "_b022",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3TrimFb",
+                    "siblingId": "_a032",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 3 input gain trim",
+                    "id": "_b023",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavLineOutFb",
+                    "siblingId": "_a033",
+                    "dataType": 2,
+                    "notes": "Analog feedback - lav line-out level",
+                    "id": "_b024",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldLineOutFb",
+                    "siblingId": "_a034",
+                    "dataType": 2,
+                    "notes": "Analog feedback - handheld line-out level",
+                    "id": "_b025",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1LineOutFb",
+                    "siblingId": "_a035",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 1 line-out level",
+                    "id": "_b026",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2LineOutFb",
+                    "siblingId": "_a036",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 2 line-out level",
+                    "id": "_b027",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3LineOutFb",
+                    "siblingId": "_a037",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 3 line-out level",
+                    "id": "_b028",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavLevel",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - lav real-time level 0-100 (~10-30 Hz)",
+                    "id": "_b029",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldLevel",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - handheld real-time level 0-100",
+                    "id": "_b030",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1Level",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 1 real-time level 0-100",
+                    "id": "_b031",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2Level",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 2 real-time level 0-100",
+                    "id": "_b032",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3Level",
+                    "siblingId": "",
+                    "dataType": 2,
+                    "notes": "Analog feedback - ceiling 3 real-time level 0-100",
+                    "id": "_b033",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicLavConnected",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - lav signal-present (mic detected)",
+                    "id": "_b034",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicHandheldConnected",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - handheld signal-present",
+                    "id": "_b035",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling1Connected",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - ceiling 1 signal-present",
+                    "id": "_b036",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling2Connected",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - ceiling 2 signal-present",
+                    "id": "_b037",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "MicCeiling3Connected",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - ceiling 3 signal-present",
+                    "id": "_b038",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display4SourceFb",
+                    "siblingId": "_a040",
+                    "dataType": 2,
+                    "notes": "Analog feedback - D4 active source",
+                    "id": "_b040",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "Display4PowerFb",
+                    "siblingId": "",
+                    "dataType": 1,
+                    "notes": "Digital feedback - D4 actually powered on",
+                    "id": "_b041",
+                    "parentId": "_0bnxx3lcs",
+                    "attributeType": 1
+                }
+            ],
+            "specifications": []
+        },
+        {
+            "Errors": [],
+            "parentId": "_jsw9gauhu",
+            "id": "_vidsync001x",
+            "name": "VideoSync",
+            "commands": [
+                {
+                    "Errors": [],
+                    "name": "RoomPcSyncSet",
+                    "siblingId": "_b001",
+                    "dataType": 1,
+                    "notes": "Dummy pair for RoomPcSync - unused at runtime",
+                    "id": "_a001",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ExtPcSyncSet",
+                    "siblingId": "_b002",
+                    "dataType": 1,
+                    "notes": "Dummy pair for ExtPcSync - unused at runtime",
+                    "id": "_a002",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaSyncSet",
+                    "siblingId": "_b003",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaSync - unused at runtime",
+                    "id": "_a003",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaMiracastSet",
+                    "siblingId": "_b004",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaMiracast - unused at runtime",
+                    "id": "_a004",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaAirPlaySet",
+                    "siblingId": "_b005",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaAirPlay - unused at runtime",
+                    "id": "_a005",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaTx3Set",
+                    "siblingId": "_b006",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaTx3 - unused at runtime",
+                    "id": "_a006",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopHdmiSyncSet",
+                    "siblingId": "_b007",
+                    "dataType": 1,
+                    "notes": "Dummy pair for LaptopHdmiSync - unused at runtime",
+                    "id": "_a007",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopUsbcSyncSet",
+                    "siblingId": "_b008",
+                    "dataType": 1,
+                    "notes": "Dummy pair for LaptopUsbcSync - unused at runtime",
+                    "id": "_a008",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 0
+                }
+            ],
+            "feedbacks": [
+                {
+                    "Errors": [],
+                    "name": "RoomPcSync",
+                    "siblingId": "_a001",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (Room PC) HDMI sync detect",
+                    "id": "_b001",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "ExtPcSync",
+                    "siblingId": "_a002",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (Ext PC) HDMI sync detect",
+                    "id": "_b002",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaSync",
+                    "siblingId": "_a003",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (AirMedia output) HDMI sync detect",
+                    "id": "_b003",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaMiracast",
+                    "siblingId": "_a004",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 Miracast session active",
+                    "id": "_b004",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaAirPlay",
+                    "siblingId": "_a005",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 AirPlay session active",
+                    "id": "_b005",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaTx3",
+                    "siblingId": "_a006",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 AM-TX3-200 wired transmitter active",
+                    "id": "_b006",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopHdmiSync",
+                    "siblingId": "_a007",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX-384 input 1 (BYOD HDMI) sync detect",
+                    "id": "_b007",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopUsbcSync",
+                    "siblingId": "_a008",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX-384 input 3 (BYOD USB-C) sync detect",
+                    "id": "_b008",
+                    "parentId": "_vidsync001x",
+                    "attributeType": 1
+                }
+            ],
+            "specifications": []
+        }
+    ],
+    "allComponentsForAllContracts": []
+}

@@ -1,0 +1,197 @@
+{
+    "Errors": [],
+    "id": "_vssync2026a",
+    "name": "VideoSync",
+    "description": "AA140 source video-sync feedback (8 digital FBs for Home source badges).",
+    "company": "MCCCD",
+    "client": "MCCCD",
+    "author": "Jordan Scales",
+    "version": "1.0.0.0",
+    "schemaVersion": 1,
+    "subContractLinks": [],
+    "subContracts": [],
+    "specifications": [
+        {
+            "Errors": [],
+            "parentId": "_vssync2026a",
+            "id": "_vssync2026b",
+            "componentId": "_vssync2026c",
+            "instanceName": "VideoSync",
+            "numberOfInstances": 1
+        }
+    ],
+    "components": [
+        {
+            "Errors": [],
+            "parentId": "_vssync2026a",
+            "id": "_vssync2026c",
+            "name": "VideoSync",
+            "commands": [
+                {
+                    "Errors": [],
+                    "name": "RoomPcSyncSet",
+                    "siblingId": "_b001",
+                    "dataType": 1,
+                    "notes": "Dummy pair for RoomPcSync feedback - unused at runtime",
+                    "id": "_a001",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "ExtPcSyncSet",
+                    "siblingId": "_b002",
+                    "dataType": 1,
+                    "notes": "Dummy pair for ExtPcSync feedback - unused at runtime",
+                    "id": "_a002",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaSyncSet",
+                    "siblingId": "_b003",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaSync feedback - unused at runtime",
+                    "id": "_a003",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaMiracastSet",
+                    "siblingId": "_b004",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaMiracast feedback - unused at runtime",
+                    "id": "_a004",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaAirPlaySet",
+                    "siblingId": "_b005",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaAirPlay feedback - unused at runtime",
+                    "id": "_a005",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaTx3Set",
+                    "siblingId": "_b006",
+                    "dataType": 1,
+                    "notes": "Dummy pair for AirMediaTx3 feedback - unused at runtime",
+                    "id": "_a006",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopHdmiSyncSet",
+                    "siblingId": "_b007",
+                    "dataType": 1,
+                    "notes": "Dummy pair for LaptopHdmiSync feedback - unused at runtime",
+                    "id": "_a007",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopUsbcSyncSet",
+                    "siblingId": "_b008",
+                    "dataType": 1,
+                    "notes": "Dummy pair for LaptopUsbcSync feedback - unused at runtime",
+                    "id": "_a008",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 0
+                }
+            ],
+            "feedbacks": [
+                {
+                    "Errors": [],
+                    "name": "RoomPcSync",
+                    "siblingId": "_a001",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (Room PC) HDMI sync detect",
+                    "id": "_b001",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "ExtPcSync",
+                    "siblingId": "_a002",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (Ext PC) HDMI sync detect",
+                    "id": "_b002",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaSync",
+                    "siblingId": "_a003",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX E30 (AirMedia output) HDMI sync detect",
+                    "id": "_b003",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaMiracast",
+                    "siblingId": "_a004",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 Miracast session active",
+                    "id": "_b004",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaAirPlay",
+                    "siblingId": "_a005",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 AirPlay session active",
+                    "id": "_b005",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "AirMediaTx3",
+                    "siblingId": "_a006",
+                    "dataType": 1,
+                    "notes": "Digital feedback - AM-3200 AM-TX3-200 wired transmitter active",
+                    "id": "_b006",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopHdmiSync",
+                    "siblingId": "_a007",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX-384 input 1 (BYOD HDMI) sync detect",
+                    "id": "_b007",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                },
+                {
+                    "Errors": [],
+                    "name": "LaptopUsbcSync",
+                    "siblingId": "_a008",
+                    "dataType": 1,
+                    "notes": "Digital feedback - NVX-384 input 3 (BYOD USB-C) sync detect",
+                    "id": "_b008",
+                    "parentId": "_vssync2026c",
+                    "attributeType": 1
+                }
+            ],
+            "specifications": []
+        }
+    ],
+    "allComponentsForAllContracts": []
+}
