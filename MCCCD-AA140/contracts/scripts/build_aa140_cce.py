@@ -34,7 +34,10 @@ BIDIRECTIONAL = [
     ("Display5Source",     "Display5SourceFb",     2),
     ("UsbHostSelect",      "UsbHostSelectFb",      2),
     ("AudioOutputSelect",  "AudioOutputSelectFb",  2),
-    ("CamTrackingMode",    "CamTrackingModeFb",    2),
+    ("CamPresenterFraming","CamPresenterFramingFb",1),
+    ("CamUsbOutput",       "CamUsbOutputFb",       2),
+    ("CamPresetZone",      "CamPresetZoneFb",      2),
+    ("CamTrackingProfile", "CamTrackingProfileFb", 2),
     ("MicLavMute",         "MicLavMuteFb",         1),
     ("MicHandheldMute",    "MicHandheldMuteFb",    1),
     ("MicCeiling1Mute",    "MicCeiling1MuteFb",    1),
@@ -59,6 +62,7 @@ PURE_COMMAND = [
     ("PtzUp", 1), ("PtzDown", 1), ("PtzLeft", 1), ("PtzRight", 1),
     ("CamSendToVtc", 1), ("ZoomIn", 1), ("ZoomOut", 1),
     ("CameraSelect", 2), ("ShotPresetRecall", 2), ("ShotPresetSave", 2), ("ShotPresetDelete", 2),
+    ("CamHomeShot", 1), ("CamTrackingShot", 1),
 ]
 
 # Pure feedback (State only): (stateName, dataType)
@@ -74,6 +78,8 @@ PURE_FEEDBACK = [
     ("RoomPcSync", 1), ("ExtPcSync", 1), ("AirMediaSync", 1),
     ("AirMediaMiracast", 1), ("AirMediaAirPlay", 1), ("AirMediaTx3", 1),
     ("LaptopHdmiSync", 1), ("LaptopUsbcSync", 1),
+    # Camera live coordinates (raw VISCA: pan/tilt signed-as-ushort, zoom 0-16384):
+    ("CamPanPos", 2), ("CamTiltPos", 2), ("CamZoomPos", 2),
 ]
 
 
