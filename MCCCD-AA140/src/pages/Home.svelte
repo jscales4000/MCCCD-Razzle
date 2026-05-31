@@ -171,18 +171,6 @@
         Advanced Routing →
       </button>
       <div class="eyebrow">— Choose your source —</div>
-      <!-- DIAG: bidirectional contract test. Two buttons publish on opposite SmartObjects;
-           displays show feedback values from each. Compare panel taps against err log. -->
-      <div style="font-size:11px;font-weight:700;color:#fde047;background:rgba(0,0,0,0.65);padding:8px 12px;border-radius:6px;margin-bottom:8px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-        <strong style="color:#fff;">CONTRACT TEST</strong>
-        <button onclick={() => pulseDigital(SIGNALS.displayPower)} style="padding:4px 10px;border-radius:4px;background:#1e293b;color:#fde047;border:1px solid #475569;cursor:pointer;font:inherit;">Pulse SO1.DisplayPower</button>
-        <button onclick={() => pulseDigital(SIGNALS.roomPcSyncSet)} style="padding:4px 10px;border-radius:4px;background:#1e293b;color:#fde047;border:1px solid #475569;cursor:pointer;font:inherit;">Pulse SO2.RoomPcSyncSet</button>
-        <span>SO1.SystemPowerFb={$systemPowerFb ? '1' : '0'}</span>
-        <span>SO2.RoomPc={$roomPcSync ? '1' : '0'}</span>
-        <span>SO2.ExtPc={$extPcSync ? '1' : '0'}</span>
-        <span>SO2.AirMedia={$airMediaSync ? '1' : '0'}</span>
-        <span>SO2.Laptop={$laptopHdmiSync ? '1' : '0'}</span>
-      </div>
       <div class="src-row">
         {#each SOURCES as src}
           {@const s = sourceStates[src.key]}
