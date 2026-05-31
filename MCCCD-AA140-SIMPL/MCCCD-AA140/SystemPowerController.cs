@@ -111,6 +111,7 @@ namespace MCCCD_AA140
 
             // Audio defaults to D1.
             _panel.WriteUShort(PanelJoins.UShortIn.AudioOutputSelectFb, 1);
+
         }
 
         public void PowerDownSequence()

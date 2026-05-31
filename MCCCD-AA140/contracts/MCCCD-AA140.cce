@@ -805,7 +805,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - NVX E30 (Room PC) HDMI sync detect",
-                    "id": "_b050",
+                    "id": "_b042",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -815,7 +815,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - NVX E30 (Ext PC) HDMI sync detect",
-                    "id": "_b051",
+                    "id": "_b043",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -825,7 +825,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - NVX E30 (AirMedia output) HDMI sync detect",
-                    "id": "_b052",
+                    "id": "_b044",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -835,7 +835,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - AM-3200 Miracast session active",
-                    "id": "_b053",
+                    "id": "_b045",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -845,7 +845,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - AM-3200 AirPlay session active",
-                    "id": "_b054",
+                    "id": "_b046",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -855,7 +855,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - AM-3200 AM-TX3-200 wired transmitter session active",
-                    "id": "_b055",
+                    "id": "_b047",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -865,7 +865,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - NVX-384 input 1 (BYOD HDMI) sync detect",
-                    "id": "_b056",
+                    "id": "_b048",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 },
@@ -875,7 +875,7 @@
                     "siblingId": "",
                     "dataType": 1,
                     "notes": "Digital feedback - NVX-384 input 3 (BYOD USB-C) sync detect",
-                    "id": "_b057",
+                    "id": "_b049",
                     "parentId": "_0bnxx3lcs",
                     "attributeType": 1
                 }

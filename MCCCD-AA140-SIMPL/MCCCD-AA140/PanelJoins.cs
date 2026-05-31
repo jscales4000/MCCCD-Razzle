@@ -76,17 +76,28 @@ namespace MCCCD_AA140
             public const uint MicCeiling2Connected = 14;
             public const uint MicCeiling3Connected = 15;
             public const uint Display4PowerFb      = 16;
-            // Source video sync feedback (Home source card badges).
-            // Driven from NvxRoutingService (HDMI sync FBs) and AirMediaService
-            // (AM-3200 REST poll for the 3 sharing-method signals).
-            public const uint RoomPcSync           = 17;
-            public const uint ExtPcSync            = 18;
-            public const uint AirMediaSync         = 19;
-            public const uint AirMediaMiracast     = 20;
-            public const uint AirMediaAirPlay      = 21;
-            public const uint AirMediaTx3          = 22;
-            public const uint LaptopHdmiSync       = 23;
-            public const uint LaptopUsbcSync       = 24;
+        }
+
+        /// <summary>
+        /// SmartObject 2 — the VideoSync sub-contract added 2026-05-30. Fresh
+        /// slot allocation, NOT subject to SmartObject 1's ~10-slot boolean-input
+        /// cap. Written via PanelDispatcher.WriteBoolSO2 (NOT WriteBool, which
+        /// targets SmartObject 1). All 8 entries here are paired in the
+        /// VideoSync.cce sub-contract — pairing is required for Contract Editor
+        /// to keep the signals on regen + for CrComLib to subscribe properly.
+        /// </summary>
+        public const uint VideoSyncSmartObjectId = 2;
+
+        public static class SO2BoolIn
+        {
+            public const uint RoomPcSync           = 1;
+            public const uint ExtPcSync            = 2;
+            public const uint AirMediaSync         = 3;
+            public const uint AirMediaMiracast     = 4;
+            public const uint AirMediaAirPlay      = 5;
+            public const uint AirMediaTx3          = 6;
+            public const uint LaptopHdmiSync       = 7;
+            public const uint LaptopUsbcSync       = 8;
         }
 
         /// <summary>

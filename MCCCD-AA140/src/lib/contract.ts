@@ -156,16 +156,22 @@ export const SIGNALS = {
   audioLinkCeilings12:   `${ROOM_NAME}.AudioLinkCeilings12`, // digital toggle
   audioLinkCeilings12Fb: `${ROOM_NAME}.AudioLinkCeilings12Fb`,
 
-  // Source video sync feedback (digital FB, panel-side only)
+  // Source video sync feedback (digital FB, panel-side only).
   // Drives the tri-state corner badge on each Home source card.
   // AirMedia method priority on simultaneous-fire: tx3 > airPlay > miracast.
-  roomPcSync:           `${ROOM_NAME}.RoomPcSync`,
-  extPcSync:            `${ROOM_NAME}.ExtPcSync`,
-  airMediaSync:         `${ROOM_NAME}.AirMediaSync`,
-  airMediaMiracast:     `${ROOM_NAME}.AirMediaMiracast`,
-  airMediaAirPlay:      `${ROOM_NAME}.AirMediaAirPlay`,
-  airMediaTx3:          `${ROOM_NAME}.AirMediaTx3`,
-  laptopHdmiSync:       `${ROOM_NAME}.LaptopHdmiSync`,
-  laptopUsbcSync:       `${ROOM_NAME}.LaptopUsbcSync`,
+  //
+  // These live under the `VideoSync` sub-contract (SmartObject 2 on the panel)
+  // — not the main AA140 contract (SmartObject 1). The split is required
+  // because SmartObject 1's boolean-input capacity caps at slot ~10 on this
+  // panel; writes past that silently fail. Each sub-contract gets its own
+  // fresh SmartObject allocation. See 2026-05-30 lessons-learned.
+  roomPcSync:           'VideoSync.RoomPcSync',
+  extPcSync:            'VideoSync.ExtPcSync',
+  airMediaSync:         'VideoSync.AirMediaSync',
+  airMediaMiracast:     'VideoSync.AirMediaMiracast',
+  airMediaAirPlay:      'VideoSync.AirMediaAirPlay',
+  airMediaTx3:          'VideoSync.AirMediaTx3',
+  laptopHdmiSync:       'VideoSync.LaptopHdmiSync',
+  laptopUsbcSync:       'VideoSync.LaptopUsbcSync',
 } as const;
 

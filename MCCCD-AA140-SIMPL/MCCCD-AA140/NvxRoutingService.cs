@@ -104,9 +104,9 @@ namespace MCCCD_AA140
             // call registers a reader callback (closure over a Crestron
             // BoolOutputSig); the 1Hz _syncPollTimer fires them all and
             // dispatches BoolValue changes to the panel via PanelDispatcher.
-            WireEncoderHdmiSync(_encRoomPc,   PanelJoins.BoolIn.RoomPcSync,   "RoomPC");
-            WireEncoderHdmiSync(_encExtPc,    PanelJoins.BoolIn.ExtPcSync,    "ExtPC");
-            WireEncoderHdmiSync(_encAirMedia, PanelJoins.BoolIn.AirMediaSync, "AirMedia");
+            WireEncoderHdmiSync(_encRoomPc,   PanelJoins.SO2BoolIn.RoomPcSync,   "RoomPC");
+            WireEncoderHdmiSync(_encExtPc,    PanelJoins.SO2BoolIn.ExtPcSync,    "ExtPC");
+            WireEncoderHdmiSync(_encAirMedia, PanelJoins.SO2BoolIn.AirMediaSync, "AirMedia");
             WireNvx384InputSync(_encHdmiUsbc);
 
             // Start the sync poll loop after all readers are registered.
@@ -356,7 +356,7 @@ namespace MCCCD_AA140
                 if (!changed) return;
                 _lastSync[panelJoin] = v;
                 try {
-                    _panel.WriteBool(panelJoin, v);
+                    _panel.WriteBoolSO2(panelJoin, v);
                     ErrorLog.Notice("NVX {0}: sync -> {1} (join {2})", label, v, panelJoin);
                     DebugTrace.Lifecycle("nvx_sync_change", new Dictionary<string, object> {
                         { "device", "nvx-" + label.ToLowerInvariant() },
@@ -401,7 +401,7 @@ namespace MCCCD_AA140
                     var en = enc.HdmiIn.GetEnumerator();
                     if (en.MoveNext()) hdmiInput = en.Current;
                 }
-                WireSyncFeedbackReflective(hdmiInput, PanelJoins.BoolIn.LaptopHdmiSync, "NVX-384-HDMI",
+                WireSyncFeedbackReflective(hdmiInput, PanelJoins.SO2BoolIn.LaptopHdmiSync, "NVX-384-HDMI",
                     "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected");
             } catch (System.Exception ex) {
                 ErrorLog.Warn("NVX-384 HDMI: setup failed: {0}", ex.Message);
@@ -439,7 +439,7 @@ namespace MCCCD_AA140
                 // DmNvxUsbInput (per live log) doesn't expose SyncDetectedFeedback.
                 // Expanded candidate list — first reflection pass also logs
                 // the type's actual properties so we can learn from the warning.
-                WireSyncFeedbackReflective(usbcInput, PanelJoins.BoolIn.LaptopUsbcSync, "NVX-384-USBC",
+                WireSyncFeedbackReflective(usbcInput, PanelJoins.SO2BoolIn.LaptopUsbcSync, "NVX-384-USBC",
                     "SyncDetectedFeedback", "VideoDetectedFeedback", "SyncDetected", "VideoDetected", "SourceDetectedFeedback",
                     "HpdFeedback", "ConnectedFeedback", "SignalPresentFeedback", "SourceConnectedFeedback",
                     "DeviceConnectedFeedback", "LinkActiveFeedback", "DetectedFeedback", "Detected",

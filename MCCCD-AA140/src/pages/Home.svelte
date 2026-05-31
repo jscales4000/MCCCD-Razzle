@@ -179,11 +179,12 @@
             class:active={$display1SourceFb === src.value}
             onclick={() => selectSourceForAll(src.value)}
             aria-pressed={$display1SourceFb === src.value}
-            aria-label={`Send ${src.name} to all displays${s.state !== 'idle' ? ' — ' + s.state : ''}`}
+            aria-label={`Send ${src.name} to all displays — sync ${s.state}`}
           >
-            {#if s.state !== 'idle'}
-              <span class="sync-dot {s.state}" aria-hidden="true"></span>
-            {/if}
+            <span class="sync-dot {s.state}" aria-hidden="true"></span>
+            <span class="dbg-raw">
+              {#if src.key === 'roomPc'}r:{$roomPcSync ? '1' : '0'}{:else if src.key === 'extPc'}e:{$extPcSync ? '1' : '0'}{:else if src.key === 'airMedia'}a:{$airMediaSync ? '1' : '0'}/m:{$airMediaMiracast ? '1' : '0'}/p:{$airMediaAirPlay ? '1' : '0'}/t:{$airMediaTx3 ? '1' : '0'}{:else}h:{$laptopHdmiSync ? '1' : '0'}/u:{$laptopUsbcSync ? '1' : '0'}{/if}
+            </span>
             {#if src.value === 1}
               <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
             {:else if src.value === 2}
@@ -485,26 +486,45 @@
 
   /* Footer styles live in AppFooter.svelte. */
 
-  /* Sync badge — top-right corner of each hero card.
+  /* Sync badge — always rendered in the top-right corner of each hero card.
      Sits BELOW the 3px orange active-routing stripe (top:0;height:3px), so they
-     never overlap. Green = live, amber = ready. Idle = not rendered. */
+     never overlap. Grey = idle (no sync), green = live (active video), amber =
+     ready (AirMedia synced but nobody sharing yet). Persistent visibility makes
+     the badge a glanceable status row across all 4 source cards. */
   .sync-dot {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 9px;
-    height: 9px;
+    width: 11px;
+    height: 11px;
     border-radius: 50%;
     pointer-events: none;
+    transition: background 220ms ease, box-shadow 220ms ease;
+  }
+  .sync-dot.idle {
+    background: #475569;
+    box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.4);
   }
   .sync-dot.live {
     background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.65);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.7), 0 0 0 1px rgba(34, 197, 94, 0.5);
     animation: sync-pulse 2.2s ease-in-out infinite;
   }
   .sync-dot.ready {
     background: #f59e0b;
-    box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.55), 0 0 0 1px rgba(245, 158, 11, 0.45);
+  }
+  .dbg-raw {
+    position: absolute;
+    bottom: 6px;
+    left: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fde047;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 1px 5px;
+    border-radius: 3px;
+    pointer-events: none;
   }
   @keyframes sync-pulse {
     0%, 100% { opacity: 1; }

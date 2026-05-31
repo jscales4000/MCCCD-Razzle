@@ -161,19 +161,19 @@ namespace MCCCD_AA140
         {
             if (_panel == null) return;
             if (miracast != _lastMiracast) {
-                try { _panel.WriteBool(PanelJoins.BoolIn.AirMediaMiracast, miracast); }
+                try { _panel.WriteBoolSO2(PanelJoins.SO2BoolIn.AirMediaMiracast, miracast); }
                 catch (System.Exception ex) { ErrorLog.Warn("AirMedia: miracast dispatch: {0}", ex.Message); }
                 _lastMiracast = miracast;
                 ErrorLog.Notice("AirMedia: miracast={0}", miracast);
             }
             if (airplay != _lastAirPlay) {
-                try { _panel.WriteBool(PanelJoins.BoolIn.AirMediaAirPlay, airplay); }
+                try { _panel.WriteBoolSO2(PanelJoins.SO2BoolIn.AirMediaAirPlay, airplay); }
                 catch (System.Exception ex) { ErrorLog.Warn("AirMedia: airplay dispatch: {0}", ex.Message); }
                 _lastAirPlay = airplay;
                 ErrorLog.Notice("AirMedia: airplay={0}", airplay);
             }
             if (tx3 != _lastTx3) {
-                try { _panel.WriteBool(PanelJoins.BoolIn.AirMediaTx3, tx3); }
+                try { _panel.WriteBoolSO2(PanelJoins.SO2BoolIn.AirMediaTx3, tx3); }
                 catch (System.Exception ex) { ErrorLog.Warn("AirMedia: tx3 dispatch: {0}", ex.Message); }
                 _lastTx3 = tx3;
                 ErrorLog.Notice("AirMedia: tx3={0}", tx3);

@@ -62,6 +62,26 @@ namespace MCCCD_AA140
                     ErrorLog.Warn("PanelDispatcher: hook failed on panel IPID 0x{0:X2}: {1}",
                         panel.ID, ex.Message);
                 }
+
+                // DIAG: enumerate ALL SmartObjects the panel actually exposes
+                // so we know whether SO2 (VideoSync) was registered or not.
+                try {
+                    ErrorLog.Notice("PanelDispatcher: panel IPID 0x{0:X2} has {1} SmartObject(s)",
+                        panel.ID, panel.SmartObjects.Count);
+                    foreach (var kv in panel.SmartObjects) {
+                        var soId = kv.Key;
+                        var soObj = kv.Value;
+                        ErrorLog.Notice("  SO {0}: {1}", soId, soObj == null ? "null" : "present");
+                    }
+                    // Explicitly check VideoSyncSmartObjectId
+                    var so2 = panel.SmartObjects[PanelJoins.VideoSyncSmartObjectId];
+                    ErrorLog.Notice("PanelDispatcher: SmartObjects[{0}] (VideoSync) = {1}",
+                        PanelJoins.VideoSyncSmartObjectId,
+                        so2 == null ? "NULL" : "non-null");
+                } catch (Exception ex) {
+                    ErrorLog.Warn("PanelDispatcher: SO enumeration on panel IPID 0x{0:X2}: {1}",
+                        panel.ID, ex.Message);
+                }
             }
         }
 
@@ -94,6 +114,26 @@ namespace MCCCD_AA140
                 }
             }
         }
+
+        /// <summary>
+        /// Write to SmartObject 2 (VideoSync sub-contract). Used for the 8
+        /// source video-sync feedbacks that wouldn't fit in SmartObject 1's
+        /// ~10-slot boolean-input cap. Joins live under PanelJoins.SO2BoolIn.
+        /// </summary>
+        public void WriteBoolSO2(uint join, bool value)
+        {
+            foreach (var panel in _panels) {
+                if (panel == null) continue;
+                try {
+                    var so = panel.SmartObjects[PanelJoins.VideoSyncSmartObjectId];
+                    if (so == null) continue;
+                    so.BooleanInput[join].BoolValue = value;
+                } catch (Exception ex) {
+                    ErrorLog.Warn("PanelDispatcher.WriteBoolSO2 join={0}: {1}", join, ex.Message);
+                }
+            }
+        }
+
 
         public void WriteUShort(uint join, ushort value)
         {

@@ -1,6 +1,6 @@
 {
 	"name": "MCCCD_AA140",
-	"timestamp": "2026-05-29 18:59:13.999",
+	"timestamp": "2026-05-30 16:17:38.688",
 	"version": "1.1.0.0",
 	"schema_version": 1,
 	"extra_value": "AA140 panel: 3 displays, 4 sources, 3 cameras, Q-SYS audio.",
@@ -26,6 +26,16 @@
 					"16": "AA140.MicCeiling1Mute",
 					"17": "AA140.MicCeiling2Mute",
 					"18": "AA140.MicCeiling3Mute"
+				},
+				"2": {
+					"1": "VideoSync.RoomPcSyncSet",
+					"2": "VideoSync.ExtPcSyncSet",
+					"3": "VideoSync.AirMediaSyncSet",
+					"4": "VideoSync.AirMediaMiracastSet",
+					"5": "VideoSync.AirMediaAirPlaySet",
+					"6": "VideoSync.AirMediaTx3Set",
+					"7": "VideoSync.LaptopHdmiSyncSet",
+					"8": "VideoSync.LaptopUsbcSyncSet"
 				}
 			},
 			"numeric": {
@@ -116,36 +126,68 @@
 					"smartObjectId": 1
 				},
 				"AA140.RoomPcSync": {
-					"joinId": 17,
+					"joinId": 16,
 					"smartObjectId": 1
 				},
 				"AA140.ExtPcSync": {
-					"joinId": 18,
+					"joinId": 17,
 					"smartObjectId": 1
 				},
 				"AA140.AirMediaSync": {
-					"joinId": 19,
+					"joinId": 18,
 					"smartObjectId": 1
 				},
 				"AA140.AirMediaMiracast": {
-					"joinId": 20,
+					"joinId": 19,
 					"smartObjectId": 1
 				},
 				"AA140.AirMediaAirPlay": {
-					"joinId": 21,
+					"joinId": 20,
 					"smartObjectId": 1
 				},
 				"AA140.AirMediaTx3": {
-					"joinId": 22,
+					"joinId": 21,
 					"smartObjectId": 1
 				},
 				"AA140.LaptopHdmiSync": {
-					"joinId": 23,
+					"joinId": 22,
 					"smartObjectId": 1
 				},
 				"AA140.LaptopUsbcSync": {
-					"joinId": 24,
+					"joinId": 23,
 					"smartObjectId": 1
+				},
+				"VideoSync.RoomPcSync": {
+					"joinId": 1,
+					"smartObjectId": 2
+				},
+				"VideoSync.ExtPcSync": {
+					"joinId": 2,
+					"smartObjectId": 2
+				},
+				"VideoSync.AirMediaSync": {
+					"joinId": 3,
+					"smartObjectId": 2
+				},
+				"VideoSync.AirMediaMiracast": {
+					"joinId": 4,
+					"smartObjectId": 2
+				},
+				"VideoSync.AirMediaAirPlay": {
+					"joinId": 5,
+					"smartObjectId": 2
+				},
+				"VideoSync.AirMediaTx3": {
+					"joinId": 6,
+					"smartObjectId": 2
+				},
+				"VideoSync.LaptopHdmiSync": {
+					"joinId": 7,
+					"smartObjectId": 2
+				},
+				"VideoSync.LaptopUsbcSync": {
+					"joinId": 8,
+					"smartObjectId": 2
 				}
 			},
 			"numeric": {
