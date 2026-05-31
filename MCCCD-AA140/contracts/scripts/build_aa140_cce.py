@@ -31,6 +31,8 @@ BIDIRECTIONAL = [
     ("Display2Source",     "Display2SourceFb",     2),
     ("Display3Source",     "Display3SourceFb",     2),
     ("Display4Source",     "Display4SourceFb",     2),
+    ("Display5Source",     "Display5SourceFb",     2),
+    ("UsbHostSelect",      "UsbHostSelectFb",      2),
     ("AudioOutputSelect",  "AudioOutputSelectFb",  2),
     ("CamTrackingMode",    "CamTrackingModeFb",    2),
     ("MicLavMute",         "MicLavMuteFb",         1),
