@@ -32,6 +32,8 @@ namespace MCCCD_AA140
         event EventHandler<UIEventArgs> Display2Source;
         event EventHandler<UIEventArgs> Display3Source;
         event EventHandler<UIEventArgs> Display4Source;
+        event EventHandler<UIEventArgs> Display5Source;
+        event EventHandler<UIEventArgs> UsbHostSelect;
         event EventHandler<UIEventArgs> AudioOutputSelect;
         event EventHandler<UIEventArgs> CamTrackingMode;
         event EventHandler<UIEventArgs> MicLavTrim;
@@ -77,6 +79,8 @@ namespace MCCCD_AA140
         void Display2SourceFb(MainUShortInputSigDelegate callback);
         void Display3SourceFb(MainUShortInputSigDelegate callback);
         void Display4SourceFb(MainUShortInputSigDelegate callback);
+        void Display5SourceFb(MainUShortInputSigDelegate callback);
+        void UsbHostSelectFb(MainUShortInputSigDelegate callback);
         void AudioOutputSelectFb(MainUShortInputSigDelegate callback);
         void CamTrackingModeFb(MainUShortInputSigDelegate callback);
         void MicLavTrimFb(MainUShortInputSigDelegate callback);
@@ -173,46 +177,50 @@ namespace MCCCD_AA140
                 public const uint Display2Source = 2;
                 public const uint Display3Source = 3;
                 public const uint Display4Source = 4;
-                public const uint AudioOutputSelect = 5;
-                public const uint CamTrackingMode = 6;
-                public const uint MicLavTrim = 7;
-                public const uint MicHandheldTrim = 8;
-                public const uint MicCeiling1Trim = 9;
-                public const uint MicCeiling2Trim = 10;
-                public const uint MicCeiling3Trim = 11;
-                public const uint MicLavLineOut = 12;
-                public const uint MicHandheldLineOut = 13;
-                public const uint MicCeiling1LineOut = 14;
-                public const uint MicCeiling2LineOut = 15;
-                public const uint MicCeiling3LineOut = 16;
-                public const uint CameraSelect = 17;
-                public const uint ShotPresetRecall = 18;
-                public const uint ShotPresetSave = 19;
-                public const uint ShotPresetDelete = 20;
+                public const uint Display5Source = 5;
+                public const uint UsbHostSelect = 6;
+                public const uint AudioOutputSelect = 7;
+                public const uint CamTrackingMode = 8;
+                public const uint MicLavTrim = 9;
+                public const uint MicHandheldTrim = 10;
+                public const uint MicCeiling1Trim = 11;
+                public const uint MicCeiling2Trim = 12;
+                public const uint MicCeiling3Trim = 13;
+                public const uint MicLavLineOut = 14;
+                public const uint MicHandheldLineOut = 15;
+                public const uint MicCeiling1LineOut = 16;
+                public const uint MicCeiling2LineOut = 17;
+                public const uint MicCeiling3LineOut = 18;
+                public const uint CameraSelect = 19;
+                public const uint ShotPresetRecall = 20;
+                public const uint ShotPresetSave = 21;
+                public const uint ShotPresetDelete = 22;
 
                 public const uint Display1SourceFb = 1;
                 public const uint Display2SourceFb = 2;
                 public const uint Display3SourceFb = 3;
                 public const uint Display4SourceFb = 4;
-                public const uint AudioOutputSelectFb = 5;
-                public const uint CamTrackingModeFb = 6;
-                public const uint MicLavTrimFb = 7;
-                public const uint MicHandheldTrimFb = 8;
-                public const uint MicCeiling1TrimFb = 9;
-                public const uint MicCeiling2TrimFb = 10;
-                public const uint MicCeiling3TrimFb = 11;
-                public const uint MicLavLineOutFb = 12;
-                public const uint MicHandheldLineOutFb = 13;
-                public const uint MicCeiling1LineOutFb = 14;
-                public const uint MicCeiling2LineOutFb = 15;
-                public const uint MicCeiling3LineOutFb = 16;
-                public const uint OccupancyState = 21;
-                public const uint ShutdownCountdown = 22;
-                public const uint MicLavLevel = 23;
-                public const uint MicHandheldLevel = 24;
-                public const uint MicCeiling1Level = 25;
-                public const uint MicCeiling2Level = 26;
-                public const uint MicCeiling3Level = 27;
+                public const uint Display5SourceFb = 5;
+                public const uint UsbHostSelectFb = 6;
+                public const uint AudioOutputSelectFb = 7;
+                public const uint CamTrackingModeFb = 8;
+                public const uint MicLavTrimFb = 9;
+                public const uint MicHandheldTrimFb = 10;
+                public const uint MicCeiling1TrimFb = 11;
+                public const uint MicCeiling2TrimFb = 12;
+                public const uint MicCeiling3TrimFb = 13;
+                public const uint MicLavLineOutFb = 14;
+                public const uint MicHandheldLineOutFb = 15;
+                public const uint MicCeiling1LineOutFb = 16;
+                public const uint MicCeiling2LineOutFb = 17;
+                public const uint MicCeiling3LineOutFb = 18;
+                public const uint OccupancyState = 23;
+                public const uint ShutdownCountdown = 24;
+                public const uint MicLavLevel = 25;
+                public const uint MicHandheldLevel = 26;
+                public const uint MicCeiling1Level = 27;
+                public const uint MicCeiling2Level = 28;
+                public const uint MicCeiling3Level = 29;
             }
         }
 
@@ -254,6 +262,8 @@ namespace MCCCD_AA140
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display2Source, onDisplay2Source);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display3Source, onDisplay3Source);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display4Source, onDisplay4Source);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display5Source, onDisplay5Source);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.UsbHostSelect, onUsbHostSelect);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.AudioOutputSelect, onAudioOutputSelect);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamTrackingMode, onCamTrackingMode);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavTrim, onMicLavTrim);
@@ -658,6 +668,22 @@ namespace MCCCD_AA140
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
+        public event EventHandler<UIEventArgs> Display5Source;
+        private void onDisplay5Source(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = Display5Source;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> UsbHostSelect;
+        private void onUsbHostSelect(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = UsbHostSelect;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
         public event EventHandler<UIEventArgs> AudioOutputSelect;
         private void onAudioOutputSelect(SmartObjectEventArgs eventArgs)
         {
@@ -816,6 +842,22 @@ namespace MCCCD_AA140
             for (int index = 0; index < Devices.Count; index++)
             {
                 callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display4SourceFb], this);
+            }
+        }
+
+        public void Display5SourceFb(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.Display5SourceFb], this);
+            }
+        }
+
+        public void UsbHostSelectFb(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.UsbHostSelectFb], this);
             }
         }
 
@@ -1020,6 +1062,8 @@ namespace MCCCD_AA140
             Display2Source = null;
             Display3Source = null;
             Display4Source = null;
+            Display5Source = null;
+            UsbHostSelect = null;
             AudioOutputSelect = null;
             CamTrackingMode = null;
             MicLavTrim = null;

@@ -1,6 +1,6 @@
 {
 	"name": "MCCCD_AA140",
-	"timestamp": "2026-05-31 09:54:45.266",
+	"timestamp": "2026-05-31 12:42:03.979",
 	"version": "2.0.0.0",
 	"schema_version": 1,
 	"extra_value": "AA140 panel: 3 displays, 4 sources, 3 cameras, Shure audio. Canonical direction encoding.",
@@ -40,25 +40,27 @@
 					"2": "AA140.Display2SourceFb",
 					"3": "AA140.Display3SourceFb",
 					"4": "AA140.Display4SourceFb",
-					"5": "AA140.AudioOutputSelectFb",
-					"6": "AA140.CamTrackingModeFb",
-					"7": "AA140.MicLavTrimFb",
-					"8": "AA140.MicHandheldTrimFb",
-					"9": "AA140.MicCeiling1TrimFb",
-					"10": "AA140.MicCeiling2TrimFb",
-					"11": "AA140.MicCeiling3TrimFb",
-					"12": "AA140.MicLavLineOutFb",
-					"13": "AA140.MicHandheldLineOutFb",
-					"14": "AA140.MicCeiling1LineOutFb",
-					"15": "AA140.MicCeiling2LineOutFb",
-					"16": "AA140.MicCeiling3LineOutFb",
-					"21": "AA140.OccupancyState",
-					"22": "AA140.ShutdownCountdown",
-					"23": "AA140.MicLavLevel",
-					"24": "AA140.MicHandheldLevel",
-					"25": "AA140.MicCeiling1Level",
-					"26": "AA140.MicCeiling2Level",
-					"27": "AA140.MicCeiling3Level"
+					"5": "AA140.Display5SourceFb",
+					"6": "AA140.UsbHostSelectFb",
+					"7": "AA140.AudioOutputSelectFb",
+					"8": "AA140.CamTrackingModeFb",
+					"9": "AA140.MicLavTrimFb",
+					"10": "AA140.MicHandheldTrimFb",
+					"11": "AA140.MicCeiling1TrimFb",
+					"12": "AA140.MicCeiling2TrimFb",
+					"13": "AA140.MicCeiling3TrimFb",
+					"14": "AA140.MicLavLineOutFb",
+					"15": "AA140.MicHandheldLineOutFb",
+					"16": "AA140.MicCeiling1LineOutFb",
+					"17": "AA140.MicCeiling2LineOutFb",
+					"18": "AA140.MicCeiling3LineOutFb",
+					"23": "AA140.OccupancyState",
+					"24": "AA140.ShutdownCountdown",
+					"25": "AA140.MicLavLevel",
+					"26": "AA140.MicHandheldLevel",
+					"27": "AA140.MicCeiling1Level",
+					"28": "AA140.MicCeiling2Level",
+					"29": "AA140.MicCeiling3Level"
 				}
 			}
 		},
@@ -154,68 +156,76 @@
 					"joinId": 4,
 					"smartObjectId": 1
 				},
-				"AA140.AudioOutputSelect": {
+				"AA140.Display5Source": {
 					"joinId": 5,
 					"smartObjectId": 1
 				},
-				"AA140.CamTrackingMode": {
+				"AA140.UsbHostSelect": {
 					"joinId": 6,
 					"smartObjectId": 1
 				},
-				"AA140.MicLavTrim": {
+				"AA140.AudioOutputSelect": {
 					"joinId": 7,
 					"smartObjectId": 1
 				},
-				"AA140.MicHandheldTrim": {
+				"AA140.CamTrackingMode": {
 					"joinId": 8,
 					"smartObjectId": 1
 				},
-				"AA140.MicCeiling1Trim": {
+				"AA140.MicLavTrim": {
 					"joinId": 9,
 					"smartObjectId": 1
 				},
-				"AA140.MicCeiling2Trim": {
+				"AA140.MicHandheldTrim": {
 					"joinId": 10,
 					"smartObjectId": 1
 				},
-				"AA140.MicCeiling3Trim": {
+				"AA140.MicCeiling1Trim": {
 					"joinId": 11,
 					"smartObjectId": 1
 				},
-				"AA140.MicLavLineOut": {
+				"AA140.MicCeiling2Trim": {
 					"joinId": 12,
 					"smartObjectId": 1
 				},
-				"AA140.MicHandheldLineOut": {
+				"AA140.MicCeiling3Trim": {
 					"joinId": 13,
 					"smartObjectId": 1
 				},
-				"AA140.MicCeiling1LineOut": {
+				"AA140.MicLavLineOut": {
 					"joinId": 14,
 					"smartObjectId": 1
 				},
-				"AA140.MicCeiling2LineOut": {
+				"AA140.MicHandheldLineOut": {
 					"joinId": 15,
 					"smartObjectId": 1
 				},
-				"AA140.MicCeiling3LineOut": {
+				"AA140.MicCeiling1LineOut": {
 					"joinId": 16,
 					"smartObjectId": 1
 				},
-				"AA140.CameraSelect": {
+				"AA140.MicCeiling2LineOut": {
 					"joinId": 17,
 					"smartObjectId": 1
 				},
-				"AA140.ShotPresetRecall": {
+				"AA140.MicCeiling3LineOut": {
 					"joinId": 18,
 					"smartObjectId": 1
 				},
-				"AA140.ShotPresetSave": {
+				"AA140.CameraSelect": {
 					"joinId": 19,
 					"smartObjectId": 1
 				},
-				"AA140.ShotPresetDelete": {
+				"AA140.ShotPresetRecall": {
 					"joinId": 20,
+					"smartObjectId": 1
+				},
+				"AA140.ShotPresetSave": {
+					"joinId": 21,
+					"smartObjectId": 1
+				},
+				"AA140.ShotPresetDelete": {
+					"joinId": 22,
 					"smartObjectId": 1
 				}
 			}
