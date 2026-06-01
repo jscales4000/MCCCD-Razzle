@@ -44,7 +44,6 @@ namespace MCCCD_AA140
 
         private int _active = 1;            // 1..2
         private CTimer _publishTimer;
-        private bool _lastPresenterTracking;
 
         public CameraService(Contract c, CrestronControlSystem cs)
         {
@@ -84,6 +83,13 @@ namespace MCCCD_AA140
                 bool on = a.SigArgs.Sig.BoolValue;
                 Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(80) : ViscaProtocol.PresetRecall(81));
                 DebugTrace.Command("cam-1", "presenter-framing", on ? "on" : "off");
+            };
+            // Group tracking on the I20 (82=on / 83=off). NOT VISCA-pollable -> cached echo.
+            _c.AA140.CamGroupFraming += (s, a) => {
+                bool on = a.SigArgs.Sig.BoolValue;
+                Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(82) : ViscaProtocol.PresetRecall(83));
+                DebugTrace.Command("cam-1", "group-framing", on ? "on" : "off");
+                _c.AA140.CamGroupFramingFb((sig, m) => sig.BoolValue = on);
             };
             // USB output / Q&A switch on the I12 host: 1=Presenter(86) 2=Group(85) 3=Auto(84).
             _c.AA140.CamUsbOutput += (s, a) => {
@@ -126,10 +132,13 @@ namespace MCCCD_AA140
                 _c.AA140.CamTiltPos((sig, m) => sig.UShortValue = unchecked((ushort)cam.TiltPosition));
                 _c.AA140.CamZoomPos((sig, m) => sig.UShortValue = cam.ZoomPosition);
             }
+            // Always republish presenter-tracking state (polled) so a panel UI
+            // restart always re-syncs — CIP suppresses unchanged values, so
+            // writing every tick is cheap and avoids a "stuck OFF after reload" toggle.
             var i20 = Cam(CAM_PRESENTER);
-            if (i20 != null && i20.TrackingActive != _lastPresenterTracking) {
-                _lastPresenterTracking = i20.TrackingActive;
-                _c.AA140.CamPresenterFramingFb((sig, m) => sig.BoolValue = i20.TrackingActive);
+            if (i20 != null) {
+                bool t = i20.TrackingActive;
+                _c.AA140.CamPresenterFramingFb((sig, m) => sig.BoolValue = t);
             }
         }
 
@@ -233,6 +242,7 @@ namespace MCCCD_AA140
 
         // v2 framing / USB / zones / profiles / shots (role-targeted; not _active-dependent).
         public void SetPresenterFramingFromDebug(bool on) { Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(80) : ViscaProtocol.PresetRecall(81)); }
+        public void SetGroupFramingFromDebug(bool on) { Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(82) : ViscaProtocol.PresetRecall(83)); }
         public void SetUsbOutputFromDebug(ushort v) { byte s = v==1?(byte)86:v==2?(byte)85:v==3?(byte)84:(byte)0; if (s!=0) Cam(CAM_GROUP)?.Send(ViscaProtocol.PresetRecall(s)); }
         public void SetPresetZoneFromDebug(ushort v) { if (v>=1&&v<=4) Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(100+v))); }
         public void SetTrackingProfileFromDebug(ushort v) { if (v>=1&&v<=4) Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(104+v))); }
