@@ -35,6 +35,7 @@ BIDIRECTIONAL = [
     ("UsbHostSelect",      "UsbHostSelectFb",      2),
     ("AudioOutputSelect",  "AudioOutputSelectFb",  2),
     ("CamPresenterFraming","CamPresenterFramingFb",1),
+    ("CamGroupFraming",    "CamGroupFramingFb",    1),
     ("CamUsbOutput",       "CamUsbOutputFb",       2),
     ("CamPresetZone",      "CamPresetZoneFb",      2),
     ("CamTrackingProfile", "CamTrackingProfileFb", 2),
