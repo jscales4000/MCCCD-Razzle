@@ -5,6 +5,7 @@
   import {
     panelOnline,
     camPresenterFramingFb, camGroupFramingFb, camUsbOutputFb, camActiveOutputFb, camPresetZoneFb, camTrackingProfileFb,
+    camPanSpeedFb, camTiltSpeedFb, camZoomSpeedFb,
     camPanPos, camTiltPos, camZoomPos,
   } from '../lib/stores/signals';
   import { goToPage, currentPage } from '../lib/stores/page';
@@ -153,6 +154,15 @@
   function setProfile(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camTrackingProfile, n); }
   function recallHome() { pulseDigital(SIGNALS.camHomeShot); }
   function recallTrackingShot() { pulseDigital(SIGNALS.camTrackingShot); }
+
+  // PTZ speed sliders — local while dragging, published on release, synced from Fb.
+  let panSpeed = $state(12), tiltSpeed = $state(10), zoomSpeed = $state(4);
+  $effect(() => { const v = $camPanSpeedFb;  if (v >= 1) panSpeed = v; });
+  $effect(() => { const v = $camTiltSpeedFb; if (v >= 1) tiltSpeed = v; });
+  $effect(() => { zoomSpeed = $camZoomSpeedFb; });
+  function commitPanSpeed()  { publishAnalog(SIGNALS.camPanSpeed, panSpeed); }
+  function commitTiltSpeed() { publishAnalog(SIGNALS.camTiltSpeed, tiltSpeed); }
+  function commitZoomSpeed() { publishAnalog(SIGNALS.camZoomSpeed, zoomSpeed); }
 
   function setPreviewMode(mode: keyof typeof DEVICE_PROFILES) {
     previewMode = mode;
@@ -346,6 +356,14 @@
             >+</button>
           </div>
           <span class="zoom-cap">press &amp; hold</span>
+        </div>
+
+        <!-- PTZ speed (wired) -->
+        <div class="ctl-sec">
+          <p class="block-label">PTZ Speed</p>
+          <label class="spd"><span class="spd-k">Pan</span><input type="range" min="1" max="24" bind:value={panSpeed} onchange={commitPanSpeed} aria-label="Pan speed" /><span class="spd-v">{panSpeed}</span></label>
+          <label class="spd"><span class="spd-k">Tilt</span><input type="range" min="1" max="20" bind:value={tiltSpeed} onchange={commitTiltSpeed} aria-label="Tilt speed" /><span class="spd-v">{tiltSpeed}</span></label>
+          <label class="spd"><span class="spd-k">Zoom</span><input type="range" min="0" max="7" bind:value={zoomSpeed} onchange={commitZoomSpeed} aria-label="Zoom speed" /><span class="spd-v">{zoomSpeed}</span></label>
         </div>
 
         <!-- Framing on the I20 — independent presenter (live) + group (cached) tracking -->
@@ -578,11 +596,17 @@
   .ptz-right:active { transform: translateY(-50%) scale(0.92); }
 
   .controls-panel {
-    padding: 18px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 12px;
+    min-height: 0;
+    overflow-y: auto;
   }
+  .spd { display: grid; grid-template-columns: 36px 1fr 26px; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--color-copy-muted); }
+  .spd-k { letter-spacing: 0.08em; text-transform: uppercase; }
+  .spd input[type="range"] { accent-color: var(--color-accent); width: 100%; }
+  .spd-v { text-align: right; color: var(--color-copy-soft); font-variant-numeric: tabular-nums; font-size: 13px; }
   .vtc-btn {
     min-height: 52px;
     font-size: 14px;

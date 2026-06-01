@@ -45,6 +45,13 @@ namespace MCCCD_AA140
         private int _active = 1;            // 1..2
         private CTimer _publishTimer;
 
+        // PTZ speeds applied to drive commands (VISCA ranges: pan 1-24, tilt 1-20, zoom 0-7).
+        private byte _panSpeed  = ViscaProtocol.DefaultPanSpeed;
+        private byte _tiltSpeed = ViscaProtocol.DefaultTiltSpeed;
+        private byte _zoomSpeed = ViscaProtocol.DefaultZoomSpeed;
+
+        private static byte Clamp(ushort v, byte min, byte max) => (byte)(v < min ? min : v > max ? max : v);
+
         public CameraService(Contract c, CrestronControlSystem cs)
         {
             _c = c;
@@ -128,6 +135,16 @@ namespace MCCCD_AA140
             _c.AA140.CamHomeShot     += (s, a) => { if (a.SigArgs.Sig.BoolValue) Active()?.Send(ViscaProtocol.PresetRecall(0)); };
             _c.AA140.CamTrackingShot += (s, a) => { if (a.SigArgs.Sig.BoolValue) Active()?.Send(ViscaProtocol.PresetRecall(1)); };
 
+            // PTZ speed sliders (pan 1-24, tilt 1-20, zoom 0-7) — apply to drive commands.
+            _c.AA140.CamPanSpeed  += (s, a) => { _panSpeed  = Clamp(a.SigArgs.Sig.UShortValue, 1, 24); _c.AA140.CamPanSpeedFb((sig, m) => sig.UShortValue = _panSpeed); };
+            _c.AA140.CamTiltSpeed += (s, a) => { _tiltSpeed = Clamp(a.SigArgs.Sig.UShortValue, 1, 20); _c.AA140.CamTiltSpeedFb((sig, m) => sig.UShortValue = _tiltSpeed); };
+            _c.AA140.CamZoomSpeed += (s, a) => { _zoomSpeed = Clamp(a.SigArgs.Sig.UShortValue, 0, 7);  _c.AA140.CamZoomSpeedFb((sig, m) => sig.UShortValue = _zoomSpeed); };
+
+            // Publish initial speed feedback so the panel sliders sync on load.
+            _c.AA140.CamPanSpeedFb((sig, m) => sig.UShortValue = _panSpeed);
+            _c.AA140.CamTiltSpeedFb((sig, m) => sig.UShortValue = _tiltSpeed);
+            _c.AA140.CamZoomSpeedFb((sig, m) => sig.UShortValue = _zoomSpeed);
+
             // Coordinate + presenter-tracking-state publisher (selected cam coords; I20 tracking fb).
             _publishTimer = new CTimer(_ => PublishTick(), null, 1000, 333);
         }
@@ -177,10 +194,10 @@ namespace MCCCD_AA140
             var cam = Active(); if (cam == null) return;
             byte[] f;
             switch (dir) {
-                case "up":    f = ViscaProtocol.TiltUpCmd(ViscaProtocol.DefaultTiltSpeed);   break;
-                case "down":  f = ViscaProtocol.TiltDownCmd(ViscaProtocol.DefaultTiltSpeed); break;
-                case "left":  f = ViscaProtocol.PanLeftCmd(ViscaProtocol.DefaultPanSpeed);   break;
-                case "right": f = ViscaProtocol.PanRightCmd(ViscaProtocol.DefaultPanSpeed);  break;
+                case "up":    f = ViscaProtocol.TiltUpCmd(_tiltSpeed);   break;
+                case "down":  f = ViscaProtocol.TiltDownCmd(_tiltSpeed); break;
+                case "left":  f = ViscaProtocol.PanLeftCmd(_panSpeed);   break;
+                case "right": f = ViscaProtocol.PanRightCmd(_panSpeed);  break;
                 default: return;
             }
             DebugTraceCmd("ptz-start", dir);
@@ -198,8 +215,8 @@ namespace MCCCD_AA140
         {
             var cam = Active(); if (cam == null) return;
             var f = direction == "in"
-                ? ViscaProtocol.ZoomInCmd(ViscaProtocol.DefaultZoomSpeed)
-                : ViscaProtocol.ZoomOutCmd(ViscaProtocol.DefaultZoomSpeed);
+                ? ViscaProtocol.ZoomInCmd(_zoomSpeed)
+                : ViscaProtocol.ZoomOutCmd(_zoomSpeed);
             DebugTraceCmd("zoom-start", direction);
             cam.Send(f);
         }

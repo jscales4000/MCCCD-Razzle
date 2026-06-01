@@ -97,6 +97,12 @@ export const SIGNALS = {
   camUsbOutputFb:        `${ROOM_NAME}.CamUsbOutputFb`,
   camActiveOutput:       `${ROOM_NAME}.CamActiveOutput`,       // analog 1-5 = explicit output cam (I12 SetCameraOutput)
   camActiveOutputFb:     `${ROOM_NAME}.CamActiveOutputFb`,     // analog 1-5 = live active cam (GetCameraOutput poll)
+  camPanSpeed:           `${ROOM_NAME}.CamPanSpeed`,           // analog 1-24
+  camPanSpeedFb:         `${ROOM_NAME}.CamPanSpeedFb`,
+  camTiltSpeed:          `${ROOM_NAME}.CamTiltSpeed`,          // analog 1-20
+  camTiltSpeedFb:        `${ROOM_NAME}.CamTiltSpeedFb`,
+  camZoomSpeed:          `${ROOM_NAME}.CamZoomSpeed`,          // analog 0-7
+  camZoomSpeedFb:        `${ROOM_NAME}.CamZoomSpeedFb`,
   camPresetZone:         `${ROOM_NAME}.CamPresetZone`,         // analog 1-4 (I20 101-104)
   camPresetZoneFb:       `${ROOM_NAME}.CamPresetZoneFb`,
   camTrackingProfile:    `${ROOM_NAME}.CamTrackingProfile`,    // analog 1-4 (I20 105-108)

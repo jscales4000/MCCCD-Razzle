@@ -82,6 +82,9 @@ export const camPresenterFramingFb = writable<boolean>(false); // polled (I20 tr
 export const camGroupFramingFb = writable<boolean>(false);     // cached (I20 group tracking on/off)
 export const camUsbOutputFb = writable<number>(1);             // 1=Presenter 2=Group 3=Auto
 export const camActiveOutputFb = writable<number>(0);          // live active output camera 1-5 (0=unknown)
+export const camPanSpeedFb = writable<number>(12);             // 1-24
+export const camTiltSpeedFb = writable<number>(10);            // 1-20
+export const camZoomSpeedFb = writable<number>(4);             // 0-7
 export const camPresetZoneFb = writable<number>(0);            // 0=none, 1-4
 export const camTrackingProfileFb = writable<number>(0);       // 0=none, 1-4
 export const camPanPos = writable<number>(0);                  // raw ushort; convert to signed in UI
@@ -161,6 +164,9 @@ export function initSignals(): void {
   subscribeDigital(SIGNALS.camGroupFramingFb,     (v) => camGroupFramingFb.set(v));
   subscribeAnalog(SIGNALS.camUsbOutputFb,         (v) => camUsbOutputFb.set(v));
   subscribeAnalog(SIGNALS.camActiveOutputFb,      (v) => camActiveOutputFb.set(v));
+  subscribeAnalog(SIGNALS.camPanSpeedFb,          (v) => camPanSpeedFb.set(v));
+  subscribeAnalog(SIGNALS.camTiltSpeedFb,         (v) => camTiltSpeedFb.set(v));
+  subscribeAnalog(SIGNALS.camZoomSpeedFb,         (v) => camZoomSpeedFb.set(v));
   subscribeAnalog(SIGNALS.camPresetZoneFb,        (v) => camPresetZoneFb.set(v));
   subscribeAnalog(SIGNALS.camTrackingProfileFb,   (v) => camTrackingProfileFb.set(v));
   subscribeAnalog(SIGNALS.camPanPos,              (v) => camPanPos.set(v));
