@@ -4,7 +4,7 @@
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import {
     panelOnline,
-    camPresenterFramingFb, camUsbOutputFb, camPresetZoneFb, camTrackingProfileFb,
+    camPresenterFramingFb, camGroupFramingFb, camUsbOutputFb, camPresetZoneFb, camTrackingProfileFb,
     camPanPos, camTiltPos, camZoomPos,
   } from '../lib/stores/signals';
   import { goToPage, currentPage } from '../lib/stores/page';
@@ -17,6 +17,22 @@
   let isPresenterCam = $derived(activeCamera.id === 'front');
   // Raw VISCA ushort -> signed 16-bit for pan/tilt display.
   const signed = (v: number) => (v > 32767 ? v - 65536 : v);
+
+  // Zoom position -> optical ratio (per model), interpolated from the IV-CAM tables.
+  const ZOOM_TABLE: Record<'i12' | 'i20', Array<[number, number]>> = {
+    i12: [[0,1],[0x1982,2],[0x24E2,3],[0x2BC9,4],[0x3099,5],[0x343D,6],[0x3724,7],[0x3988,8],[0x3B8B,9],[0x3D43,10],[0x3EBB,11],[0x4000,12]],
+    i20: [[0,1],[0x1851,2],[0x22BE,3],[0x28F6,4],[0x2D45,5],[0x3086,6],[0x3320,7],[0x3549,8],[0x371E,9],[0x38B3,10],[0x3A12,11],[0x3B42,12],[0x3C47,13],[0x3D25,14],[0x3DDF,15],[0x3E7B,16],[0x3EFB,17],[0x3F64,18],[0x3FBA,19],[0x4000,20]],
+  };
+  function zoomRatio(pos: number, model: 'i12' | 'i20'): string {
+    const t = ZOOM_TABLE[model];
+    if (pos <= t[0][0]) return '1.0×';
+    for (let i = 0; i < t.length - 1; i++) {
+      const [p0, r0] = t[i], [p1, r1] = t[i + 1];
+      if (pos <= p1) return (r0 + ((pos - p0) / (p1 - p0)) * (r1 - r0)).toFixed(1) + '×';
+    }
+    return t[t.length - 1][1].toFixed(1) + '×';
+  }
+  let zoomX = $derived(zoomRatio($camZoomPos, activeCamera.model));
 
   const presets = [
     { idx: 1, name: 'Default' },
@@ -130,6 +146,7 @@
 
   // Framing / Q&A USB switch / shots (v2)
   function togglePresenter() { publishDigital(SIGNALS.camPresenterFraming, !$camPresenterFramingFb); }
+  function toggleGroup() { publishDigital(SIGNALS.camGroupFraming, !$camGroupFramingFb); }
   function setUsbOutput(n: 1 | 2 | 3) { publishAnalog(SIGNALS.camUsbOutput, n); }
   function setZone(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camPresetZone, n); }
   function setProfile(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camTrackingProfile, n); }
@@ -295,6 +312,7 @@
           <div class="coord"><span class="ck">Pan</span><span class="cv">{signed($camPanPos)}</span></div>
           <div class="coord"><span class="ck">Tilt</span><span class="cv">{signed($camTiltPos)}</span></div>
           <div class="coord"><span class="ck">Zoom</span><span class="cv">{$camZoomPos}</span></div>
+          <div class="coord"><span class="ck">Optical</span><span class="cv">{zoomX}</span></div>
           <span class="coord-live">● live</span>
         </div>
       </div>
@@ -329,24 +347,28 @@
           <span class="zoom-cap">press &amp; hold</span>
         </div>
 
-        <!-- Presenter tracking (I20) — live feedback -->
+        <!-- Framing on the I20 — independent presenter (live) + group (cached) tracking -->
         <div class="ctl-sec">
-          <p class="block-label">Presenter Tracking · I20</p>
+          <p class="block-label">Framing · I20</p>
           <button class="btn toggle-row" class:on={$camPresenterFramingFb} onclick={togglePresenter} aria-pressed={$camPresenterFramingFb}>
-            <span>Auto-track presenter</span>
+            <span>Presenter Tracking</span>
             <span class="tg-state">{$camPresenterFramingFb ? '● ON' : 'OFF'}</span>
+          </button>
+          <button class="btn toggle-row" class:on={$camGroupFramingFb} onclick={toggleGroup} aria-pressed={$camGroupFramingFb}>
+            <span>Group Tracking</span>
+            <span class="tg-state">{$camGroupFramingFb ? 'ON' : 'OFF'}</span>
           </button>
         </div>
 
-        <!-- USB output / Q&A switch (I12 host) -->
+        <!-- Active camera switch (I12 host: which view goes out the USB) -->
         <div class="ctl-sec">
-          <p class="block-label">USB Output — Q&amp;A · I12</p>
+          <p class="block-label">Active Camera · I12 switch</p>
           <div class="seg">
             <button class="seg-btn" class:active={$camUsbOutputFb === 1} onclick={() => setUsbOutput(1)}>Presenter</button>
             <button class="seg-btn" class:active={$camUsbOutputFb === 2} onclick={() => setUsbOutput(2)}>Group</button>
             <button class="seg-btn" class:active={$camUsbOutputFb === 3} onclick={() => setUsbOutput(3)}>Auto</button>
           </div>
-          <p class="ctl-hint">What the room PC / codec sees. Auto = Intelligent Switching.</p>
+          <p class="ctl-hint">Which view the room PC / codec sees. Auto = Intelligent Switching (multicam).</p>
         </div>
 
         <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>

@@ -79,6 +79,7 @@ export const shutdownCountdown = writable<number>(0);
 
 // Camera page v2 — framing / Q&A USB switch / live coordinates
 export const camPresenterFramingFb = writable<boolean>(false); // polled (I20 tracking on/off)
+export const camGroupFramingFb = writable<boolean>(false);     // cached (I20 group tracking on/off)
 export const camUsbOutputFb = writable<number>(1);             // 1=Presenter 2=Group 3=Auto
 export const camPresetZoneFb = writable<number>(0);            // 0=none, 1-4
 export const camTrackingProfileFb = writable<number>(0);       // 0=none, 1-4
@@ -156,6 +157,7 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.shutdownCountdown,   (v) => shutdownCountdown.set(v));
 
   subscribeDigital(SIGNALS.camPresenterFramingFb, (v) => camPresenterFramingFb.set(v));
+  subscribeDigital(SIGNALS.camGroupFramingFb,     (v) => camGroupFramingFb.set(v));
   subscribeAnalog(SIGNALS.camUsbOutputFb,         (v) => camUsbOutputFb.set(v));
   subscribeAnalog(SIGNALS.camPresetZoneFb,        (v) => camPresetZoneFb.set(v));
   subscribeAnalog(SIGNALS.camTrackingProfileFb,   (v) => camTrackingProfileFb.set(v));

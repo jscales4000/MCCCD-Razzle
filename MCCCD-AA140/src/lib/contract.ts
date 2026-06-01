@@ -91,6 +91,8 @@ export const SIGNALS = {
   // Camera framing / Q&A USB switch / shots / live coordinates (v2)
   camPresenterFraming:   `${ROOM_NAME}.CamPresenterFraming`,   // digital toggle (I20 80/81)
   camPresenterFramingFb: `${ROOM_NAME}.CamPresenterFramingFb`, // digital fb (polled)
+  camGroupFraming:       `${ROOM_NAME}.CamGroupFraming`,       // digital toggle (I20 82/83)
+  camGroupFramingFb:     `${ROOM_NAME}.CamGroupFramingFb`,     // digital fb (cached)
   camUsbOutput:          `${ROOM_NAME}.CamUsbOutput`,          // analog 1/2/3 = Presenter/Group/Auto (I12)
   camUsbOutputFb:        `${ROOM_NAME}.CamUsbOutputFb`,
   camPresetZone:         `${ROOM_NAME}.CamPresetZone`,         // analog 1-4 (I20 101-104)
