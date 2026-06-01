@@ -1,18 +1,24 @@
 export interface Camera {
-  id: 'front' | 'rear';
+  id: 'front' | 'back';
   label: string;
   model: 'i20' | 'i12';
   ip: string;
-  // Index used by SIMPL# CamSelect signal (1=front, 2=rear)
+  // CameraSelect index — picks which camera PTZ/zoom/presets/coords target
+  // (1 = cam-1/I20, 2 = cam-2/I12 on the processor).
   selectIndex: 1 | 2;
+  // CamActiveOutput value — which output the I12 host's SetCameraOutput selects
+  // for the USB feed. Host input numbering may differ from selectIndex; swap
+  // these if the live output shows the wrong camera.
+  outputIndex: 1 | 2 | 3 | 4 | 5;
 }
 
-// AA140 has TWO 1Beyond IV-CAMs (confirmed live). cam-1 = IV-CAM-I20 (.2.174),
-// cam-2 = IV-CAM-I12 (.2.173). On the .2.x /24 so the processor's VISCA control
-// (port 5500) is accepted. selectIndex matches CameraService's _active.
+// AA140 has TWO 1Beyond IV-CAMs (confirmed live). Front = IV-CAM-I20 (.2.174),
+// Back = IV-CAM-I12 (.2.173, USB host). On the .2.x /24 so the processor's VISCA
+// control (port 5500) is accepted. Selecting a camera here switches the multicam
+// USB output AND the PTZ/preset control target (CameraSelect + CamActiveOutput).
 export const CAMERAS: Camera[] = [
-  { id: 'front', label: 'Front', model: 'i20', ip: '192.168.2.174', selectIndex: 1 },
-  { id: 'rear',  label: 'Rear',  model: 'i12', ip: '192.168.2.173', selectIndex: 2 },
+  { id: 'front', label: 'Front', model: 'i20', ip: '192.168.2.174', selectIndex: 1, outputIndex: 1 },
+  { id: 'back',  label: 'Back',  model: 'i12', ip: '192.168.2.173', selectIndex: 2, outputIndex: 2 },
 ];
 
 // 1Beyond IV-CAM RTSP defaults (confirmed live 2026-05-31 via Digest auth):

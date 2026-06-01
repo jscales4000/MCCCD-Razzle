@@ -112,8 +112,9 @@
 
   function selectCamera(cam: Camera) {
     activeCamera = cam;
-    publishAnalog(SIGNALS.cameraSelect, cam.selectIndex);
-    mountCameraStream(cam);   // swap the live feed to the selected camera
+    publishAnalog(SIGNALS.cameraSelect, cam.selectIndex);    // PTZ / preset / coords target
+    publishAnalog(SIGNALS.camActiveOutput, cam.outputIndex); // multicam USB output (I12 host)
+    mountCameraStream(cam);                                   // swap the live preview feed
   }
 
   // PTZ press-and-hold (rising edge starts movement, falling edge stops)
@@ -149,7 +150,6 @@
   function togglePresenter() { publishDigital(SIGNALS.camPresenterFraming, !$camPresenterFramingFb); }
   function toggleGroup() { publishDigital(SIGNALS.camGroupFraming, !$camGroupFramingFb); }
   function setUsbOutput(n: 1 | 2 | 3) { publishAnalog(SIGNALS.camUsbOutput, n); }
-  function setActiveOutput(n: number) { publishAnalog(SIGNALS.camActiveOutput, n); }
   function setZone(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camPresetZone, n); }
   function setProfile(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camTrackingProfile, n); }
   function recallHome() { pulseDigital(SIGNALS.camHomeShot); }
@@ -233,20 +233,22 @@
 
     <div class="work-area">
 
-      <!-- Camera selector sidebar -->
+      <!-- Multicam selector — switches USB output + PTZ/preset control + preview -->
       <div class="glass-card camera-sidebar">
-        <p class="panel-label">Cameras</p>
+        <p class="panel-label">Multicam · Active Feed</p>
         {#each CAMERAS as cam}
           <button
             class="btn camera-select-btn"
             class:active={activeCamera.id === cam.id}
+            class:live={$camActiveOutputFb === cam.outputIndex}
             onclick={() => selectCamera(cam)}
             aria-pressed={activeCamera.id === cam.id}
           >
             <strong>{cam.label}</strong>
-            <em>{cam.model}</em>
+            <em>{cam.model}{#if $camActiveOutputFb === cam.outputIndex} · ● live{/if}</em>
           </button>
         {/each}
+        <p class="cam-side-hint">Switches the USB output and the camera you control.</p>
       </div>
 
       <!-- Live preview + transparent PTZ overlay -->
@@ -389,16 +391,6 @@
           </div>
         </div>
 
-        <!-- Explicit multicam output camera (1-5) — live highlight = actual output -->
-        <div class="ctl-sec">
-          <p class="block-label">Active Camera · multicam {#if $camActiveOutputFb >= 1}<span class="live-tag">● Cam {$camActiveOutputFb}</span>{/if}</p>
-          <div class="cam-row">
-            {#each [1, 2, 3, 4, 5] as n}
-              <button class="btn cam-out-btn" class:active={$camActiveOutputFb === n} onclick={() => setActiveOutput(n)}>{n}</button>
-            {/each}
-          </div>
-          <p class="ctl-hint">Which camera feeds the USB output. Live highlight = current output (works in Auto too).</p>
-        </div>
 
         <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>
       </div>
@@ -669,12 +661,10 @@
   }
   .seg-btn:last-child { border-right: none; }
   .seg-btn.active { background: rgba(56, 189, 248, 0.16); color: var(--color-accent); }
-  .ctl-hint { margin: 0; font-size: 9px; color: var(--color-copy-muted); line-height: 1.4; }
 
-  .live-tag { font-size: 9px; font-weight: 800; color: #34d399; margin-left: 6px; }
-  .cam-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .cam-out-btn { min-height: 44px; font-size: 16px; font-weight: 800; }
-  .cam-out-btn.active { background: rgba(34, 197, 94, 0.16); border-color: #34d399; color: #86efac; box-shadow: 0 0 0 1px rgba(52,211,153,.4); }
+  .cam-side-hint { margin: 6px 0 0; font-size: 9px; color: var(--color-copy-muted); line-height: 1.4; }
+  .camera-select-btn.live { border-color: rgba(52, 211, 153, 0.55); box-shadow: inset 3px 0 0 #34d399; }
+  .camera-select-btn.live em { color: #34d399; }
 
   .bottom-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; min-height: 0; }
   .bottom-row .presets-row { margin: 0; }
