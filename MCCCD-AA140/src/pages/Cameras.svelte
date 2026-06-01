@@ -4,7 +4,7 @@
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import {
     panelOnline,
-    camPresenterFramingFb, camGroupFramingFb, camUsbOutputFb, camPresetZoneFb, camTrackingProfileFb,
+    camPresenterFramingFb, camGroupFramingFb, camUsbOutputFb, camActiveOutputFb, camPresetZoneFb, camTrackingProfileFb,
     camPanPos, camTiltPos, camZoomPos,
   } from '../lib/stores/signals';
   import { goToPage, currentPage } from '../lib/stores/page';
@@ -148,6 +148,7 @@
   function togglePresenter() { publishDigital(SIGNALS.camPresenterFraming, !$camPresenterFramingFb); }
   function toggleGroup() { publishDigital(SIGNALS.camGroupFraming, !$camGroupFramingFb); }
   function setUsbOutput(n: 1 | 2 | 3) { publishAnalog(SIGNALS.camUsbOutput, n); }
+  function setActiveOutput(n: number) { publishAnalog(SIGNALS.camActiveOutput, n); }
   function setZone(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camPresetZone, n); }
   function setProfile(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camTrackingProfile, n); }
   function recallHome() { pulseDigital(SIGNALS.camHomeShot); }
@@ -360,15 +361,25 @@
           </button>
         </div>
 
-        <!-- Active camera switch (I12 host: which view goes out the USB) -->
+        <!-- Framing output mode (I12 host IS: presenter / group / auto) -->
         <div class="ctl-sec">
-          <p class="block-label">Active Camera · I12 switch</p>
+          <p class="block-label">Framing Output · I12</p>
           <div class="seg">
             <button class="seg-btn" class:active={$camUsbOutputFb === 1} onclick={() => setUsbOutput(1)}>Presenter</button>
             <button class="seg-btn" class:active={$camUsbOutputFb === 2} onclick={() => setUsbOutput(2)}>Group</button>
             <button class="seg-btn" class:active={$camUsbOutputFb === 3} onclick={() => setUsbOutput(3)}>Auto</button>
           </div>
-          <p class="ctl-hint">Which view the room PC / codec sees. Auto = Intelligent Switching (multicam).</p>
+        </div>
+
+        <!-- Explicit multicam output camera (1-5) — live highlight = actual output -->
+        <div class="ctl-sec">
+          <p class="block-label">Active Camera · multicam {#if $camActiveOutputFb >= 1}<span class="live-tag">● Cam {$camActiveOutputFb}</span>{/if}</p>
+          <div class="cam-row">
+            {#each [1, 2, 3, 4, 5] as n}
+              <button class="btn cam-out-btn" class:active={$camActiveOutputFb === n} onclick={() => setActiveOutput(n)}>{n}</button>
+            {/each}
+          </div>
+          <p class="ctl-hint">Which camera feeds the USB output. Live highlight = current output (works in Auto too).</p>
         </div>
 
         <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>
@@ -635,6 +646,11 @@
   .seg-btn:last-child { border-right: none; }
   .seg-btn.active { background: rgba(56, 189, 248, 0.16); color: var(--color-accent); }
   .ctl-hint { margin: 0; font-size: 9px; color: var(--color-copy-muted); line-height: 1.4; }
+
+  .live-tag { font-size: 9px; font-weight: 800; color: #34d399; margin-left: 6px; }
+  .cam-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .cam-out-btn { min-height: 44px; font-size: 16px; font-weight: 800; }
+  .cam-out-btn.active { background: rgba(34, 197, 94, 0.16); border-color: #34d399; color: #86efac; box-shadow: 0 0 0 1px rgba(52,211,153,.4); }
 
   .bottom-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; min-height: 0; }
   .bottom-row .presets-row { margin: 0; }

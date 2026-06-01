@@ -95,6 +95,8 @@ export const SIGNALS = {
   camGroupFramingFb:     `${ROOM_NAME}.CamGroupFramingFb`,     // digital fb (cached)
   camUsbOutput:          `${ROOM_NAME}.CamUsbOutput`,          // analog 1/2/3 = Presenter/Group/Auto (I12)
   camUsbOutputFb:        `${ROOM_NAME}.CamUsbOutputFb`,
+  camActiveOutput:       `${ROOM_NAME}.CamActiveOutput`,       // analog 1-5 = explicit output cam (I12 SetCameraOutput)
+  camActiveOutputFb:     `${ROOM_NAME}.CamActiveOutputFb`,     // analog 1-5 = live active cam (GetCameraOutput poll)
   camPresetZone:         `${ROOM_NAME}.CamPresetZone`,         // analog 1-4 (I20 101-104)
   camPresetZoneFb:       `${ROOM_NAME}.CamPresetZoneFb`,
   camTrackingProfile:    `${ROOM_NAME}.CamTrackingProfile`,    // analog 1-4 (I20 105-108)
