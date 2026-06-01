@@ -91,6 +91,14 @@ namespace MCCCD_AA140
                 DebugTrace.Command("cam-1", "group-framing", on ? "on" : "off");
                 _c.AA140.CamGroupFramingFb((sig, m) => sig.BoolValue = on);
             };
+            // Explicit multicam output switch on the I12 host: SetCameraOutput(1..5).
+            // 1Beyond vendor command; active camera is polled back (CamActiveOutputFb).
+            _c.AA140.CamActiveOutput += (s, a) => {
+                ushort v = a.SigArgs.Sig.UShortValue;
+                if (v < 1 || v > 5) return;
+                Cam(CAM_GROUP)?.Send(ViscaProtocol.SetCameraOutput((byte)v));
+                DebugTrace.Command("cam-2", "active-output", v.ToString());
+            };
             // USB output / Q&A switch on the I12 host: 1=Presenter(86) 2=Group(85) 3=Auto(84).
             _c.AA140.CamUsbOutput += (s, a) => {
                 ushort v = a.SigArgs.Sig.UShortValue;
@@ -139,6 +147,12 @@ namespace MCCCD_AA140
             if (i20 != null) {
                 bool t = i20.TrackingActive;
                 _c.AA140.CamPresenterFramingFb((sig, m) => sig.BoolValue = t);
+            }
+            // Active output camera (polled from the I12 host's GetCameraOutput).
+            var host = Cam(CAM_GROUP);
+            if (host != null && host.ActiveOutput >= 1) {
+                ushort n = host.ActiveOutput;
+                _c.AA140.CamActiveOutputFb((sig, m) => sig.UShortValue = n);
             }
         }
 
@@ -243,6 +257,7 @@ namespace MCCCD_AA140
         // v2 framing / USB / zones / profiles / shots (role-targeted; not _active-dependent).
         public void SetPresenterFramingFromDebug(bool on) { Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(80) : ViscaProtocol.PresetRecall(81)); }
         public void SetGroupFramingFromDebug(bool on) { Cam(CAM_PRESENTER)?.Send(on ? ViscaProtocol.PresetRecall(82) : ViscaProtocol.PresetRecall(83)); }
+        public void SetActiveOutputFromDebug(ushort v) { if (v>=1&&v<=5) Cam(CAM_GROUP)?.Send(ViscaProtocol.SetCameraOutput((byte)v)); }
         public void SetUsbOutputFromDebug(ushort v) { byte s = v==1?(byte)86:v==2?(byte)85:v==3?(byte)84:(byte)0; if (s!=0) Cam(CAM_GROUP)?.Send(ViscaProtocol.PresetRecall(s)); }
         public void SetPresetZoneFromDebug(ushort v) { if (v>=1&&v<=4) Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(100+v))); }
         public void SetTrackingProfileFromDebug(ushort v) { if (v>=1&&v<=4) Cam(CAM_PRESENTER)?.Send(ViscaProtocol.PresetRecall((byte)(104+v))); }

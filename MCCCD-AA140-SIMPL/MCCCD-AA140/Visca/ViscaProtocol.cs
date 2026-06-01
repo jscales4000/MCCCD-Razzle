@@ -79,6 +79,16 @@ namespace MCCCD_AA140.Visca
         public static byte[] ZoomPosInq()    => new byte[] { CamAddress, 0x09, 0x04, 0x47, FrameEnd };
         public static byte[] TrackingInq()   => new byte[] { CamAddress, 0x09, 0x08, 0x01, FrameEnd };
 
+        // ─── Multicam output switch (1Beyond vendor command, host camera) ──
+        // Extracted from the legacy OneBeyondCamera.SetCameraOutput; verified live.
+        //   Set output to camera N (1..5): 81 C2 01 08 0N FF  -> ACK + Completion
+        //   Get current output camera:     81 C2 09 08 FF     -> 90 50 00 0N FF
+        public static byte[] SetCameraOutput(byte camId) => new byte[] { CamAddress, 0xC2, 0x01, 0x08, camId, FrameEnd };
+        public static byte[] GetCameraOutput()           => new byte[] { CamAddress, 0xC2, 0x09, 0x08, FrameEnd };
+
+        /// <summary>GetCameraOutput reply payload (e.g. 00 0N) -> camera number N (last byte). 0 if malformed.</summary>
+        public static byte ParseCameraOutput(byte[] p) => (p != null && p.Length >= 1) ? p[p.Length - 1] : (byte)0;
+
         // ─── Reply categorization (for debug logging only) ─────────────────
         public static string ReplyKind(byte[] frame)
         {

@@ -37,6 +37,7 @@ BIDIRECTIONAL = [
     ("CamPresenterFraming","CamPresenterFramingFb",1),
     ("CamGroupFraming",    "CamGroupFramingFb",    1),
     ("CamUsbOutput",       "CamUsbOutputFb",       2),
+    ("CamActiveOutput",    "CamActiveOutputFb",    2),
     ("CamPresetZone",      "CamPresetZoneFb",      2),
     ("CamTrackingProfile", "CamTrackingProfileFb", 2),
     ("MicLavMute",         "MicLavMuteFb",         1),

@@ -31,7 +31,7 @@ namespace MCCCD_AA140.Visca
         private readonly object _stateLock = new object();
 
         // Inquiry polling — one inquiry in flight at a time (cameras = 1 socket).
-        private enum Inq { None, PanTilt, Zoom, Tracking }
+        private enum Inq { None, PanTilt, Zoom, Tracking, Output }
         private Inq _pending = Inq.None;
         private CTimer _pollTimer;
         private int _pollCycle;
@@ -40,6 +40,7 @@ namespace MCCCD_AA140.Visca
         public short  TiltPosition { get; private set; }
         public ushort ZoomPosition { get; private set; }
         public bool   TrackingActive { get; private set; }
+        public byte   ActiveOutput { get; private set; }  // host only: current output camera 1..5 (0=unknown)
 
         public ViscaCameraClient(string host, int port, string name)
         {
@@ -167,8 +168,9 @@ namespace MCCCD_AA140.Visca
             if (!IsConnected) return;
             if (_pending != Inq.None) _pending = Inq.None;
             _pollCycle++;
-            if (_pollCycle % 3 == 0) { _pending = Inq.Tracking; SendRaw(ViscaProtocol.TrackingInq()); }
-            else                     { _pending = Inq.PanTilt;  SendRaw(ViscaProtocol.PanTiltPosInq()); }
+            if      (_pollCycle % 4 == 0) { _pending = Inq.Tracking; SendRaw(ViscaProtocol.TrackingInq()); }
+            else if (_pollCycle % 4 == 2) { _pending = Inq.Output;   SendRaw(ViscaProtocol.GetCameraOutput()); }
+            else                          { _pending = Inq.PanTilt;  SendRaw(ViscaProtocol.PanTiltPosInq()); }
         }
 
         // Send without the "not connected" drop-logging used by command Send().
@@ -215,6 +217,11 @@ namespace MCCCD_AA140.Visca
                 }
                 if (which == Inq.Tracking) {
                     lock (_stateLock) { TrackingActive = ViscaProtocol.ParseTrackingActive(payload); }
+                    return;
+                }
+                if (which == Inq.Output) {
+                    byte n = ViscaProtocol.ParseCameraOutput(payload);
+                    if (n >= 1 && n <= 5) lock (_stateLock) { ActiveOutput = n; }
                     return;
                 }
             }

@@ -340,6 +340,9 @@ namespace MCCCD_AA140.Debug
                 case "group-framing":
                     _cameras.SetGroupFramingFromDebug(qs?["on"] == "true" || qs?["on"] == "1");
                     break;
+                case "output":
+                    if (int.TryParse(qs?["n"], out int co)) _cameras.SetActiveOutputFromDebug((ushort)co);
+                    break;
                 case "usb":
                     if (int.TryParse(qs?["out"], out int uo)) _cameras.SetUsbOutputFromDebug((ushort)uo);
                     break;
