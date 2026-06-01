@@ -11,6 +11,7 @@ namespace MCCCD_AA140
         object UserObject { get; set; }
 
         event EventHandler<UIEventArgs> CamPresenterFraming;
+        event EventHandler<UIEventArgs> CamGroupFraming;
         event EventHandler<UIEventArgs> MicLavMute;
         event EventHandler<UIEventArgs> MicHandheldMute;
         event EventHandler<UIEventArgs> MicCeiling1Mute;
@@ -39,6 +40,10 @@ namespace MCCCD_AA140
         event EventHandler<UIEventArgs> UsbHostSelect;
         event EventHandler<UIEventArgs> AudioOutputSelect;
         event EventHandler<UIEventArgs> CamUsbOutput;
+        event EventHandler<UIEventArgs> CamActiveOutput;
+        event EventHandler<UIEventArgs> CamPanSpeed;
+        event EventHandler<UIEventArgs> CamTiltSpeed;
+        event EventHandler<UIEventArgs> CamZoomSpeed;
         event EventHandler<UIEventArgs> CamPresetZone;
         event EventHandler<UIEventArgs> CamTrackingProfile;
         event EventHandler<UIEventArgs> MicLavTrim;
@@ -57,6 +62,7 @@ namespace MCCCD_AA140
         event EventHandler<UIEventArgs> ShotPresetDelete;
 
         void CamPresenterFramingFb(MainBoolInputSigDelegate callback);
+        void CamGroupFramingFb(MainBoolInputSigDelegate callback);
         void MicLavMuteFb(MainBoolInputSigDelegate callback);
         void MicHandheldMuteFb(MainBoolInputSigDelegate callback);
         void MicCeiling1MuteFb(MainBoolInputSigDelegate callback);
@@ -89,6 +95,10 @@ namespace MCCCD_AA140
         void UsbHostSelectFb(MainUShortInputSigDelegate callback);
         void AudioOutputSelectFb(MainUShortInputSigDelegate callback);
         void CamUsbOutputFb(MainUShortInputSigDelegate callback);
+        void CamActiveOutputFb(MainUShortInputSigDelegate callback);
+        void CamPanSpeedFb(MainUShortInputSigDelegate callback);
+        void CamTiltSpeedFb(MainUShortInputSigDelegate callback);
+        void CamZoomSpeedFb(MainUShortInputSigDelegate callback);
         void CamPresetZoneFb(MainUShortInputSigDelegate callback);
         void CamTrackingProfileFb(MainUShortInputSigDelegate callback);
         void MicLavTrimFb(MainUShortInputSigDelegate callback);
@@ -139,52 +149,54 @@ namespace MCCCD_AA140
             internal static class Booleans
             {
                 public const uint CamPresenterFraming = 1;
-                public const uint MicLavMute = 2;
-                public const uint MicHandheldMute = 3;
-                public const uint MicCeiling1Mute = 4;
-                public const uint MicCeiling2Mute = 5;
-                public const uint MicCeiling3Mute = 6;
-                public const uint DisplayPower = 7;
-                public const uint D1MirrorToD3 = 8;
-                public const uint D2MirrorToD3 = 9;
-                public const uint VolumeUp = 10;
-                public const uint VolumeDown = 11;
-                public const uint MuteAll = 12;
-                public const uint PtzUp = 13;
-                public const uint PtzDown = 14;
-                public const uint PtzLeft = 15;
-                public const uint PtzRight = 16;
-                public const uint CamSendToVtc = 17;
-                public const uint ZoomIn = 18;
-                public const uint ZoomOut = 19;
-                public const uint CamHomeShot = 20;
-                public const uint CamTrackingShot = 21;
+                public const uint CamGroupFraming = 2;
+                public const uint MicLavMute = 3;
+                public const uint MicHandheldMute = 4;
+                public const uint MicCeiling1Mute = 5;
+                public const uint MicCeiling2Mute = 6;
+                public const uint MicCeiling3Mute = 7;
+                public const uint DisplayPower = 8;
+                public const uint D1MirrorToD3 = 9;
+                public const uint D2MirrorToD3 = 10;
+                public const uint VolumeUp = 11;
+                public const uint VolumeDown = 12;
+                public const uint MuteAll = 13;
+                public const uint PtzUp = 14;
+                public const uint PtzDown = 15;
+                public const uint PtzLeft = 16;
+                public const uint PtzRight = 17;
+                public const uint CamSendToVtc = 18;
+                public const uint ZoomIn = 19;
+                public const uint ZoomOut = 20;
+                public const uint CamHomeShot = 21;
+                public const uint CamTrackingShot = 22;
 
                 public const uint CamPresenterFramingFb = 1;
-                public const uint MicLavMuteFb = 2;
-                public const uint MicHandheldMuteFb = 3;
-                public const uint MicCeiling1MuteFb = 4;
-                public const uint MicCeiling2MuteFb = 5;
-                public const uint MicCeiling3MuteFb = 6;
-                public const uint PanelOnline = 22;
-                public const uint SystemPowerFb = 23;
-                public const uint Display1PowerFb = 24;
-                public const uint Display2PowerFb = 25;
-                public const uint Display3PowerFb = 26;
-                public const uint Display4PowerFb = 27;
-                public const uint MicLavConnected = 28;
-                public const uint MicHandheldConnected = 29;
-                public const uint MicCeiling1Connected = 30;
-                public const uint MicCeiling2Connected = 31;
-                public const uint MicCeiling3Connected = 32;
-                public const uint RoomPcSync = 33;
-                public const uint ExtPcSync = 34;
-                public const uint AirMediaSync = 35;
-                public const uint AirMediaMiracast = 36;
-                public const uint AirMediaAirPlay = 37;
-                public const uint AirMediaTx3 = 38;
-                public const uint LaptopHdmiSync = 39;
-                public const uint LaptopUsbcSync = 40;
+                public const uint CamGroupFramingFb = 2;
+                public const uint MicLavMuteFb = 3;
+                public const uint MicHandheldMuteFb = 4;
+                public const uint MicCeiling1MuteFb = 5;
+                public const uint MicCeiling2MuteFb = 6;
+                public const uint MicCeiling3MuteFb = 7;
+                public const uint PanelOnline = 23;
+                public const uint SystemPowerFb = 24;
+                public const uint Display1PowerFb = 25;
+                public const uint Display2PowerFb = 26;
+                public const uint Display3PowerFb = 27;
+                public const uint Display4PowerFb = 28;
+                public const uint MicLavConnected = 29;
+                public const uint MicHandheldConnected = 30;
+                public const uint MicCeiling1Connected = 31;
+                public const uint MicCeiling2Connected = 32;
+                public const uint MicCeiling3Connected = 33;
+                public const uint RoomPcSync = 34;
+                public const uint ExtPcSync = 35;
+                public const uint AirMediaSync = 36;
+                public const uint AirMediaMiracast = 37;
+                public const uint AirMediaAirPlay = 38;
+                public const uint AirMediaTx3 = 39;
+                public const uint LaptopHdmiSync = 40;
+                public const uint LaptopUsbcSync = 41;
             }
             internal static class Numerics
             {
@@ -196,22 +208,26 @@ namespace MCCCD_AA140
                 public const uint UsbHostSelect = 6;
                 public const uint AudioOutputSelect = 7;
                 public const uint CamUsbOutput = 8;
-                public const uint CamPresetZone = 9;
-                public const uint CamTrackingProfile = 10;
-                public const uint MicLavTrim = 11;
-                public const uint MicHandheldTrim = 12;
-                public const uint MicCeiling1Trim = 13;
-                public const uint MicCeiling2Trim = 14;
-                public const uint MicCeiling3Trim = 15;
-                public const uint MicLavLineOut = 16;
-                public const uint MicHandheldLineOut = 17;
-                public const uint MicCeiling1LineOut = 18;
-                public const uint MicCeiling2LineOut = 19;
-                public const uint MicCeiling3LineOut = 20;
-                public const uint CameraSelect = 21;
-                public const uint ShotPresetRecall = 22;
-                public const uint ShotPresetSave = 23;
-                public const uint ShotPresetDelete = 24;
+                public const uint CamActiveOutput = 9;
+                public const uint CamPanSpeed = 10;
+                public const uint CamTiltSpeed = 11;
+                public const uint CamZoomSpeed = 12;
+                public const uint CamPresetZone = 13;
+                public const uint CamTrackingProfile = 14;
+                public const uint MicLavTrim = 15;
+                public const uint MicHandheldTrim = 16;
+                public const uint MicCeiling1Trim = 17;
+                public const uint MicCeiling2Trim = 18;
+                public const uint MicCeiling3Trim = 19;
+                public const uint MicLavLineOut = 20;
+                public const uint MicHandheldLineOut = 21;
+                public const uint MicCeiling1LineOut = 22;
+                public const uint MicCeiling2LineOut = 23;
+                public const uint MicCeiling3LineOut = 24;
+                public const uint CameraSelect = 25;
+                public const uint ShotPresetRecall = 26;
+                public const uint ShotPresetSave = 27;
+                public const uint ShotPresetDelete = 28;
 
                 public const uint Display1SourceFb = 1;
                 public const uint Display2SourceFb = 2;
@@ -221,28 +237,32 @@ namespace MCCCD_AA140
                 public const uint UsbHostSelectFb = 6;
                 public const uint AudioOutputSelectFb = 7;
                 public const uint CamUsbOutputFb = 8;
-                public const uint CamPresetZoneFb = 9;
-                public const uint CamTrackingProfileFb = 10;
-                public const uint MicLavTrimFb = 11;
-                public const uint MicHandheldTrimFb = 12;
-                public const uint MicCeiling1TrimFb = 13;
-                public const uint MicCeiling2TrimFb = 14;
-                public const uint MicCeiling3TrimFb = 15;
-                public const uint MicLavLineOutFb = 16;
-                public const uint MicHandheldLineOutFb = 17;
-                public const uint MicCeiling1LineOutFb = 18;
-                public const uint MicCeiling2LineOutFb = 19;
-                public const uint MicCeiling3LineOutFb = 20;
-                public const uint OccupancyState = 25;
-                public const uint ShutdownCountdown = 26;
-                public const uint MicLavLevel = 27;
-                public const uint MicHandheldLevel = 28;
-                public const uint MicCeiling1Level = 29;
-                public const uint MicCeiling2Level = 30;
-                public const uint MicCeiling3Level = 31;
-                public const uint CamPanPos = 32;
-                public const uint CamTiltPos = 33;
-                public const uint CamZoomPos = 34;
+                public const uint CamActiveOutputFb = 9;
+                public const uint CamPanSpeedFb = 10;
+                public const uint CamTiltSpeedFb = 11;
+                public const uint CamZoomSpeedFb = 12;
+                public const uint CamPresetZoneFb = 13;
+                public const uint CamTrackingProfileFb = 14;
+                public const uint MicLavTrimFb = 15;
+                public const uint MicHandheldTrimFb = 16;
+                public const uint MicCeiling1TrimFb = 17;
+                public const uint MicCeiling2TrimFb = 18;
+                public const uint MicCeiling3TrimFb = 19;
+                public const uint MicLavLineOutFb = 20;
+                public const uint MicHandheldLineOutFb = 21;
+                public const uint MicCeiling1LineOutFb = 22;
+                public const uint MicCeiling2LineOutFb = 23;
+                public const uint MicCeiling3LineOutFb = 24;
+                public const uint OccupancyState = 29;
+                public const uint ShutdownCountdown = 30;
+                public const uint MicLavLevel = 31;
+                public const uint MicHandheldLevel = 32;
+                public const uint MicCeiling1Level = 33;
+                public const uint MicCeiling2Level = 34;
+                public const uint MicCeiling3Level = 35;
+                public const uint CamPanPos = 36;
+                public const uint CamTiltPos = 37;
+                public const uint CamZoomPos = 38;
             }
         }
 
@@ -263,6 +283,7 @@ namespace MCCCD_AA140
             _devices = new List<BasicTriListWithSmartObject>(); 
  
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.CamPresenterFraming, onCamPresenterFraming);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.CamGroupFraming, onCamGroupFraming);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicLavMute, onMicLavMute);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicHandheldMute, onMicHandheldMute);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.MicCeiling1Mute, onMicCeiling1Mute);
@@ -291,6 +312,10 @@ namespace MCCCD_AA140
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.UsbHostSelect, onUsbHostSelect);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.AudioOutputSelect, onAudioOutputSelect);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamUsbOutput, onCamUsbOutput);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamActiveOutput, onCamActiveOutput);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamPanSpeed, onCamPanSpeed);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamTiltSpeed, onCamTiltSpeed);
+            ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamZoomSpeed, onCamZoomSpeed);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamPresetZone, onCamPresetZone);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.CamTrackingProfile, onCamTrackingProfile);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.MicLavTrim, onMicLavTrim);
@@ -330,6 +355,14 @@ namespace MCCCD_AA140
         private void onCamPresenterFraming(SmartObjectEventArgs eventArgs)
         {
             EventHandler<UIEventArgs> handler = CamPresenterFraming;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> CamGroupFraming;
+        private void onCamGroupFraming(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = CamGroupFraming;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
@@ -500,6 +533,14 @@ namespace MCCCD_AA140
             for (int index = 0; index < Devices.Count; index++)
             {
                 callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.CamPresenterFramingFb], this);
+            }
+        }
+
+        public void CamGroupFramingFb(MainBoolInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].BooleanInput[Joins.Booleans.CamGroupFramingFb], this);
             }
         }
 
@@ -759,6 +800,38 @@ namespace MCCCD_AA140
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
 
+        public event EventHandler<UIEventArgs> CamActiveOutput;
+        private void onCamActiveOutput(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = CamActiveOutput;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> CamPanSpeed;
+        private void onCamPanSpeed(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = CamPanSpeed;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> CamTiltSpeed;
+        private void onCamTiltSpeed(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = CamTiltSpeed;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> CamZoomSpeed;
+        private void onCamZoomSpeed(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = CamZoomSpeed;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
         public event EventHandler<UIEventArgs> CamPresetZone;
         private void onCamPresetZone(SmartObjectEventArgs eventArgs)
         {
@@ -949,6 +1022,38 @@ namespace MCCCD_AA140
             for (int index = 0; index < Devices.Count; index++)
             {
                 callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamUsbOutputFb], this);
+            }
+        }
+
+        public void CamActiveOutputFb(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamActiveOutputFb], this);
+            }
+        }
+
+        public void CamPanSpeedFb(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamPanSpeedFb], this);
+            }
+        }
+
+        public void CamTiltSpeedFb(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamTiltSpeedFb], this);
+            }
+        }
+
+        public void CamZoomSpeedFb(MainUShortInputSigDelegate callback)
+        {
+            for (int index = 0; index < Devices.Count; index++)
+            {
+                callback(Devices[index].SmartObjects[ControlJoinId].UShortInput[Joins.Numerics.CamZoomSpeedFb], this);
             }
         }
 
@@ -1156,6 +1261,7 @@ namespace MCCCD_AA140
             IsDisposed = true;
 
             CamPresenterFraming = null;
+            CamGroupFraming = null;
             MicLavMute = null;
             MicHandheldMute = null;
             MicCeiling1Mute = null;
@@ -1184,6 +1290,10 @@ namespace MCCCD_AA140
             UsbHostSelect = null;
             AudioOutputSelect = null;
             CamUsbOutput = null;
+            CamActiveOutput = null;
+            CamPanSpeed = null;
+            CamTiltSpeed = null;
+            CamZoomSpeed = null;
             CamPresetZone = null;
             CamTrackingProfile = null;
             MicLavTrim = null;
