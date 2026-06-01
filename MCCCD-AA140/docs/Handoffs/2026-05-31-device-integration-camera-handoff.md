@@ -1,25 +1,41 @@
 # 2026-05-31 — Handoff: Device Integration + Camera Page (branch `feat/device-integration-usb-signage`)
 
-**Worktree:** `.worktrees/device-integration-usb-signage/` (git worktree, branch `feat/device-integration-usb-signage`, branched from `main` @ `0f463cd`). 30 commits, nothing uncommitted. **Not merged.**
+**Worktree:** `.worktrees/device-integration-usb-signage/` (git worktree, branch `feat/device-integration-usb-signage`, branched from `main` @ `0f463cd`). 33 commits, nothing uncommitted. **Not merged.**
 
 **Processor:** RMC4 @ `192.168.2.198` (admin/password). **Panels:** TS-1070 `.80`, TSW-1070 `.78`.
 **Debug tool:** `https://192.168.2.198/cws/aa140/debug/` (device config, ping/health, per-device command routes, `/events` stream).
 
+**Build/deploy status (2026-06-01):** Contract Editor gate **DONE** — `CamGroupFraming/Fb`, `CamActiveOutput/Fb`, `CamPanSpeed/Tilt/ZoomSpeed/Fb` all built (direction verified), processor **builds 0 errors**, processor + both panels **deployed**. Everything below is live except the one open mapping item.
+
 ---
 
-## ⏭ IMMEDIATE NEXT STEP — pending Contract Editor gate
+## ⏭ IMMEDIATE NEXT STEP — fix the multicam Front/Back ↔ camera mapping
 
-The `.cce` has new camera signals that are **regenerated but not yet built** in Crestron Contract Editor. Until then the processor won't compile (the panel builds fine). **Signals added since the last successful Contract Editor build:**
-`CamGroupFraming/Fb`, `CamActiveOutput/Fb`, `CamPanSpeed/Fb`, `CamTiltSpeed/Fb`, `CamZoomSpeed/Fb`.
+**Symptom (reported):** on the unified left **Multicam selector** (Front/Back), selecting a feed does not give control of the right camera / show the right feed. The multicam VISCA commands themselves are verified working (SetCameraOutput 1↔2 + GetCameraOutput feedback all ACK) — this is purely a **mapping config** in `MCCCD-AA140/src/lib/cameras.ts`, panel-only (no contract/processor change, no Contract Editor pass).
 
-**Run (Windows):**
-1. Open `MCCCD-AA140/contracts/MCCCD-AA140-canonical.cce` in Crestron Contract Editor → confirm the 5 signals above are present, **no "unpaired" warnings** → **Build**.
-2. Copy `*.g.cs` → `MCCCD-AA140-SIMPL/MCCCD-AA140/Generated/` (overwrite).
-3. Copy `*.cse2j` → `MCCCD-AA140/contracts/output/MCCCD_AA140/interface/mapping/` (overwrite).
-4. Verify direction: `grep -E "void (CamActiveOutputFb|CamPanSpeedFb)\(" Generated/Main.g.cs` (setters) and `grep -E "event .*(CamActiveOutput|CamPanSpeed)\b" Generated/Main.g.cs` (events).
-5. Commit the regenerated outputs, then build + deploy (recipe below).
+**Two independent mappings to verify (run the identify test, then set in `cameras.ts`):**
 
-**Contract encoding rule (don't forget):** `attributeType 0 = State = feedback (proc→panel) = setter`; `1 = Event = command (panel→proc) = event`. The Python generator (`build_aa140_cce.py`) bakes this in correctly — just add `(Cmd, CmdFb, dataType)` tuples to the right list and re-run it. **Never hand-edit `.g.cs`/`.cce`.**
+1. **Control/preview (`selectIndex` + `ip` + label):** which physical camera each button controls (PTZ/preset/coords) and previews. Today: `Front = .2.174 (I20, selectIndex 1)`, `Back = .2.173 (I12, selectIndex 2)`.
+2. **USB output number (`outputIndex`):** which feed the I12 host's `SetCameraOutput(N)` puts on USB. Today: `Front → outputIndex 1`, `Back → outputIndex 2` — **host internal numbering may be reversed.**
+
+**Identify test (re-runnable; cameras wiggle + output cycles so you can watch):**
+```python
+# from repo root — wiggles each cam (returns to center) + cycles USB output 1->2
+python - <<'PY'
+import socket,time
+def C(h): s=socket.socket();s.settimeout(3);s.connect((h,5500));return s
+def drv(s,p,t,sec): s.sendall(bytes([0x81,1,6,1,0x0C,0x0A,p,t,0xFF]));time.sleep(sec);s.sendall(bytes([0x81,1,6,1,1,1,3,3,0xFF]));time.sleep(.3)
+def wig(h,l): print(l);s=C(h);drv(s,1,3,1.5);drv(s,2,3,1.5);s.close();time.sleep(1)
+def out(h,n): s=C(h);s.sendall(bytes([0x81,0xC2,1,8,n,0xFF]));time.sleep(.4);s.recv(32);s.close()
+wig('192.168.2.174','.2.174 (I20/Front) wiggling — which physical cam moves?')
+wig('192.168.2.173','.2.173 (I12/Back) wiggling — which physical cam moves?')
+print('output=1'); out('192.168.2.173',1); time.sleep(4)
+print('output=2'); out('192.168.2.173',2); time.sleep(4)
+PY
+```
+**Then fix in `cameras.ts`:** if the *wrong physical camera responds to PTZ* → swap `ip`/`selectIndex`/`label` between the two `CAMERAS` entries. If the *wrong feed shows on the USB output* → swap the two `outputIndex` values. (They're independent — you may need one, the other, or both.) Rebuild panel + `npm run deploy:both` (no processor build needed).
+
+**Contract encoding rule (for any future signal):** `attributeType 0 = State = feedback (proc→panel) = setter`; `1 = Event = command (panel→proc) = event`. Edit `build_aa140_cce.py`, re-run it, then a Contract Editor Build. **Never hand-edit `.g.cs`/`.cce`.**
 
 ---
 
@@ -34,7 +50,8 @@ The `.cce` has new camera signals that are **regenerated but not yet built** in 
 | **Cameras — VISCA rewrite** | ✅ **live-verified.** IV-CAMs speak VISCA TCP 5500, NOT HTTP. `Visca/ViscaProtocol.cs` + `ViscaCameraClient.cs`. PTZ/zoom/presets/tracking all ACK. |
 | **Cameras — RTSP stream on panel** | ✅ working. `rtsp://admin:Password1!@<ip>:554/1.h264` (Digest; **NOT** admin/crestron). Stream switches by replacing the `ch5-video` element. |
 | **Camera page v2** | ✅ built (deployed through the prior gate): 2 cameras, prominent zoom, presenter-tracking toggle (live fb), framing-output switch, live coordinates + **zoom ratio 1×–20×**, I20 zones/profiles, Home/Tracking-shot. |
-| **Camera page — this round (PENDING GATE)** | ⏳ code done, awaiting Contract Editor: **I20 Group-Tracking toggle**, reliable presenter feedback, **Active Camera 1–5 multicam switch + live feedback**, **PTZ speed sliders**. |
+| **Camera page — multicam + framing + speed** | ✅ built/deployed (gate done): **I20 Group-Tracking toggle**, reliable presenter feedback, **multicam output switch** (`SetCameraOutput`/`GetCameraOutput`), **PTZ speed sliders** (pan 1-24/tilt 1-20/zoom 0-7), zoom-ratio readout. |
+| **Camera page — unified Front/Back multicam selector** | ✅ deployed; ⚠️ **mapping unverified** — left selector replaced with Front/Back; selecting switches USB output + PTZ/preset control + preview + live badge. **See IMMEDIATE NEXT STEP** to verify/fix the Front/Back↔IP↔output# mapping in `cameras.ts`. |
 
 ---
 
@@ -77,18 +94,19 @@ The `.cce` has new camera signals that are **regenerated but not yet built** in 
 
 ```bash
 cd "C:/Users/scale/CascadeProjects/Archon-Tests/MCCCD Razzle/.worktrees/device-integration-usb-signage"
-git log --oneline -1            # expect the PTZ-speed commit on feat/device-integration-usb-signage
+git log --oneline -1            # expect: feat(panel): unify left selector into Front/Back multicam switch
 
-# 1) Run the Contract Editor gate (above), commit Generated/ + cse2j.
+# IMMEDIATE: fix the Front/Back mapping (see IMMEDIATE NEXT STEP). Edit cameras.ts, then PANEL ONLY:
+cd MCCCD-AA140 && npm run deploy:both     # no processor build/Contract Editor needed for the mapping fix
 
-# 2) Build + deploy:
+# Full build + deploy (only if processor/contract changed):
 cd MCCCD-AA140-SIMPL && dotnet build MCCCD-AA140/MCCCD-AA140.csproj -c Release && \
   PROC_HOST=192.168.2.198 python scripts/deploy.py MCCCD-AA140/bin/Release/net6.0/MCCCD-AA140.cpz
 cd ../MCCCD-AA140 && npm run deploy:both
 
-# 3) Live-test the new bits (debug routes, POST with --data ""):
+# Debug routes for camera bring-up (POST with --data ""):
 B=https://192.168.2.198/cws/aa140/debug
-curl -k -s -X POST --data "" "$B/cam/2/output?n=1"    # multicam -> cam 1 (watch /events: usb-sw? no -> cam-2 active-output ACK; GET feedback)
+curl -k -s -X POST --data "" "$B/cam/2/output?n=1"          # multicam SetCameraOutput(1) on I12 host
 curl -k -s -X POST --data "" "$B/cam/1/group-framing?on=true"
 # PTZ speed: drag sliders on the panel; verify smoother/faster moves.
 ```
