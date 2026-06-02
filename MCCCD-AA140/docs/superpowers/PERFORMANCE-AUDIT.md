@@ -137,7 +137,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
 | 2026-05-04 | Loop final summary (iter-9) | f5201e1 | All HIGH addressed (per prior session); loop graduated |
-| 2026-06-02 | H4-followup routing+mixer state gating (partial) | pending iter-10 | 4 fewer always-on crcomlib subscriptions; index-*.js +103 B; camTrackingModeFb stays always-on (Cameras.svelte protected) |
+| 2026-06-02 | H4-followup routing+mixer state gating (partial) | 06924db | 4 fewer always-on crcomlib subscriptions; index-*.js +103 B; camTrackingModeFb stays always-on (Cameras.svelte protected) |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
