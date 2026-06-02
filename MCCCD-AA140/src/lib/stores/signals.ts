@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { SIGNALS } from '../contract';
-import { subscribeAnalog, subscribeDigital, unsubscribeAnalog } from '../CrComLib';
+import { subscribeAnalog, subscribeDigital, unsubscribeAnalog, unsubscribeDigital } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor. Components publish commands via the typed CrComLib helpers
@@ -121,12 +121,10 @@ export function initSignals(): void {
 
   subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
 
-  subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
-  subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
+  // routingModeFb + autoRouteEnableFb are gated to DisplayRouting — see initRoutingStateSubscriptions()
+  // sceneRecallFb + audioLinkCeilings12Fb are gated to AudioMixer — see initMixerStateSubscriptions()
 
   subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
-  subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
-  subscribeDigital(SIGNALS.audioLinkCeilings12Fb,(v) => audioLinkCeilings12Fb.set(v));
 }
 
 // ── Per-page lazy subscriptions ──────────────────────────────────────
@@ -160,4 +158,44 @@ export function teardownMicLevelSubscriptions(): void {
   micCeiling1Level.set(0);
   micCeiling2Level.set(0);
   micCeiling3Level.set(0);
+}
+
+// ── Per-page lazy subscriptions (H4-followup): low-frequency state signals ──
+// These fire only on user action (not continuously) but are only consumed by
+// one page each. Gate them to reduce the always-on crcomlib registry footprint.
+// Keep last-known store value on teardown — re-subscribe restores current state
+// from the processor on next mount.
+
+let routingStateIds: string[] = [];
+
+export function initRoutingStateSubscriptions(): void {
+  if (routingStateIds.length > 0) return;
+  routingStateIds = [
+    subscribeAnalog(SIGNALS.routingModeFb,      (v) => routingModeFb.set(v)),
+    subscribeDigital(SIGNALS.autoRouteEnableFb, (v) => autoRouteEnableFb.set(v)),
+  ];
+}
+
+export function teardownRoutingStateSubscriptions(): void {
+  const [rid, did] = routingStateIds;
+  if (rid) unsubscribeAnalog(rid);
+  if (did) unsubscribeDigital(did);
+  routingStateIds = [];
+}
+
+let mixerStateIds: string[] = [];
+
+export function initMixerStateSubscriptions(): void {
+  if (mixerStateIds.length > 0) return;
+  mixerStateIds = [
+    subscribeAnalog(SIGNALS.sceneRecallFb,          (v) => sceneRecallFb.set(v)),
+    subscribeDigital(SIGNALS.audioLinkCeilings12Fb, (v) => audioLinkCeilings12Fb.set(v)),
+  ];
+}
+
+export function teardownMixerStateSubscriptions(): void {
+  const [aid, did] = mixerStateIds;
+  if (aid) unsubscribeAnalog(aid);
+  if (did) unsubscribeDigital(did);
+  mixerStateIds = [];
 }
