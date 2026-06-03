@@ -68,6 +68,9 @@ PURE_COMMAND = [
     ("CamSendToVtc", 1), ("ZoomIn", 1), ("ZoomOut", 1),
     ("CameraSelect", 2), ("ShotPresetRecall", 2), ("ShotPresetSave", 2), ("ShotPresetDelete", 2),
     ("CamHomeShot", 1), ("CamTrackingShot", 1),
+    # Projector screen relays (RMC4 onboard relays; momentary pulse-to-limit).
+    # No feedback — dry contacts can't report screen position.
+    ("ScreenUp", 1), ("ScreenDown", 1),
 ]
 
 # Pure feedback (State only): (stateName, dataType)

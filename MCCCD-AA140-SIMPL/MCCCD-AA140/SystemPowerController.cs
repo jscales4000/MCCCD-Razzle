@@ -14,6 +14,7 @@ namespace MCCCD_AA140
         private readonly Contract _c;
         private readonly NvxRoutingService _nvx;
         private readonly UsbSwitchService _usb;
+        private readonly ScreenRelayService _screens;
         private readonly CrestronControlSystem _cs;
 
         private bool _systemOn;
@@ -25,11 +26,12 @@ namespace MCCCD_AA140
         private ushort _lastD2 = 1;
         private ushort _lastD3 = 1;
 
-        public SystemPowerController(Contract c, NvxRoutingService nvx, UsbSwitchService usb, CrestronControlSystem cs)
+        public SystemPowerController(Contract c, NvxRoutingService nvx, UsbSwitchService usb, ScreenRelayService screens, CrestronControlSystem cs)
         {
             _c = c;
             _nvx = nvx;
             _usb = usb;
+            _screens = screens;
             _cs = cs;
         }
 
@@ -124,6 +126,9 @@ namespace MCCCD_AA140
             // USB peripherals (camera + Shure) default to the in-room Room PC.
             _usb.SelectHost(UsbSwitchService.UsbHost.RoomPc);
 
+            // Lower the projector screens when the room powers on (momentary pulse).
+            _screens.ScreenDown();
+
             // Signage (D5) stays idle until explicitly routed.
             _nvx.RouteSourceToDisplay(0, 5);
             _c.AA140.Display5SourceFb((sig, m) => sig.UShortValue = 0);
@@ -155,6 +160,9 @@ namespace MCCCD_AA140
             _c.AA140.Display5SourceFb((sig, m) => sig.UShortValue = 0);
 
             // USB host left as-is on power-down (don't strand a connected laptop).
+
+            // Raise the projector screens on shutdown (momentary pulse).
+            _screens.ScreenUp();
         }
     }
 }

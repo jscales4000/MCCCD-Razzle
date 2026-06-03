@@ -42,6 +42,7 @@ namespace MCCCD_AA140.Debug
         private NewlineService _newline;
         private AirMediaService _airmedia;
         private UsbSwitchService _usb;
+        private ScreenRelayService _screens;
         private Contract _contract;
 
         public void Configure(
@@ -55,6 +56,7 @@ namespace MCCCD_AA140.Debug
             NewlineService newline,
             AirMediaService airmedia,
             UsbSwitchService usb,
+            ScreenRelayService screens,
             Contract contract)
         {
             _store = store;
@@ -67,6 +69,7 @@ namespace MCCCD_AA140.Debug
             _newline = newline;
             _airmedia = airmedia;
             _usb = usb;
+            _screens = screens;
             _contract = contract;
         }
 
@@ -123,6 +126,7 @@ namespace MCCCD_AA140.Debug
                     else if (sub.StartsWith("/newline/",  StringComparison.OrdinalIgnoreCase)) HandleNewlinePost(args, sub.Substring("/newline/".Length));
                     else if (sub.StartsWith("/airmedia/", StringComparison.OrdinalIgnoreCase)) HandleAirMediaPost(args, sub.Substring("/airmedia/".Length));
                     else if (sub.StartsWith("/usb/",      StringComparison.OrdinalIgnoreCase)) HandleUsbPost(args, sub.Substring("/usb/".Length));
+                    else if (sub.StartsWith("/screen/",   StringComparison.OrdinalIgnoreCase)) HandleScreenPost(args, sub.Substring("/screen/".Length));
                     else                                         Serve404(args, "POST " + sub);
                 } else {
                     Serve404(args, method + " " + sub);
@@ -585,6 +589,20 @@ namespace MCCCD_AA140.Debug
                 return;
             }
             Serve404(args, "usb/" + sub);
+        }
+
+        // ─── /screen/<up|down> — projector screen relays ────────────────
+
+        private void HandleScreenPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_screens == null) { ServeJson(args, 503, "{\"error\":\"no screens\"}"); return; }
+            var action = sub.Trim('/').ToLowerInvariant();
+            switch (action) {
+                case "up":   _screens.TriggerFromDebug("up");   break;
+                case "down": _screens.TriggerFromDebug("down"); break;
+                default:     Serve404(args, "screen/" + action); return;
+            }
+            ServeOk(args);
         }
 
         // ─── helpers ─────────────────────────────────────────────────────

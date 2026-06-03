@@ -530,7 +530,7 @@
         },
         {
           "Errors": [],
-          "name": "PanelOnline",
+          "name": "",
           "siblingId": "_e051",
           "dataType": 1,
           "notes": "",
@@ -540,7 +540,7 @@
         },
         {
           "Errors": [],
-          "name": "SystemPowerFb",
+          "name": "",
           "siblingId": "_e052",
           "dataType": 1,
           "notes": "",
@@ -550,7 +550,7 @@
         },
         {
           "Errors": [],
-          "name": "Display1PowerFb",
+          "name": "PanelOnline",
           "siblingId": "_e053",
           "dataType": 1,
           "notes": "",
@@ -560,7 +560,7 @@
         },
         {
           "Errors": [],
-          "name": "Display2PowerFb",
+          "name": "SystemPowerFb",
           "siblingId": "_e054",
           "dataType": 1,
           "notes": "",
@@ -570,7 +570,7 @@
         },
         {
           "Errors": [],
-          "name": "Display3PowerFb",
+          "name": "Display1PowerFb",
           "siblingId": "_e055",
           "dataType": 1,
           "notes": "",
@@ -580,7 +580,7 @@
         },
         {
           "Errors": [],
-          "name": "Display4PowerFb",
+          "name": "Display2PowerFb",
           "siblingId": "_e056",
           "dataType": 1,
           "notes": "",
@@ -590,7 +590,7 @@
         },
         {
           "Errors": [],
-          "name": "MicLavConnected",
+          "name": "Display3PowerFb",
           "siblingId": "_e057",
           "dataType": 1,
           "notes": "",
@@ -600,7 +600,7 @@
         },
         {
           "Errors": [],
-          "name": "MicHandheldConnected",
+          "name": "Display4PowerFb",
           "siblingId": "_e058",
           "dataType": 1,
           "notes": "",
@@ -610,7 +610,7 @@
         },
         {
           "Errors": [],
-          "name": "MicCeiling1Connected",
+          "name": "MicLavConnected",
           "siblingId": "_e059",
           "dataType": 1,
           "notes": "",
@@ -620,7 +620,7 @@
         },
         {
           "Errors": [],
-          "name": "MicCeiling2Connected",
+          "name": "MicHandheldConnected",
           "siblingId": "_e060",
           "dataType": 1,
           "notes": "",
@@ -630,7 +630,7 @@
         },
         {
           "Errors": [],
-          "name": "MicCeiling3Connected",
+          "name": "MicCeiling1Connected",
           "siblingId": "_e061",
           "dataType": 1,
           "notes": "",
@@ -640,9 +640,9 @@
         },
         {
           "Errors": [],
-          "name": "OccupancyState",
+          "name": "MicCeiling2Connected",
           "siblingId": "_e062",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_s062",
           "parentId": "_aa140main",
@@ -650,9 +650,9 @@
         },
         {
           "Errors": [],
-          "name": "ShutdownCountdown",
+          "name": "MicCeiling3Connected",
           "siblingId": "_e063",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_s063",
           "parentId": "_aa140main",
@@ -660,7 +660,7 @@
         },
         {
           "Errors": [],
-          "name": "MicLavLevel",
+          "name": "OccupancyState",
           "siblingId": "_e064",
           "dataType": 2,
           "notes": "",
@@ -670,7 +670,7 @@
         },
         {
           "Errors": [],
-          "name": "MicHandheldLevel",
+          "name": "ShutdownCountdown",
           "siblingId": "_e065",
           "dataType": 2,
           "notes": "",
@@ -680,7 +680,7 @@
         },
         {
           "Errors": [],
-          "name": "MicCeiling1Level",
+          "name": "MicLavLevel",
           "siblingId": "_e066",
           "dataType": 2,
           "notes": "",
@@ -690,7 +690,7 @@
         },
         {
           "Errors": [],
-          "name": "MicCeiling2Level",
+          "name": "MicHandheldLevel",
           "siblingId": "_e067",
           "dataType": 2,
           "notes": "",
@@ -700,7 +700,7 @@
         },
         {
           "Errors": [],
-          "name": "MicCeiling3Level",
+          "name": "MicCeiling1Level",
           "siblingId": "_e068",
           "dataType": 2,
           "notes": "",
@@ -710,9 +710,9 @@
         },
         {
           "Errors": [],
-          "name": "RoomPcSync",
+          "name": "MicCeiling2Level",
           "siblingId": "_e069",
-          "dataType": 1,
+          "dataType": 2,
           "notes": "",
           "id": "_s069",
           "parentId": "_aa140main",
@@ -720,9 +720,9 @@
         },
         {
           "Errors": [],
-          "name": "ExtPcSync",
+          "name": "MicCeiling3Level",
           "siblingId": "_e070",
-          "dataType": 1,
+          "dataType": 2,
           "notes": "",
           "id": "_s070",
           "parentId": "_aa140main",
@@ -730,7 +730,7 @@
         },
         {
           "Errors": [],
-          "name": "AirMediaSync",
+          "name": "RoomPcSync",
           "siblingId": "_e071",
           "dataType": 1,
           "notes": "",
@@ -740,7 +740,7 @@
         },
         {
           "Errors": [],
-          "name": "AirMediaMiracast",
+          "name": "ExtPcSync",
           "siblingId": "_e072",
           "dataType": 1,
           "notes": "",
@@ -750,7 +750,7 @@
         },
         {
           "Errors": [],
-          "name": "AirMediaAirPlay",
+          "name": "AirMediaSync",
           "siblingId": "_e073",
           "dataType": 1,
           "notes": "",
@@ -760,7 +760,7 @@
         },
         {
           "Errors": [],
-          "name": "AirMediaTx3",
+          "name": "AirMediaMiracast",
           "siblingId": "_e074",
           "dataType": 1,
           "notes": "",
@@ -770,7 +770,7 @@
         },
         {
           "Errors": [],
-          "name": "LaptopHdmiSync",
+          "name": "AirMediaAirPlay",
           "siblingId": "_e075",
           "dataType": 1,
           "notes": "",
@@ -780,7 +780,7 @@
         },
         {
           "Errors": [],
-          "name": "LaptopUsbcSync",
+          "name": "AirMediaTx3",
           "siblingId": "_e076",
           "dataType": 1,
           "notes": "",
@@ -790,9 +790,9 @@
         },
         {
           "Errors": [],
-          "name": "CamPanPos",
+          "name": "LaptopHdmiSync",
           "siblingId": "_e077",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_s077",
           "parentId": "_aa140main",
@@ -800,9 +800,9 @@
         },
         {
           "Errors": [],
-          "name": "CamTiltPos",
+          "name": "LaptopUsbcSync",
           "siblingId": "_e078",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_s078",
           "parentId": "_aa140main",
@@ -810,11 +810,31 @@
         },
         {
           "Errors": [],
-          "name": "CamZoomPos",
+          "name": "CamPanPos",
           "siblingId": "_e079",
           "dataType": 2,
           "notes": "",
           "id": "_s079",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "CamTiltPos",
+          "siblingId": "_e080",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s080",
+          "parentId": "_aa140main",
+          "attributeType": 0
+        },
+        {
+          "Errors": [],
+          "name": "CamZoomPos",
+          "siblingId": "_e081",
+          "dataType": 2,
+          "notes": "",
+          "id": "_s081",
           "parentId": "_aa140main",
           "attributeType": 0
         }
@@ -1322,7 +1342,7 @@
         },
         {
           "Errors": [],
-          "name": "",
+          "name": "ScreenUp",
           "siblingId": "_s051",
           "dataType": 1,
           "notes": "",
@@ -1332,7 +1352,7 @@
         },
         {
           "Errors": [],
-          "name": "",
+          "name": "ScreenDown",
           "siblingId": "_s052",
           "dataType": 1,
           "notes": "",
@@ -1434,7 +1454,7 @@
           "Errors": [],
           "name": "",
           "siblingId": "_s062",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_e062",
           "parentId": "_aa140main",
@@ -1444,7 +1464,7 @@
           "Errors": [],
           "name": "",
           "siblingId": "_s063",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_e063",
           "parentId": "_aa140main",
@@ -1504,7 +1524,7 @@
           "Errors": [],
           "name": "",
           "siblingId": "_s069",
-          "dataType": 1,
+          "dataType": 2,
           "notes": "",
           "id": "_e069",
           "parentId": "_aa140main",
@@ -1514,7 +1534,7 @@
           "Errors": [],
           "name": "",
           "siblingId": "_s070",
-          "dataType": 1,
+          "dataType": 2,
           "notes": "",
           "id": "_e070",
           "parentId": "_aa140main",
@@ -1584,7 +1604,7 @@
           "Errors": [],
           "name": "",
           "siblingId": "_s077",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_e077",
           "parentId": "_aa140main",
@@ -1594,7 +1614,7 @@
           "Errors": [],
           "name": "",
           "siblingId": "_s078",
-          "dataType": 2,
+          "dataType": 1,
           "notes": "",
           "id": "_e078",
           "parentId": "_aa140main",
@@ -1607,6 +1627,26 @@
           "dataType": 2,
           "notes": "",
           "id": "_e079",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s080",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e080",
+          "parentId": "_aa140main",
+          "attributeType": 1
+        },
+        {
+          "Errors": [],
+          "name": "",
+          "siblingId": "_s081",
+          "dataType": 2,
+          "notes": "",
+          "id": "_e081",
           "parentId": "_aa140main",
           "attributeType": 1
         }

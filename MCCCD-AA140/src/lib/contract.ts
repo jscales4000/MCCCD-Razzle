@@ -77,6 +77,11 @@ export const SIGNALS = {
   // USB peripheral host switch (USB-SW-400): 1=RoomPC, 2=AirMedia, 3=Laptop
   usbHostSelect:      `${ROOM_NAME}.UsbHostSelect`,       // analog set
   usbHostSelectFb:    `${ROOM_NAME}.UsbHostSelectFb`,     // analog feedback
+
+  // Projector screen relays (RMC4 onboard relays; momentary pulse-to-limit).
+  // Both screens move together — no feedback (dry contacts can't report position).
+  screenUp:           `${ROOM_NAME}.ScreenUp`,            // digital pulse
+  screenDown:         `${ROOM_NAME}.ScreenDown`,          // digital pulse
   audioOutputSelectFb:`${ROOM_NAME}.AudioOutputSelectFb`, // analog feedback (1=D1, 2=D2)
 
   micLavMute:         `${ROOM_NAME}.MicLavMute`,          // digital toggle
