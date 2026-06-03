@@ -9,6 +9,7 @@
     camPanPos, camTiltPos, camZoomPos,
   } from '../lib/stores/signals';
   import { goToPage, currentPage } from '../lib/stores/page';
+  import { role } from '../lib/stores/role';
   import { CAMERAS, rtspMain, CAM_USER, CAM_PASS, type Camera } from '../lib/cameras';
   import PresetButton from '../components/PresetButton.svelte';
 
@@ -262,6 +263,8 @@
           z-index:0 of the body and the Svelte UI is above it at z-index:1.
         -->
         <div class="video-container" bind:this={videoWindow}>
+          <!-- PTZ drive pad — Technician only (users use presets + framing) -->
+          {#if $role === 'tech'}
           <div class="ptz-overlay">
             <button
               class="icon-btn ptz-btn ptz-up"
@@ -320,7 +323,9 @@
               </svg>
             </button>
           </div>
+          {/if}
         </div>
+        {#if $role === 'tech'}
         <div class="coords-bar">
           <div class="coord"><span class="ck">Pan</span><span class="cv">{signed($camPanPos)}</span></div>
           <div class="coord"><span class="ck">Tilt</span><span class="cv">{signed($camTiltPos)}</span></div>
@@ -328,6 +333,7 @@
           <div class="coord"><span class="ck">Optical</span><span class="cv">{zoomX}</span></div>
           <span class="coord-live">● live</span>
         </div>
+        {/if}
       </div>
 
       <!-- Right-side controls -->
@@ -360,13 +366,15 @@
           <span class="zoom-cap">press &amp; hold</span>
         </div>
 
-        <!-- PTZ speed (wired) -->
+        <!-- PTZ speed (wired) — Technician only -->
+        {#if $role === 'tech'}
         <div class="ctl-sec">
           <p class="block-label">PTZ Speed</p>
           <label class="spd"><span class="spd-k">Pan</span><input type="range" min="1" max="24" bind:value={panSpeed} onchange={commitPanSpeed} aria-label="Pan speed" /><span class="spd-v">{panSpeed}</span></label>
           <label class="spd"><span class="spd-k">Tilt</span><input type="range" min="1" max="20" bind:value={tiltSpeed} onchange={commitTiltSpeed} aria-label="Tilt speed" /><span class="spd-v">{tiltSpeed}</span></label>
           <label class="spd"><span class="spd-k">Zoom</span><input type="range" min="0" max="7" bind:value={zoomSpeed} onchange={commitZoomSpeed} aria-label="Zoom speed" /><span class="spd-v">{zoomSpeed}</span></label>
         </div>
+        {/if}
 
         <!-- Framing on the I20 — independent presenter (live) + group (cached) tracking -->
         <div class="ctl-sec">
@@ -392,7 +400,9 @@
         </div>
 
 
+        {#if $role === 'tech'}
         <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>
+        {/if}
       </div>
 
     </div>
@@ -414,7 +424,7 @@
         </div>
       </div>
 
-      {#if isPresenterCam}
+      {#if isPresenterCam && $role === 'tech'}
         <div class="i20-row glass-card">
           <div class="i20-block">
             <p class="block-label">Preset Zones <span class="i20-tag">I20</span></p>

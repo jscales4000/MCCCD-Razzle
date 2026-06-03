@@ -14,6 +14,7 @@
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
+  import { role } from '../lib/stores/role';
   import {
     SOURCES,
     routeSource,
@@ -44,6 +45,7 @@
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
   import DisplayStatusCard from '../components/routing/DisplayStatusCard.svelte';
+  import ScreenControl from '../components/ScreenControl.svelte';
   import Aa140Footer from '../components/Aa140Footer.svelte';
 
   // ── Source-value (1..4) ↔ SourceId map ─────────────────────────────────
@@ -294,27 +296,32 @@
         <div class="aud-hint">Camera + room mic follow the selected host. Default: Room PC.</div>
       </div>
 
-      <!-- Outside signage (D5) — independent of the in-room displays -->
-      <div class="side-sign">
-        <span class="side-h">Outside Signage</span>
-        <div class="sign-row">
-          {#each SIGNAGE_SOURCES as s}
+      <!-- Projector screens (RMC4 relays) — visible to all users -->
+      <ScreenControl />
+
+      <!-- Outside signage (D5) — installer-level, Technician view only -->
+      {#if $role === 'tech'}
+        <div class="side-sign">
+          <span class="side-h">Outside Signage</span>
+          <div class="sign-row">
+            {#each SIGNAGE_SOURCES as s}
+              <button
+                type="button"
+                class="sign-btn"
+                class:active={signageSource === s}
+                aria-pressed={signageSource === s}
+                onclick={() => onSignagePick(s)}
+              >{SOURCES[s].label}</button>
+            {/each}
             <button
               type="button"
-              class="sign-btn"
-              class:active={signageSource === s}
-              aria-pressed={signageSource === s}
-              onclick={() => onSignagePick(s)}
-            >{SOURCES[s].label}</button>
-          {/each}
-          <button
-            type="button"
-            class="sign-btn clear"
-            class:active={signageSource === null}
-            onclick={() => clearSignage()}
-          >Off</button>
+              class="sign-btn clear"
+              class:active={signageSource === null}
+              onclick={() => clearSignage()}
+            >Off</button>
+          </div>
         </div>
-      </div>
+      {/if}
     </aside>
   </div>
 

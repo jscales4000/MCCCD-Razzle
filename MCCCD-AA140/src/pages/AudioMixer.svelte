@@ -14,6 +14,7 @@
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
+  import { role } from '../lib/stores/role';
   import {
     panelOnline,
     audioOutputSelectFb,
@@ -127,6 +128,7 @@
       lineOut={$micLavLineOutFb}
       trim={$micLavTrimFb}
       muted={$micLavMuteFb}
+      advanced={$role === 'tech'}
       onLineOutChange={(n) => publishAnalog(SIGNALS.micLavLineOut, n)}
       onTrimChange={(n) => publishAnalog(SIGNALS.micLavTrim, n)}
       onMuteToggle={() => publishDigital(SIGNALS.micLavMute, !$micLavMuteFb)}
@@ -140,6 +142,7 @@
       lineOut={$micHandheldLineOutFb}
       trim={$micHandheldTrimFb}
       muted={$micHandheldMuteFb}
+      advanced={$role === 'tech'}
       onLineOutChange={(n) => publishAnalog(SIGNALS.micHandheldLineOut, n)}
       onTrimChange={(n) => publishAnalog(SIGNALS.micHandheldTrim, n)}
       onMuteToggle={() => publishDigital(SIGNALS.micHandheldMute, !$micHandheldMuteFb)}
@@ -153,6 +156,7 @@
       lineOut={$micCeiling1LineOutFb}
       trim={$micCeiling1TrimFb}
       muted={$micCeiling1MuteFb}
+      advanced={$role === 'tech'}
       onLineOutChange={(n) => publishAnalog(SIGNALS.micCeiling1LineOut, n)}
       onTrimChange={(n) => publishAnalog(SIGNALS.micCeiling1Trim, n)}
       onMuteToggle={() => publishDigital(SIGNALS.micCeiling1Mute, !$micCeiling1MuteFb)}
@@ -166,6 +170,7 @@
       lineOut={$micCeiling2LineOutFb}
       trim={$micCeiling2TrimFb}
       muted={$micCeiling2MuteFb}
+      advanced={$role === 'tech'}
       onLineOutChange={(n) => publishAnalog(SIGNALS.micCeiling2LineOut, n)}
       onTrimChange={(n) => publishAnalog(SIGNALS.micCeiling2Trim, n)}
       onMuteToggle={() => publishDigital(SIGNALS.micCeiling2Mute, !$micCeiling2MuteFb)}

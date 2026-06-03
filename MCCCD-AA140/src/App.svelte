@@ -2,6 +2,7 @@
   import { currentPage } from './lib/stores/page';
   import Home from './pages/Home.svelte';
   import DragCloneOverlay from './components/DragCloneOverlay.svelte';
+  import TechGate from './components/TechGate.svelte';
 
   // Home + DragCloneOverlay load synchronously (always-needed first paint).
   // Cameras / AudioMixer / DisplayRouting are dynamic-imported so their JS
@@ -45,3 +46,10 @@
   routing page relies on its presence; harmless when no drag is active.
 -->
 <DragCloneOverlay />
+
+<!--
+  TechGate: global view-role affordance (invisible long-press hotspot + tech
+  badge + PIN modal). Mounted at the App root so it's available on every page
+  regardless of which one is active. Renders only the hidden hotspot in User view.
+-->
+<TechGate />

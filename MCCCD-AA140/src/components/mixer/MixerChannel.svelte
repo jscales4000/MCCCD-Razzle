@@ -24,6 +24,7 @@
     lineOut: number;      // 0..100, drives fader fill + thumb
     trim: number;         // -20..+20 dB
     muted: boolean;
+    advanced?: boolean;   // false = User view: hide line-out fader + trim (keep meter + mute)
     onLineOutChange: (n: number) => void;
     onTrimChange: (n: number) => void;
     onMuteToggle: () => void;
@@ -38,6 +39,7 @@
     lineOut,
     trim,
     muted,
+    advanced = true,
     onLineOutChange,
     onTrimChange,
     onMuteToggle,
@@ -65,41 +67,49 @@
     <div class="fader-wrap" class:disabled={!connected}>
       <div class="vu-slot"><VuMeter level={connected ? level : 0} /></div>
 
-      <div class="fader">
-        <div class="fader-rail"></div>
-        <div class="fader-fill" style="height: {lineOut}%"></div>
-        <input
-          class="fader-input"
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          value={lineOut}
-          disabled={!connected}
-          oninput={(e) => onLineOutChange(+(e.currentTarget as HTMLInputElement).value)}
-          aria-label="{name} line out level"
-        />
-        <div class="fader-thumb" style="bottom: calc({lineOut}% - 8px)"></div>
-      </div>
+      {#if advanced}
+        <!-- Line-out (output feed) fader — Technician only -->
+        <div class="fader">
+          <div class="fader-rail"></div>
+          <div class="fader-fill" style="height: {lineOut}%"></div>
+          <input
+            class="fader-input"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={lineOut}
+            disabled={!connected}
+            oninput={(e) => onLineOutChange(+(e.currentTarget as HTMLInputElement).value)}
+            aria-label="{name} line out level"
+          />
+          <div class="fader-thumb" style="bottom: calc({lineOut}% - 8px)"></div>
+        </div>
+      {:else}
+        <div class="fader-spacer" aria-hidden="true"></div>
+      {/if}
 
       <div class="vu-slot"><VuMeter level={connected ? level : 0} /></div>
     </div>
 
-    <div class="trim-row" class:disabled={!connected}>
-      <span class="trim-label">Trim</span>
-      <input
-        class="trim-slider"
-        type="range"
-        min="-20"
-        max="20"
-        step="1"
-        value={trim}
-        disabled={!connected}
-        oninput={(e) => onTrimChange(+(e.currentTarget as HTMLInputElement).value)}
-        aria-label="{name} trim"
-      />
-      <span class="trim-readout">{trim > 0 ? '+' : ''}{trim}</span>
-    </div>
+    {#if advanced}
+      <!-- Input trim/gain — Technician only -->
+      <div class="trim-row" class:disabled={!connected}>
+        <span class="trim-label">Trim</span>
+        <input
+          class="trim-slider"
+          type="range"
+          min="-20"
+          max="20"
+          step="1"
+          value={trim}
+          disabled={!connected}
+          oninput={(e) => onTrimChange(+(e.currentTarget as HTMLInputElement).value)}
+          aria-label="{name} trim"
+        />
+        <span class="trim-readout">{trim > 0 ? '+' : ''}{trim}</span>
+      </div>
+    {/if}
   </div>
 
   <!-- Foot -->
@@ -221,6 +231,12 @@
 
   .fader {
     position: relative;
+    width: 28px;
+    height: 100%;
+    min-height: 120px;
+  }
+  /* User view: no line-out fader — keep the column so the VU meters stay flanked. */
+  .fader-spacer {
     width: 28px;
     height: 100%;
     min-height: 120px;
