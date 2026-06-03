@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { SIGNALS } from '../contract';
-import { subscribeAnalog, subscribeDigital, unsubscribeAnalog } from '../CrComLib';
+import { subscribeAnalog, subscribeDigital, unsubscribeAnalog, unsubscribeDigital } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor. Components publish commands via the typed CrComLib helpers
@@ -22,40 +22,35 @@ export const display3PowerFb = writable<boolean>(false);
 // System power (drives Power button enlarged variant + reflects current power state)
 export const systemPowerFb = writable<boolean>(false);
 
-// Mic mutes (Lav/Handheld on Home; Ceiling 1-3 on Settings)
+// Mic mutes (Lav/Handheld on Home; Ceiling 1-2 on AudioMixer)
 export const micLavMuteFb = writable<boolean>(false);
 export const micHandheldMuteFb = writable<boolean>(false);
 export const micCeiling1MuteFb = writable<boolean>(false);
 export const micCeiling2MuteFb = writable<boolean>(false);
-export const micCeiling3MuteFb = writable<boolean>(false);
 
 // Mic input gain trims (0-100)
 export const micLavTrimFb = writable<number>(50);
 export const micHandheldTrimFb = writable<number>(50);
 export const micCeiling1TrimFb = writable<number>(50);
 export const micCeiling2TrimFb = writable<number>(50);
-export const micCeiling3TrimFb = writable<number>(50);
 
 // Mic line-out levels (0-100)
 export const micLavLineOutFb = writable<number>(50);
 export const micHandheldLineOutFb = writable<number>(50);
 export const micCeiling1LineOutFb = writable<number>(50);
 export const micCeiling2LineOutFb = writable<number>(50);
-export const micCeiling3LineOutFb = writable<number>(50);
 
-// Mic real-time levels (0-100, ~10-30 Hz update from Q-SYS)
+// Mic real-time levels (0-100, ~10-30 Hz update from Shure P300)
 export const micLavLevel = writable<number>(0);
 export const micHandheldLevel = writable<number>(0);
 export const micCeiling1Level = writable<number>(0);
 export const micCeiling2Level = writable<number>(0);
-export const micCeiling3Level = writable<number>(0);
 
 // Mic connection / signal-present
 export const micLavConnected = writable<boolean>(false);
 export const micHandheldConnected = writable<boolean>(false);
 export const micCeiling1Connected = writable<boolean>(false);
 export const micCeiling2Connected = writable<boolean>(false);
-export const micCeiling3Connected = writable<boolean>(false);
 
 // Occupancy + shutdown
 export const occupancyState = writable<0 | 1 | 2>(0); // 0=vacant, 1=occupied, 2=shutdown-pending
@@ -92,19 +87,16 @@ export function initSignals(): void {
   subscribeDigital(SIGNALS.micHandheldMuteFb,  (v) => micHandheldMuteFb.set(v));
   subscribeDigital(SIGNALS.micCeiling1MuteFb,  (v) => micCeiling1MuteFb.set(v));
   subscribeDigital(SIGNALS.micCeiling2MuteFb,  (v) => micCeiling2MuteFb.set(v));
-  subscribeDigital(SIGNALS.micCeiling3MuteFb,  (v) => micCeiling3MuteFb.set(v));
 
   subscribeAnalog(SIGNALS.micLavTrimFb,        (v) => micLavTrimFb.set(v));
   subscribeAnalog(SIGNALS.micHandheldTrimFb,   (v) => micHandheldTrimFb.set(v));
   subscribeAnalog(SIGNALS.micCeiling1TrimFb,   (v) => micCeiling1TrimFb.set(v));
   subscribeAnalog(SIGNALS.micCeiling2TrimFb,   (v) => micCeiling2TrimFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling3TrimFb,   (v) => micCeiling3TrimFb.set(v));
 
   subscribeAnalog(SIGNALS.micLavLineOutFb,        (v) => micLavLineOutFb.set(v));
   subscribeAnalog(SIGNALS.micHandheldLineOutFb,   (v) => micHandheldLineOutFb.set(v));
   subscribeAnalog(SIGNALS.micCeiling1LineOutFb,   (v) => micCeiling1LineOutFb.set(v));
   subscribeAnalog(SIGNALS.micCeiling2LineOutFb,   (v) => micCeiling2LineOutFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling3LineOutFb,   (v) => micCeiling3LineOutFb.set(v));
 
   // Mic real-time levels are subscribed lazily — see initMicLevelSubscriptions()
   // below. They fire 10-30 Hz from Q-SYS and are only consumed by AudioMixer's
@@ -114,15 +106,14 @@ export function initSignals(): void {
   subscribeDigital(SIGNALS.micHandheldConnected,   (v) => micHandheldConnected.set(v));
   subscribeDigital(SIGNALS.micCeiling1Connected,   (v) => micCeiling1Connected.set(v));
   subscribeDigital(SIGNALS.micCeiling2Connected,   (v) => micCeiling2Connected.set(v));
-  subscribeDigital(SIGNALS.micCeiling3Connected,   (v) => micCeiling3Connected.set(v));
 
   subscribeAnalog(SIGNALS.occupancyState,      (v) => occupancyState.set(v === 1 ? 1 : v === 2 ? 2 : 0));
   subscribeAnalog(SIGNALS.shutdownCountdown,   (v) => shutdownCountdown.set(v));
 
   subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
 
-  subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
-  subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
+  // routingModeFb + autoRouteEnableFb are gated to DisplayRouting — see
+  // initDisplayRoutingSignals() / teardownDisplayRoutingSignals() below.
 
   subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
   subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
@@ -144,7 +135,6 @@ export function initMicLevelSubscriptions(): void {
     subscribeAnalog(SIGNALS.micHandheldLevel, (v) => micHandheldLevel.set(v)),
     subscribeAnalog(SIGNALS.micCeiling1Level, (v) => micCeiling1Level.set(v)),
     subscribeAnalog(SIGNALS.micCeiling2Level, (v) => micCeiling2Level.set(v)),
-    subscribeAnalog(SIGNALS.micCeiling3Level, (v) => micCeiling3Level.set(v)),
   ];
 }
 
@@ -153,11 +143,31 @@ export function teardownMicLevelSubscriptions(): void {
     if (id) unsubscribeAnalog(id);
   }
   micLevelSubscriptionIds = [];
-  // Reset the stored values so a stale meter level doesn't linger if the user
-  // re-enters AudioMixer before SIMPL pushes the next update.
+  // Reset stored values so stale meter levels don't linger on re-entry.
   micLavLevel.set(0);
   micHandheldLevel.set(0);
   micCeiling1Level.set(0);
   micCeiling2Level.set(0);
-  micCeiling3Level.set(0);
+}
+
+// ── DisplayRouting lazy subscriptions ────────────────────────────────
+// routingModeFb and autoRouteEnableFb only fire on user action (mode toggle,
+// auto-route toggle), never at 10-30 Hz like mic levels. Gate them per-page
+// so the registry stays lean even if a future DSP sends them more often.
+
+let routingSubscriptionIds: string[] = [];
+
+export function initDisplayRoutingSignals(): void {
+  if (routingSubscriptionIds.length > 0) return;
+  routingSubscriptionIds = [
+    subscribeAnalog( SIGNALS.routingModeFb,    (v) => routingModeFb.set(v)),
+    subscribeDigital(SIGNALS.autoRouteEnableFb, (v) => autoRouteEnableFb.set(v)),
+  ];
+}
+
+export function teardownDisplayRoutingSignals(): void {
+  if (routingSubscriptionIds.length === 0) return;
+  unsubscribeAnalog( routingSubscriptionIds[0]);
+  unsubscribeDigital(routingSubscriptionIds[1]);
+  routingSubscriptionIds = [];
 }
