@@ -1,6 +1,6 @@
 {
 	"name": "MCCCD_AA140",
-	"timestamp": "2026-05-31 18:52:41.898",
+	"timestamp": "2026-06-04 11:19:47.760",
 	"version": "2.0.0.0",
 	"schema_version": 1,
 	"extra_value": "AA140 panel: 3 displays, 4 sources, 3 cameras, Shure audio. Canonical direction encoding.",
@@ -15,25 +15,25 @@
 					"5": "AA140.MicCeiling1MuteFb",
 					"6": "AA140.MicCeiling2MuteFb",
 					"7": "AA140.MicCeiling3MuteFb",
-					"23": "AA140.PanelOnline",
-					"24": "AA140.SystemPowerFb",
-					"25": "AA140.Display1PowerFb",
-					"26": "AA140.Display2PowerFb",
-					"27": "AA140.Display3PowerFb",
-					"28": "AA140.Display4PowerFb",
-					"29": "AA140.MicLavConnected",
-					"30": "AA140.MicHandheldConnected",
-					"31": "AA140.MicCeiling1Connected",
-					"32": "AA140.MicCeiling2Connected",
-					"33": "AA140.MicCeiling3Connected",
-					"34": "AA140.RoomPcSync",
-					"35": "AA140.ExtPcSync",
-					"36": "AA140.AirMediaSync",
-					"37": "AA140.AirMediaMiracast",
-					"38": "AA140.AirMediaAirPlay",
-					"39": "AA140.AirMediaTx3",
-					"40": "AA140.LaptopHdmiSync",
-					"41": "AA140.LaptopUsbcSync"
+					"25": "AA140.PanelOnline",
+					"26": "AA140.SystemPowerFb",
+					"27": "AA140.Display1PowerFb",
+					"28": "AA140.Display2PowerFb",
+					"29": "AA140.Display3PowerFb",
+					"30": "AA140.Display4PowerFb",
+					"31": "AA140.MicLavConnected",
+					"32": "AA140.MicHandheldConnected",
+					"33": "AA140.MicCeiling1Connected",
+					"34": "AA140.MicCeiling2Connected",
+					"35": "AA140.MicCeiling3Connected",
+					"36": "AA140.RoomPcSync",
+					"37": "AA140.ExtPcSync",
+					"38": "AA140.AirMediaSync",
+					"39": "AA140.AirMediaMiracast",
+					"40": "AA140.AirMediaAirPlay",
+					"41": "AA140.AirMediaTx3",
+					"42": "AA140.LaptopHdmiSync",
+					"43": "AA140.LaptopUsbcSync"
 				}
 			},
 			"numeric": {
@@ -163,6 +163,14 @@
 				},
 				"AA140.CamTrackingShot": {
 					"joinId": 22,
+					"smartObjectId": 1
+				},
+				"AA140.ScreenUp": {
+					"joinId": 23,
+					"smartObjectId": 1
+				},
+				"AA140.ScreenDown": {
+					"joinId": 24,
 					"smartObjectId": 1
 				}
 			},

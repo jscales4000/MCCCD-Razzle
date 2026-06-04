@@ -32,6 +32,8 @@ namespace MCCCD_AA140
         event EventHandler<UIEventArgs> ZoomOut;
         event EventHandler<UIEventArgs> CamHomeShot;
         event EventHandler<UIEventArgs> CamTrackingShot;
+        event EventHandler<UIEventArgs> ScreenUp;
+        event EventHandler<UIEventArgs> ScreenDown;
         event EventHandler<UIEventArgs> Display1Source;
         event EventHandler<UIEventArgs> Display2Source;
         event EventHandler<UIEventArgs> Display3Source;
@@ -170,6 +172,8 @@ namespace MCCCD_AA140
                 public const uint ZoomOut = 20;
                 public const uint CamHomeShot = 21;
                 public const uint CamTrackingShot = 22;
+                public const uint ScreenUp = 23;
+                public const uint ScreenDown = 24;
 
                 public const uint CamPresenterFramingFb = 1;
                 public const uint CamGroupFramingFb = 2;
@@ -178,25 +182,25 @@ namespace MCCCD_AA140
                 public const uint MicCeiling1MuteFb = 5;
                 public const uint MicCeiling2MuteFb = 6;
                 public const uint MicCeiling3MuteFb = 7;
-                public const uint PanelOnline = 23;
-                public const uint SystemPowerFb = 24;
-                public const uint Display1PowerFb = 25;
-                public const uint Display2PowerFb = 26;
-                public const uint Display3PowerFb = 27;
-                public const uint Display4PowerFb = 28;
-                public const uint MicLavConnected = 29;
-                public const uint MicHandheldConnected = 30;
-                public const uint MicCeiling1Connected = 31;
-                public const uint MicCeiling2Connected = 32;
-                public const uint MicCeiling3Connected = 33;
-                public const uint RoomPcSync = 34;
-                public const uint ExtPcSync = 35;
-                public const uint AirMediaSync = 36;
-                public const uint AirMediaMiracast = 37;
-                public const uint AirMediaAirPlay = 38;
-                public const uint AirMediaTx3 = 39;
-                public const uint LaptopHdmiSync = 40;
-                public const uint LaptopUsbcSync = 41;
+                public const uint PanelOnline = 25;
+                public const uint SystemPowerFb = 26;
+                public const uint Display1PowerFb = 27;
+                public const uint Display2PowerFb = 28;
+                public const uint Display3PowerFb = 29;
+                public const uint Display4PowerFb = 30;
+                public const uint MicLavConnected = 31;
+                public const uint MicHandheldConnected = 32;
+                public const uint MicCeiling1Connected = 33;
+                public const uint MicCeiling2Connected = 34;
+                public const uint MicCeiling3Connected = 35;
+                public const uint RoomPcSync = 36;
+                public const uint ExtPcSync = 37;
+                public const uint AirMediaSync = 38;
+                public const uint AirMediaMiracast = 39;
+                public const uint AirMediaAirPlay = 40;
+                public const uint AirMediaTx3 = 41;
+                public const uint LaptopHdmiSync = 42;
+                public const uint LaptopUsbcSync = 43;
             }
             internal static class Numerics
             {
@@ -304,6 +308,8 @@ namespace MCCCD_AA140
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ZoomOut, onZoomOut);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.CamHomeShot, onCamHomeShot);
             ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.CamTrackingShot, onCamTrackingShot);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ScreenUp, onScreenUp);
+            ComponentMediator.ConfigureBooleanEvent(controlJoinId, Joins.Booleans.ScreenDown, onScreenDown);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display1Source, onDisplay1Source);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display2Source, onDisplay2Source);
             ComponentMediator.ConfigureNumericEvent(controlJoinId, Joins.Numerics.Display3Source, onDisplay3Source);
@@ -523,6 +529,22 @@ namespace MCCCD_AA140
         private void onCamTrackingShot(SmartObjectEventArgs eventArgs)
         {
             EventHandler<UIEventArgs> handler = CamTrackingShot;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> ScreenUp;
+        private void onScreenUp(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = ScreenUp;
+            if (handler != null)
+                handler(this, UIEventArgs.CreateEventArgs(eventArgs));
+        }
+
+        public event EventHandler<UIEventArgs> ScreenDown;
+        private void onScreenDown(SmartObjectEventArgs eventArgs)
+        {
+            EventHandler<UIEventArgs> handler = ScreenDown;
             if (handler != null)
                 handler(this, UIEventArgs.CreateEventArgs(eventArgs));
         }
@@ -1282,6 +1304,8 @@ namespace MCCCD_AA140
             ZoomOut = null;
             CamHomeShot = null;
             CamTrackingShot = null;
+            ScreenUp = null;
+            ScreenDown = null;
             Display1Source = null;
             Display2Source = null;
             Display3Source = null;
