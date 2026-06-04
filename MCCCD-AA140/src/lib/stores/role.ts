@@ -9,7 +9,7 @@ export type Role = 'user' | 'tech';
 // Client-side PIN gate. This deters end users from the technician controls; it is
 // NOT a security boundary. For a hard boundary, validate processor-side via a
 // contract signal instead. Set the production value at commissioning.
-export const TECH_PIN = '1988';
+export const TECH_PIN = '1981';
 
 // Auto-revert to 'user' after this much inactivity in tech view.
 export const TECH_TIMEOUT_MS = 5 * 60 * 1000;

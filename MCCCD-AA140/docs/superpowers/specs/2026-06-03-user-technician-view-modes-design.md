@@ -23,7 +23,7 @@ layouts (duplication), whole-page route gating (too coarse for partial-page hidi
 - **Auto-revert to User** after an inactivity timeout (**default 5 min**, reset on any
   pointer interaction) and via an explicit **"Exit Tech View"** button (shown in a small
   badge while in tech mode).
-- PIN is a configurable client-side constant (default `1988`). **This is panel-side
+- PIN is a configurable client-side constant (set to `1981`). **This is panel-side
   gating, not a security boundary** — it deters end users, not a determined one. If a
   hard boundary is needed later, validate processor-side via a contract signal.
 
