@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { SIGNALS } from '../contract';
-import { subscribeAnalog, subscribeDigital, unsubscribeAnalog } from '../CrComLib';
+import { subscribeAnalog, subscribeDigital, unsubscribeAnalog, unsubscribeDigital } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor. Components publish commands via the typed CrComLib helpers
@@ -88,45 +88,35 @@ export function initSignals(): void {
   subscribeDigital(SIGNALS.display3PowerFb,    (v) => display3PowerFb.set(v));
   subscribeDigital(SIGNALS.systemPowerFb,      (v) => systemPowerFb.set(v));
 
+  // Lav + Handheld mutes stay common — Home.svelte reads them for mic-strip buttons.
   subscribeDigital(SIGNALS.micLavMuteFb,       (v) => micLavMuteFb.set(v));
   subscribeDigital(SIGNALS.micHandheldMuteFb,  (v) => micHandheldMuteFb.set(v));
-  subscribeDigital(SIGNALS.micCeiling1MuteFb,  (v) => micCeiling1MuteFb.set(v));
-  subscribeDigital(SIGNALS.micCeiling2MuteFb,  (v) => micCeiling2MuteFb.set(v));
+
+  // Ceiling 3 state stays here: strip removed from AudioMixer in the 4-mic redesign
+  // (2026-05-26) but SIMPL may still push these joins; stores kept as a safety net.
   subscribeDigital(SIGNALS.micCeiling3MuteFb,  (v) => micCeiling3MuteFb.set(v));
-
-  subscribeAnalog(SIGNALS.micLavTrimFb,        (v) => micLavTrimFb.set(v));
-  subscribeAnalog(SIGNALS.micHandheldTrimFb,   (v) => micHandheldTrimFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling1TrimFb,   (v) => micCeiling1TrimFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling2TrimFb,   (v) => micCeiling2TrimFb.set(v));
   subscribeAnalog(SIGNALS.micCeiling3TrimFb,   (v) => micCeiling3TrimFb.set(v));
-
-  subscribeAnalog(SIGNALS.micLavLineOutFb,        (v) => micLavLineOutFb.set(v));
-  subscribeAnalog(SIGNALS.micHandheldLineOutFb,   (v) => micHandheldLineOutFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling1LineOutFb,   (v) => micCeiling1LineOutFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling2LineOutFb,   (v) => micCeiling2LineOutFb.set(v));
-  subscribeAnalog(SIGNALS.micCeiling3LineOutFb,   (v) => micCeiling3LineOutFb.set(v));
+  subscribeAnalog(SIGNALS.micCeiling3LineOutFb,(v) => micCeiling3LineOutFb.set(v));
+  subscribeDigital(SIGNALS.micCeiling3Connected,(v) => micCeiling3Connected.set(v));
 
   // Mic real-time levels are subscribed lazily — see initMicLevelSubscriptions()
   // below. They fire 10-30 Hz from Q-SYS and are only consumed by AudioMixer's
   // VuMeter, so we gate them per-page to avoid a callback storm at idle.
 
-  subscribeDigital(SIGNALS.micLavConnected,        (v) => micLavConnected.set(v));
-  subscribeDigital(SIGNALS.micHandheldConnected,   (v) => micHandheldConnected.set(v));
-  subscribeDigital(SIGNALS.micCeiling1Connected,   (v) => micCeiling1Connected.set(v));
-  subscribeDigital(SIGNALS.micCeiling2Connected,   (v) => micCeiling2Connected.set(v));
-  subscribeDigital(SIGNALS.micCeiling3Connected,   (v) => micCeiling3Connected.set(v));
-
   subscribeAnalog(SIGNALS.occupancyState,      (v) => occupancyState.set(v === 1 ? 1 : v === 2 ? 2 : 0));
   subscribeAnalog(SIGNALS.shutdownCountdown,   (v) => shutdownCountdown.set(v));
 
+  // camTrackingModeFb is Cameras-only but stays common — Cameras.svelte is
+  // protected WIP and cannot wire per-page teardown. Fires only on user action.
   subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
 
-  subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
-  subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
-
+  // progAudioLevelFb stays common — Home.svelte reads it for the VolumePopup.
   subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
-  subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
-  subscribeDigital(SIGNALS.audioLinkCeilings12Fb,(v) => audioLinkCeilings12Fb.set(v));
+
+  // routingModeFb, autoRouteEnableFb → gated to DisplayRouting via
+  //   initDisplayRoutingSubscriptions() / teardownDisplayRoutingSubscriptions().
+  // sceneRecallFb, audioLinkCeilings12Fb, mic 1/2 trim/lineOut/mute/connected →
+  //   gated to AudioMixer via initAudioMixerStateSubscriptions().
 }
 
 // ── Per-page lazy subscriptions ──────────────────────────────────────
@@ -160,4 +150,66 @@ export function teardownMicLevelSubscriptions(): void {
   micCeiling1Level.set(0);
   micCeiling2Level.set(0);
   micCeiling3Level.set(0);
+}
+
+// ── DisplayRouting per-page subscriptions ────────────────────────────────
+// routingModeFb + autoRouteEnableFb only matter on the routing page. Gating
+// them saves 2 crcomlib registry entries at boot with no CPU tradeoff (these
+// fire only on user mode changes, not continuously).
+
+let drAnalogIds: string[] = [];
+let drDigitalIds: string[] = [];
+
+export function initDisplayRoutingSubscriptions(): void {
+  if (drAnalogIds.length > 0) return;
+  drAnalogIds  = [subscribeAnalog(SIGNALS.routingModeFb,      (v) => routingModeFb.set(v))];
+  drDigitalIds = [subscribeDigital(SIGNALS.autoRouteEnableFb, (v) => autoRouteEnableFb.set(v))];
+}
+
+export function teardownDisplayRoutingSubscriptions(): void {
+  for (const id of drAnalogIds)  if (id) unsubscribeAnalog(id);
+  for (const id of drDigitalIds) if (id) unsubscribeDigital(id);
+  drAnalogIds  = [];
+  drDigitalIds = [];
+}
+
+// ── AudioMixer state per-page subscriptions ──────────────────────────────
+// 16 state signals only consumed by AudioMixer (trim/lineOut/mute/connected
+// for mics 1+2, plus scene recall and ceiling-link toggle). These fire only
+// on user action — gating saves 16 registry entries at boot, zero CPU delta.
+// micLavMuteFb + micHandheldMuteFb stay in initSignals() (Home reads them).
+// progAudioLevelFb stays in initSignals() (Home VolumePopup reads it).
+
+let amAnalogIds: string[]  = [];
+let amDigitalIds: string[] = [];
+
+export function initAudioMixerStateSubscriptions(): void {
+  if (amAnalogIds.length > 0) return;
+  amAnalogIds = [
+    subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v)),
+    subscribeAnalog(SIGNALS.micLavTrimFb,          (v) => micLavTrimFb.set(v)),
+    subscribeAnalog(SIGNALS.micHandheldTrimFb,     (v) => micHandheldTrimFb.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling1TrimFb,     (v) => micCeiling1TrimFb.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling2TrimFb,     (v) => micCeiling2TrimFb.set(v)),
+    subscribeAnalog(SIGNALS.micLavLineOutFb,       (v) => micLavLineOutFb.set(v)),
+    subscribeAnalog(SIGNALS.micHandheldLineOutFb,  (v) => micHandheldLineOutFb.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling1LineOutFb,  (v) => micCeiling1LineOutFb.set(v)),
+    subscribeAnalog(SIGNALS.micCeiling2LineOutFb,  (v) => micCeiling2LineOutFb.set(v)),
+  ];
+  amDigitalIds = [
+    subscribeDigital(SIGNALS.audioLinkCeilings12Fb,(v) => audioLinkCeilings12Fb.set(v)),
+    subscribeDigital(SIGNALS.micLavConnected,      (v) => micLavConnected.set(v)),
+    subscribeDigital(SIGNALS.micHandheldConnected, (v) => micHandheldConnected.set(v)),
+    subscribeDigital(SIGNALS.micCeiling1Connected, (v) => micCeiling1Connected.set(v)),
+    subscribeDigital(SIGNALS.micCeiling2Connected, (v) => micCeiling2Connected.set(v)),
+    subscribeDigital(SIGNALS.micCeiling1MuteFb,    (v) => micCeiling1MuteFb.set(v)),
+    subscribeDigital(SIGNALS.micCeiling2MuteFb,    (v) => micCeiling2MuteFb.set(v)),
+  ];
+}
+
+export function teardownAudioMixerStateSubscriptions(): void {
+  for (const id of amAnalogIds)  if (id) unsubscribeAnalog(id);
+  for (const id of amDigitalIds) if (id) unsubscribeDigital(id);
+  amAnalogIds  = [];
+  amDigitalIds = [];
 }
