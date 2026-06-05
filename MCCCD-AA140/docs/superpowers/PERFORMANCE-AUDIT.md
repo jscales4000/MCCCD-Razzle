@@ -136,7 +136,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H7 SVG sprite | DEFERRED | After H5 only 5 inline SVGs left in Home, all distinct single-instance; sprite consolidation no longer cost-effective |
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
-| 2026-06-05 | H4-followup (partial) | pending iter-10 | 18 subscriptions gated (2 DR + 16 AM-state); index JS +181 B; crcomlib registry ~41→~23 always-live |
+| 2026-06-05 | H4-followup (partial) | ac28113 | 18 subscriptions gated (2 DR + 16 AM-state); index JS +181 B; crcomlib registry ~41→~23 always-live |
 | 2026-05-04 | Loop final summary (this iter) | pending iter-9 | All HIGH addressed, stop conditions met |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
