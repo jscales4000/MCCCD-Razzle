@@ -7,6 +7,7 @@
 -->
 
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -29,9 +30,14 @@
     display2SourceFb,
     display3SourceFb,
     routingModeFb,
+    initDisplayRoutingSignals,
+    teardownDisplayRoutingSignals,
   } from '../lib/stores/signals';
   import SourceListItem from '../components/routing/SourceListItem.svelte';
   import DisplayCell from '../components/routing/DisplayCell.svelte';
+
+  onMount(initDisplayRoutingSignals);
+  onDestroy(teardownDisplayRoutingSignals);
 
   // ── Source-list metadata (4 sources, matching SOURCES in router.ts) ────
   // Sub-labels match the mockup: connector type per input.
