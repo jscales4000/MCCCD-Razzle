@@ -15,10 +15,6 @@ export function publishAnalog(join: string, value: number): void {
   CrComLib?.publishEvent('n', join, value);
 }
 
-export function publishSerial(join: string, value: string): void {
-  CrComLib?.publishEvent('s', join, value);
-}
-
 export function subscribeDigital(join: string, callback: (value: boolean) => void): string {
   return CrComLib?.subscribeState('b', join, (val: string | boolean) => {
     callback(val === 'true' || val === true);
@@ -31,20 +27,8 @@ export function subscribeAnalog(join: string, callback: (value: number) => void)
   }) ?? '';
 }
 
-export function subscribeSerial(join: string, callback: (value: string) => void): string {
-  return CrComLib?.subscribeState('s', join, callback) ?? '';
-}
-
-export function unsubscribeDigital(id: string): void {
-  CrComLib?.unsubscribeState('b', '', id);
-}
-
 export function unsubscribeAnalog(id: string): void {
   CrComLib?.unsubscribeState('n', '', id);
-}
-
-export function unsubscribeSerial(id: string): void {
-  CrComLib?.unsubscribeState('s', '', id);
 }
 
 export function pulseDigital(join: string): void {
