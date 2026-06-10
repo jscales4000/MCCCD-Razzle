@@ -7,6 +7,7 @@
 -->
 
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -29,7 +30,14 @@
     display2SourceFb,
     display3SourceFb,
     routingModeFb,
+    initRoutingSignals,
+    teardownRoutingSignals,
   } from '../lib/stores/signals';
+
+  // Gate display power + routing mode/auto-route subscriptions to this page.
+  // Per-audit H4-followup: these fire only on user action, not continuously.
+  onMount(initRoutingSignals);
+  onDestroy(teardownRoutingSignals);
   import SourceListItem from '../components/routing/SourceListItem.svelte';
   import DisplayCell from '../components/routing/DisplayCell.svelte';
 
