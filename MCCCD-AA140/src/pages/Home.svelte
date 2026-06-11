@@ -4,14 +4,20 @@
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import {
     panelOnline,
-    display1SourceFb,
+    display1SourceFb, display2SourceFb, display3SourceFb, display4SourceFb,
+    display1PowerFb, display2PowerFb, display3PowerFb, display4PowerFb,
     systemPowerFb,
     occupancyState, shutdownCountdown,
     roomPcSync, extPcSync,
     airMediaSync, airMediaMiracast, airMediaAirPlay, airMediaTx3,
     laptopHdmiSync, laptopUsbcSync,
   } from '../lib/stores/signals';
-  import { routeSourceToAll } from '../lib/stores/router';
+  import {
+    SOURCES as ROUTER_SOURCES,
+    routeSourceToTargets, sourceFromValue,
+    targetDisplays, toggleTargetDisplay, allTargeted, resetTargetDisplays,
+    type DisplayId,
+  } from '../lib/stores/router';
   import { goToPage } from '../lib/stores/page';
   import { userPoweredOn } from '../lib/stores/session';
   import Aa140Footer from '../components/Aa140Footer.svelte';
@@ -19,9 +25,11 @@
   import VolIcon from '../lib/ui/VolIcon.svelte';
 
   // ── Source buttons (Mockup 22 — Centered Hero) ──
-  // Tapping a source publishes its value to ALL THREE displays at once.
-  // Default-meeting assumption: one source mirrored across D1/D2/D3.
-  // Advanced (per-display) routing reachable via the Advanced Routing chip.
+  // Tapping a source routes it to the current display target set (the strip
+  // below the hero row). Default-meeting assumption: all four displays
+  // targeted, so a tap mirrors one source across D1–D4 — the historical
+  // behavior. Advanced (per-display) routing reachable via the Advanced
+  // Routing chip.
   // `key` selects which sync FB stores feed `sourceStates` below.
   // `sub` is the static sub-label; null = rendered specially (Laptop dual-token).
   const SOURCES = [
@@ -31,9 +39,46 @@
     { value: 4, name: 'Laptop',   key: 'laptop',   sub: null       },
   ] as const;
 
-  function selectSourceForAll(value: 1 | 2 | 3 | 4) {
-    routeSourceToAll(value);
+  // Routes to the current display target set (defaults to all four — the
+  // historical route-everywhere behavior). The tapped card flashes briefly
+  // so the action has immediate visible feedback even when D1 isn't in the
+  // target set (the persistent active/Control treatment tracks D1 only).
+  let flashedSource = $state<number | null>(null);
+  let flashTimerId: ReturnType<typeof setTimeout> | null = null;
+  function selectSourceForTargets(value: 1 | 2 | 3 | 4) {
+    routeSourceToTargets(value);
+    flashedSource = null;
+    if (flashTimerId) clearTimeout(flashTimerId);
+    requestAnimationFrame(() => { flashedSource = value; });
+    flashTimerId = setTimeout(() => { flashedSource = null; }, 300);
   }
+
+  // ── Display strip (route targets + live per-display feedback) ──
+  const DISPLAYS = [
+    { id: 'd1' as DisplayId, num: 'D1', label: 'Front Left'  },
+    { id: 'd2' as DisplayId, num: 'D2', label: 'Front Right' },
+    { id: 'd3' as DisplayId, num: 'D3', label: 'Rear'        },
+    { id: 'd4' as DisplayId, num: 'D4', label: 'Podium'      },
+  ] as const;
+
+  function fbLabel(v: number): string {
+    const id = sourceFromValue(v);
+    return id ? ROUTER_SOURCES[id].label : 'No Source';
+  }
+
+  let displayStates = $derived({
+    d1: { sourceFb: $display1SourceFb, powerOn: $display1PowerFb },
+    d2: { sourceFb: $display2SourceFb, powerOn: $display2PowerFb },
+    d3: { sourceFb: $display3SourceFb, powerOn: $display3PowerFb },
+    d4: { sourceFb: $display4SourceFb, powerOn: $display4PowerFb },
+  });
+
+  let targetsAreAll = $derived(allTargeted($targetDisplays));
+  let targetCaption = $derived(
+    targetsAreAll
+      ? 'All Displays'
+      : DISPLAYS.filter(d => $targetDisplays.has(d.id)).map(d => d.num).join(' + ')
+  );
 
   // AirMedia rolls 4 signals (sync + 3 sharing methods) into the tri-state model.
   // Sharing-method priority on simultaneous fire: TX3 > AirPlay > Miracast.
@@ -101,6 +146,10 @@
   }
 
   onMount(() => {
+    // Every arrival at Home starts from the route-everywhere default — a
+    // narrowed target set left by a previous visit must not survive nav.
+    resetTargetDisplays();
+
     // Preview Dock is dev-only — never runs on the panel itself. Wrapping
     // in import.meta.env.DEV lets Vite tree-shake the entire branch
     // (including the resize listener and applyViewport closure) out of
@@ -177,11 +226,19 @@
           <button
             class="hero-card"
             class:active={$display1SourceFb === src.value}
-            onclick={() => selectSourceForAll(src.value)}
-            aria-pressed={$display1SourceFb === src.value}
-            aria-label={`Send ${src.name} to all displays — sync ${s.state}`}
+            class:route-flash={flashedSource === src.value}
+            onclick={() => selectSourceForTargets(src.value)}
+            aria-label={`Send ${src.name} to ${targetCaption} — sync ${s.state}`}
           >
             <span class="sync-dot {s.state}" aria-hidden="true"></span>
+            {#if $display1SourceFb === src.value}
+              <span class="control-flag">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 21V4M5 4h13l-3 4 3 4H5"/>
+                </svg>
+                Control
+              </span>
+            {/if}
             {#if src.value === 1}
               <svg class="hc-ico" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
             {:else if src.value === 2}
@@ -202,6 +259,41 @@
             {:else}
               <span class="hc-sub">{src.sub}</span>
             {/if}
+          </button>
+        {/each}
+      </div>
+
+      <!-- Display strip — per-display route targets with live feedback.
+           All-targeted is the default; first tap from that state solos the
+           tapped display, later taps toggle, and a quiet-period timer in
+           router.ts reverts a narrowed set to All. -->
+      <div class="target-caption" class:narrowed={!targetsAreAll} aria-live="polite">
+        Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
+      </div>
+      <div class="disp-strip" role="group" aria-label="Choose which displays receive the source">
+        {#each DISPLAYS as d}
+          {@const ds = displayStates[d.id]}
+          {@const targeted = $targetDisplays.has(d.id) && !targetsAreAll}
+          <button
+            class="disp-chip"
+            class:targeted
+            class:powered={ds.powerOn}
+            onclick={() => toggleTargetDisplay(d.id)}
+            aria-pressed={targeted}
+            aria-label={`${d.num} ${d.label} — showing ${fbLabel(ds.sourceFb)}, power ${ds.powerOn ? 'on' : 'off'}${targeted ? ', targeted' : ''}`}
+            type="button"
+          >
+            <span class="dc-id">{d.num}</span>
+            <span class="dc-body">
+              <span class="dc-label">{d.label}</span>
+              <span class="dc-src" class:none={!sourceFromValue(ds.sourceFb)}>{fbLabel(ds.sourceFb)}</span>
+            </span>
+            {#if targeted}
+              <svg class="dc-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12.5l5.5 5.5L20 6.5"/>
+              </svg>
+            {/if}
+            <span class="dc-pwr" class:on={ds.powerOn} aria-hidden="true"></span>
           </button>
         {/each}
       </div>
@@ -381,6 +473,135 @@
     width: 80%;
     max-height: 440px;
   }
+
+  /* Destination caption — plain-words feedback for the target set, sitting
+     directly above the display strip it describes. Brightens to accent when
+     the user has narrowed targets so the departure from the route-everywhere
+     default is unmissable. State-bearing text: ≥13px, soft-or-brighter. */
+  .target-caption {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-copy-soft, #94a3b8);
+    margin-bottom: -12px;
+    transition: color 160ms ease;
+  }
+  .target-caption strong {
+    font-weight: 800;
+    color: var(--color-copy, #e2e8f0);
+  }
+  .target-caption.narrowed,
+  .target-caption.narrowed strong {
+    color: #f5a623;
+  }
+  .tc-hint {
+    font-weight: 600;
+    color: var(--color-copy-muted, #64748b);
+    text-transform: none;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Display strip — 4 target chips under the hero row ── */
+  .disp-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: 80%;
+  }
+  .disp-chip {
+    appearance: none;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 60px;
+    padding: 0 14px;
+    border-radius: 12px;
+    background-color: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+    color: var(--color-copy-soft, #94a3b8);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+  .disp-chip:hover {
+    background-color: rgba(51, 65, 85, 0.7);
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+  .disp-chip:active {
+    transform: scale(0.97);
+    background-color: rgba(51, 65, 85, 0.85);
+    transition-duration: 90ms;
+  }
+  .disp-chip.targeted {
+    border-color: rgba(245, 166, 35, 0.55);
+    background-color: rgba(245, 166, 35, 0.08);
+    box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.35), 0 0 16px rgba(245, 166, 35, 0.12);
+  }
+  .dc-id {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--color-copy, #e2e8f0);
+    background: rgba(8, 16, 30, 0.6);
+    border: 0.5px solid rgba(148, 163, 184, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    line-height: 1.1;
+  }
+  .disp-chip.targeted .dc-id {
+    color: #f5a623;
+    border-color: rgba(245, 166, 35, 0.4);
+  }
+  .dc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+  .dc-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--color-copy, #e2e8f0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dc-src {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-copy-soft, #94a3b8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dc-src.none {
+    color: var(--color-copy-muted, #64748b);
+  }
+  /* Non-color targeted signifier — shape accompanies the orange treatment */
+  .dc-check {
+    flex-shrink: 0;
+    color: #f5a623;
+  }
+  .dc-pwr {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #475569;
+    box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.4);
+    transition: background 220ms ease, box-shadow 220ms ease;
+  }
+  .dc-pwr.on {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6), 0 0 0 1px rgba(34, 197, 94, 0.45);
+  }
   /* Source button — Layered Depth (Mockup #24 variant 3) */
   .hero-card {
     appearance: none;
@@ -405,6 +626,28 @@
   .hero-card:hover {
     border-color: rgba(245, 166, 35, 0.3);
     transform: translateY(-2px);
+  }
+  /* Press state — the only hover-equivalent that actually fires on the
+     panel's capacitive touchscreen. */
+  .hero-card:active {
+    transform: scale(0.985);
+    border-color: rgba(245, 166, 35, 0.5);
+    transition-duration: 90ms;
+  }
+  /* Route-tap confirmation flash — fires on the tapped card regardless of
+     which displays were targeted, so the action always has visible result. */
+  .hero-card.route-flash {
+    animation: route-flash 300ms ease-out;
+  }
+  @keyframes route-flash {
+    0% {
+      border-color: #f5a623;
+      box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.55), 0 0 32px rgba(245, 166, 35, 0.35);
+    }
+    100% {
+      border-color: rgba(148, 163, 184, 0.2);
+      box-shadow: 0 0 0 0 rgba(245, 166, 35, 0), 0 0 0 rgba(245, 166, 35, 0);
+    }
   }
   .hc-ico {
     color: var(--color-copy-soft, #94a3b8);
@@ -442,6 +685,29 @@
   }
   .hero-card.active .hc-ico,
   .hero-card.active .hc-name { color: #f5a623; }
+
+  /* Control Source flag — labeled badge on the card whose source D1 is showing.
+     D1's route is the room authority (program audio follows it; BYOD USB follows
+     the active source). Text label so the state never rides on color alone.
+     Top-left, mirroring the sync dot's top-right corner. */
+  .control-flag {
+    position: absolute;
+    top: 9px;
+    left: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(245, 166, 35, 0.16);
+    border: 0.5px solid rgba(245, 166, 35, 0.45);
+    color: #f5a623;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
 
   /* Advanced Routing chip — top-right of body area */
   /* Advanced Routing — Prominent (Mockup #25) — orange-on-navy, 52px tall */
@@ -537,7 +803,9 @@
   @media (prefers-reduced-motion: reduce) {
     .pdot { animation: none; }
     .hero-card { transition: none; }
+    .hero-card.route-flash { animation: none; }
     .sync-dot.live { animation: none; }
     .hc-sub-token { transition: none; }
+    .disp-chip, .target-caption, .dc-pwr { transition: none; }
   }
 </style>

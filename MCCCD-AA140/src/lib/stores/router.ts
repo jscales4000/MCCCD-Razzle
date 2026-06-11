@@ -19,12 +19,17 @@ export const SOURCES: Record<SourceId, { label: string; value: 1 | 2 | 3 | 4 }> 
   laptop:   { label: 'Laptop',   value: 4 },
 };
 
-const VALUE_TO_SOURCE: Record<number, SourceId> = {
+export const VALUE_TO_SOURCE: Record<number, SourceId> = {
   1: 'roomPc',
   2: 'extPc',
   3: 'airMedia',
   4: 'laptop',
 };
+
+/** Canonical analog-FB-value → SourceId lookup (0 / unknown → null). */
+export function sourceFromValue(v: number): SourceId | null {
+  return VALUE_TO_SOURCE[v] ?? null;
+}
 
 // ── Reactive UI state (components subscribe) ───────────────────────────
 export const armedSource = writable<SourceId | null>(null);
@@ -118,12 +123,63 @@ export function clearDisplay(displayId: DisplayId): void {
   publishAnalog(SET_SIGNAL_BY_DISPLAY[displayId], 0);
 }
 
-/** Route the same source to all 4 displays.
- *  Takes the raw source value (1..4) per the SOURCES.value contract. */
-export function routeSourceToAll(value: 1 | 2 | 3 | 4): void {
-  (['d1', 'd2', 'd3', 'd4'] as DisplayId[]).forEach((d) => {
-    publishAnalog(SET_SIGNAL_BY_DISPLAY[d], value);
-  });
+// ── Home display targeting (display strip on Home) ─────────────────────
+export const ALL_DISPLAYS: readonly DisplayId[] = ['d1', 'd2', 'd3', 'd4'] as const;
+
+/** Which displays the next Home source-tap routes to. Defaults to all four,
+ *  which keeps the source buttons' historical route-everywhere behavior. */
+export const targetDisplays = writable<ReadonlySet<DisplayId>>(new Set(ALL_DISPLAYS));
+
+export function allTargeted(set: ReadonlySet<DisplayId>): boolean {
+  return set.size === ALL_DISPLAYS.length;
+}
+
+// A narrowed target set is transient by design: it auto-reverts to the
+// all-targeted default after a quiet period, mirroring armChip's 4s disarm.
+// Without this, someone soloing D4 and walking away leaves a trap where the
+// next presenter's source tap silently routes to one display.
+let targetResetTimerId: ReturnType<typeof setTimeout> | null = null;
+const TARGET_RESET_MS = 10000;
+
+function refreshTargetResetTimer(): void {
+  if (targetResetTimerId) clearTimeout(targetResetTimerId);
+  targetResetTimerId = setTimeout(() => resetTargetDisplays(), TARGET_RESET_MS);
+}
+
+/** Tap semantics for the Home display chips:
+ *  - From the all-targeted default, a tap SOLOS that display ("just this one").
+ *  - Otherwise taps toggle membership.
+ *  - Untoggling the last member reverts to the all-targeted default — the
+ *    target set can never be empty. */
+export function toggleTargetDisplay(displayId: DisplayId): void {
+  const cur = get(targetDisplays);
+  let next: Set<DisplayId>;
+  if (allTargeted(cur)) {
+    next = new Set([displayId]);
+  } else {
+    next = new Set(cur);
+    if (next.has(displayId)) next.delete(displayId);
+    else next.add(displayId);
+    if (next.size === 0) next = new Set(ALL_DISPLAYS);
+  }
+  targetDisplays.set(next);
+  if (allTargeted(next)) resetTargetDisplays();
+  else refreshTargetResetTimer();
+}
+
+export function resetTargetDisplays(): void {
+  if (targetResetTimerId) clearTimeout(targetResetTimerId);
+  targetResetTimerId = null;
+  targetDisplays.set(new Set(ALL_DISPLAYS));
+}
+
+/** Route a source to the current Home target set. A narrowed set is kept
+ *  alive (timer refreshed, not reset) so sequential routes to the same
+ *  display work; the quiet-period timer restores the all-targeted default. */
+export function routeSourceToTargets(value: 1 | 2 | 3 | 4): void {
+  const targets = get(targetDisplays);
+  targets.forEach((d) => publishAnalog(SET_SIGNAL_BY_DISPLAY[d], value));
+  if (!allTargeted(targets)) refreshTargetResetTimer();
 }
 
 export function shouldSuppressClick(): boolean {
