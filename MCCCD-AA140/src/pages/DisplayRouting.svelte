@@ -14,10 +14,17 @@
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
+  import { role } from '../lib/stores/role';
   import {
     SOURCES,
     routeSource,
     clearDisplay,
+    routeSignage,
+    clearSignage,
+    selectUsbHost,
+    usbHostFromFb,
+    USB_HOSTS,
+    type UsbHostId,
     type DisplayId,
     type SourceId,
   } from '../lib/stores/router';
@@ -31,11 +38,14 @@
     display2SourceFb,
     display3SourceFb,
     display4SourceFb,
+    display5SourceFb,
+    usbHostSelectFb,
     routingModeFb,
   } from '../lib/stores/signals';
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
   import DisplayStatusCard from '../components/routing/DisplayStatusCard.svelte';
+  import ScreenControl from '../components/ScreenControl.svelte';
   import Aa140Footer from '../components/Aa140Footer.svelte';
 
   // ── Source-value (1..4) ↔ SourceId map ─────────────────────────────────
@@ -158,6 +168,18 @@
     const d1 = srcFromFb($display1SourceFb);
     return d1 ? `D1 · ${SOURCES[d1].label}` : 'D1 · —';
   });
+
+  // ── Outside signage (D5) — sidebar source picker (off the room map) ─────
+  const SIGNAGE_SOURCES: SourceId[] = ['roomPc', 'extPc', 'airMedia', 'laptop'];
+  let signageSource = $derived(srcFromFb($display5SourceFb));
+  function onSignagePick(sourceId: SourceId): void {
+    if (signageSource === sourceId) clearSignage();
+    else routeSignage(sourceId);
+  }
+
+  // ── USB peripheral host (USB-SW-400) ────────────────────────────────────
+  const USB_HOST_IDS: UsbHostId[] = ['roomPc', 'airMedia', 'laptop'];
+  let usbHost = $derived(usbHostFromFb($usbHostSelectFb));
 </script>
 
 <svelte:head>
@@ -256,6 +278,50 @@
         </div>
         <div class="aud-hint">Audio always follows D1's routed source.</div>
       </div>
+
+      <!-- USB peripheral host (USB-SW-400) — camera + mic follow the host -->
+      <div class="side-usb">
+        <span class="side-h">USB Host</span>
+        <div class="usb-row">
+          {#each USB_HOST_IDS as h}
+            <button
+              type="button"
+              class="usb-btn"
+              class:active={usbHost === h}
+              aria-pressed={usbHost === h}
+              onclick={() => selectUsbHost(h)}
+            >{USB_HOSTS[h].label}</button>
+          {/each}
+        </div>
+        <div class="aud-hint">Camera + room mic follow the selected host. Default: Room PC.</div>
+      </div>
+
+      <!-- Projector screens (RMC4 relays) — visible to all users -->
+      <ScreenControl />
+
+      <!-- Outside signage (D5) — installer-level, Technician view only -->
+      {#if $role === 'tech'}
+        <div class="side-sign">
+          <span class="side-h">Outside Signage</span>
+          <div class="sign-row">
+            {#each SIGNAGE_SOURCES as s}
+              <button
+                type="button"
+                class="sign-btn"
+                class:active={signageSource === s}
+                aria-pressed={signageSource === s}
+                onclick={() => onSignagePick(s)}
+              >{SOURCES[s].label}</button>
+            {/each}
+            <button
+              type="button"
+              class="sign-btn clear"
+              class:active={signageSource === null}
+              onclick={() => clearSignage()}
+            >Off</button>
+          </div>
+        </div>
+      {/if}
     </aside>
   </div>
 
@@ -457,6 +523,56 @@
     font-size: 10px;
     color: var(--color-copy-muted);
     line-height: 1.4;
+  }
+
+  /* ── USB host + Signage sidebar sections ────────────────────────────── */
+  .side-usb, .side-sign {
+    border-top: 0.5px solid var(--color-border);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .usb-row, .sign-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .usb-btn, .sign-btn {
+    flex: 1 1 auto;
+    min-width: 64px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 110ms ease, color 110ms ease, border-color 110ms ease;
+  }
+  .usb-btn:hover, .sign-btn:hover {
+    background: rgba(51, 65, 85, 0.7);
+    color: var(--color-copy);
+  }
+  .usb-btn.active {
+    background: rgba(56, 189, 248, 0.14);
+    border-color: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+  .sign-btn.active {
+    background: rgba(140, 29, 64, 0.22);
+    border-color: rgba(140, 29, 64, 0.55);
+    color: #f7b7c8;
+  }
+  .sign-btn.clear.active {
+    background: rgba(100, 116, 139, 0.18);
+    border-color: var(--color-border);
+    color: var(--color-copy-soft);
   }
 
   @media (prefers-reduced-motion: reduce) {

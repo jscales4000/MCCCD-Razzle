@@ -582,7 +582,10 @@
       ipEl.spellcheck = false;
       ipEl.placeholder = "0.0.0.0";
       ipEl.addEventListener("change", function () {
-        postDeviceUpdate(key, { host: ipEl.value });
+        postDeviceUpdate(key, { host: ipEl.value }, function () {
+          ipEl.classList.add("saved");
+          setTimeout(function () { ipEl.classList.remove("saved"); }, 1200);
+        });
       });
 
       var togEl = document.createElement("label");
@@ -607,11 +610,25 @@
       badgeEl.setAttribute("data-key", key);
       badgeEl.style.marginLeft = "0";   // grid cell handles spacing
 
+      // Reachability (independent probe) — distinct from the events-derived badge
+      // (online = service-connected) and the dev-status text (config enabled flag).
+      var reachEl = document.createElement("span");
+      reachEl.className = "dev-reach unknown";
+      reachEl.setAttribute("data-reach", key);
+      reachEl.textContent = "?";
+
+      var pingEl = document.createElement("button");
+      pingEl.className = "dev-ping btn-mini";
+      pingEl.textContent = "Ping";
+      pingEl.addEventListener("click", function () { pingDevice(key, reachEl); });
+
       $devicesBody.appendChild(nameEl);
       $devicesBody.appendChild(ipEl);
       $devicesBody.appendChild(togEl);
       $devicesBody.appendChild(statusEl);
       $devicesBody.appendChild(badgeEl);
+      $devicesBody.appendChild(reachEl);
+      $devicesBody.appendChild(pingEl);
 
       // For cameras, also update the camera-panel header IP label.
       if (key === "cam-1" || key === "cam-2") {
@@ -623,7 +640,7 @@
     renderStatus();
   }
 
-  function postDeviceUpdate(key, fields) {
+  function postDeviceUpdate(key, fields, onsaved) {
     var q = [];
     if (typeof fields.host    !== "undefined") q.push("host=" + encodeURIComponent(fields.host));
     if (typeof fields.enabled !== "undefined") q.push("enabled=" + (fields.enabled ? "true" : "false"));
@@ -632,8 +649,25 @@
         if (!r.ok) throw new Error("HTTP " + r.status);
         return r.json();
       })
-      .then(function () { loadDevices(); })
+      .then(function () { if (onsaved) onsaved(); loadDevices(); })
       .catch(function (err) { console.warn("device update failed", err); });
+  }
+
+  // Reachability probe — POST /devices/<key>/ping. Independent of config enabled
+  // flag and of the events-derived online badge. For REST devices (cameras,
+  // AirMedia) this is the only real "is the box there" signal, since they emit
+  // no TCP connect lifecycle events.
+  function pingDevice(key, reachEl) {
+    reachEl.className = "dev-reach pending";
+    reachEl.textContent = "…";
+    fetch("./devices/" + encodeURIComponent(key) + "/ping", { method: "POST", cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.reachable) { reachEl.className = "dev-reach ok"; reachEl.textContent = "reachable"; }
+        else { reachEl.className = "dev-reach bad"; reachEl.textContent = "unreachable"; }
+        reachEl.title = (j && j.detail) || "";
+      })
+      .catch(function (err) { reachEl.className = "dev-reach bad"; reachEl.textContent = "err"; reachEl.title = err.message; });
   }
 
   // ─── Cameras (PTZ + presets + tracking + VTC) ──────────────────────
@@ -777,7 +811,20 @@
       .catch(function (err) { console.warn("POST failed:", url, err); });
   }
 
+  // ─── Auto-ping ─────────────────────────────────────────────────────
+  // Probe every device on a slow cadence so the reachability cells stay fresh
+  // without a manual click. Rows are rebuilt by renderDevices, so we re-query.
+  function autoPingAll() {
+    DEVICE_KEYS.forEach(function (kv) {
+      var key = kv[0];
+      var reachEl = document.querySelector('[data-reach="' + key + '"]');
+      if (reachEl) pingDevice(key, reachEl);
+    });
+  }
+
   // ─── Boot ──────────────────────────────────────────────────────────
   loadDevices();
   poll();
+  setTimeout(autoPingAll, 1500);
+  setInterval(autoPingAll, 10000);
 })();

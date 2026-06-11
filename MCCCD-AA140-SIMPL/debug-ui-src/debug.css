@@ -96,8 +96,16 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); fon
 #sig-status.bad { color: var(--bad); }
 
 /* DEVICES */
-.devices-body { display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 8px 14px; align-items: center; }
+.devices-body { display: grid; grid-template-columns: auto 1fr auto auto auto auto auto; gap: 8px 14px; align-items: center; }
 .devices-body .dev-name  { font-weight: 600; }
+.devices-body .dev-reach { font-size: 11px; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+.devices-body .dev-reach.unknown { color: var(--muted); }
+.devices-body .dev-reach.pending { color: var(--warn); }
+.devices-body .dev-reach.ok  { color: var(--good); }
+.devices-body .dev-reach.bad { color: var(--bad); }
+.devices-body .dev-ping.btn-mini { font-size: 11px; padding: 3px 8px; background: rgba(61, 126, 255, 0.10); border: 1px solid var(--border); color: var(--fg); border-radius: 6px; cursor: pointer; }
+.devices-body .dev-ping.btn-mini:hover { background: rgba(61, 126, 255, 0.20); }
+.devices-body .dev-ip.saved { outline: 2px solid var(--good); transition: outline 120ms; }
 .devices-body .dev-ip    { background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; width: 100%; min-width: 140px; }
 .devices-body .dev-ip:focus { outline: none; border-color: var(--accent); }
 .devices-body .dev-toggle  { display: flex; align-items: center; gap: 8px; }

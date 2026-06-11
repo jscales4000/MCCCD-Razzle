@@ -13,7 +13,11 @@ export const display1SourceFb = writable<number>(0);
 export const display2SourceFb = writable<number>(0);
 export const display3SourceFb = writable<number>(0);
 export const display4SourceFb = writable<number>(0);
+export const display5SourceFb = writable<number>(0);  // outside signage
 export const audioOutputSelectFb = writable<1 | 2>(1);
+
+// USB peripheral host (USB-SW-400): 1=RoomPC, 2=AirMedia, 3=Laptop
+export const usbHostSelectFb = writable<number>(1);
 
 // Per-display power feedback (NVX D200 sink-connected)
 export const display1PowerFb = writable<boolean>(false);
@@ -73,8 +77,19 @@ export const laptopUsbcSync      = writable<boolean>(false);
 export const occupancyState = writable<0 | 1 | 2>(0); // 0=vacant, 1=occupied, 2=shutdown-pending
 export const shutdownCountdown = writable<number>(0);
 
-// Camera tracking mode (Front/Back-L/Back-R selection is local UI state, not stored here)
-export const camTrackingModeFb = writable<1 | 2 | 3>(3); // default VX AutoSwitch
+// Camera page v2 — framing / Q&A USB switch / live coordinates
+export const camPresenterFramingFb = writable<boolean>(false); // polled (I20 tracking on/off)
+export const camGroupFramingFb = writable<boolean>(false);     // cached (I20 group tracking on/off)
+export const camUsbOutputFb = writable<number>(1);             // 1=Presenter 2=Group 3=Auto
+export const camActiveOutputFb = writable<number>(0);          // live active output camera 1-5 (0=unknown)
+export const camPanSpeedFb = writable<number>(12);             // 1-24
+export const camTiltSpeedFb = writable<number>(10);            // 1-20
+export const camZoomSpeedFb = writable<number>(4);             // 0-7
+export const camPresetZoneFb = writable<number>(0);            // 0=none, 1-4
+export const camTrackingProfileFb = writable<number>(0);       // 0=none, 1-4
+export const camPanPos = writable<number>(0);                  // raw ushort; convert to signed in UI
+export const camTiltPos = writable<number>(0);
+export const camZoomPos = writable<number>(0);                 // 0-16384
 
 // Display routing mode + auto-route (Plan 3 — Mockup #14)
 export const routingModeFb = writable<number>(0);            // 0=unset, 1=Manual, 2=Mirror, 3=Extend
@@ -94,7 +109,9 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.display2SourceFb,    (v) => display2SourceFb.set(v));
   subscribeAnalog(SIGNALS.display3SourceFb,    (v) => display3SourceFb.set(v));
   subscribeAnalog(SIGNALS.display4SourceFb,    (v) => display4SourceFb.set(v));
+  subscribeAnalog(SIGNALS.display5SourceFb,    (v) => display5SourceFb.set(v));
   subscribeAnalog(SIGNALS.audioOutputSelectFb, (v) => audioOutputSelectFb.set(v === 2 ? 2 : 1));
+  subscribeAnalog(SIGNALS.usbHostSelectFb,     (v) => usbHostSelectFb.set(v));
 
   subscribeDigital(SIGNALS.display1PowerFb,    (v) => display1PowerFb.set(v));
   subscribeDigital(SIGNALS.display2PowerFb,    (v) => display2PowerFb.set(v));
@@ -143,7 +160,18 @@ export function initSignals(): void {
   subscribeAnalog(SIGNALS.occupancyState,      (v) => occupancyState.set(v === 1 ? 1 : v === 2 ? 2 : 0));
   subscribeAnalog(SIGNALS.shutdownCountdown,   (v) => shutdownCountdown.set(v));
 
-  subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
+  subscribeDigital(SIGNALS.camPresenterFramingFb, (v) => camPresenterFramingFb.set(v));
+  subscribeDigital(SIGNALS.camGroupFramingFb,     (v) => camGroupFramingFb.set(v));
+  subscribeAnalog(SIGNALS.camUsbOutputFb,         (v) => camUsbOutputFb.set(v));
+  subscribeAnalog(SIGNALS.camActiveOutputFb,      (v) => camActiveOutputFb.set(v));
+  subscribeAnalog(SIGNALS.camPanSpeedFb,          (v) => camPanSpeedFb.set(v));
+  subscribeAnalog(SIGNALS.camTiltSpeedFb,         (v) => camTiltSpeedFb.set(v));
+  subscribeAnalog(SIGNALS.camZoomSpeedFb,         (v) => camZoomSpeedFb.set(v));
+  subscribeAnalog(SIGNALS.camPresetZoneFb,        (v) => camPresetZoneFb.set(v));
+  subscribeAnalog(SIGNALS.camTrackingProfileFb,   (v) => camTrackingProfileFb.set(v));
+  subscribeAnalog(SIGNALS.camPanPos,              (v) => camPanPos.set(v));
+  subscribeAnalog(SIGNALS.camTiltPos,             (v) => camTiltPos.set(v));
+  subscribeAnalog(SIGNALS.camZoomPos,             (v) => camZoomPos.set(v));
 
   subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
   subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));

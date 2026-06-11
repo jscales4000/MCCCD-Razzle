@@ -2,15 +2,39 @@
   import { onMount } from 'svelte';
   import { publishAnalog, publishDigital, pulseDigital } from '../lib/CrComLib';
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
-  import { panelOnline, camTrackingModeFb } from '../lib/stores/signals';
+  import {
+    panelOnline,
+    camPresenterFramingFb, camGroupFramingFb, camUsbOutputFb, camActiveOutputFb, camPresetZoneFb, camTrackingProfileFb,
+    camPanSpeedFb, camTiltSpeedFb, camZoomSpeedFb,
+    camPanPos, camTiltPos, camZoomPos,
+  } from '../lib/stores/signals';
   import { goToPage, currentPage } from '../lib/stores/page';
+  import { role } from '../lib/stores/role';
   import { CAMERAS, rtspMain, CAM_USER, CAM_PASS, type Camera } from '../lib/cameras';
   import PresetButton from '../components/PresetButton.svelte';
 
   let activeCamera: Camera = $state(CAMERAS[0]);
 
-  let panSpeed = $state(50);
-  let tiltSpeed = $state(50);
+  // I20 (Presenter cam) gets the I20-only controls (zones/profiles).
+  let isPresenterCam = $derived(activeCamera.id === 'front');
+  // Raw VISCA ushort -> signed 16-bit for pan/tilt display.
+  const signed = (v: number) => (v > 32767 ? v - 65536 : v);
+
+  // Zoom position -> optical ratio (per model), interpolated from the IV-CAM tables.
+  const ZOOM_TABLE: Record<'i12' | 'i20', Array<[number, number]>> = {
+    i12: [[0,1],[0x1982,2],[0x24E2,3],[0x2BC9,4],[0x3099,5],[0x343D,6],[0x3724,7],[0x3988,8],[0x3B8B,9],[0x3D43,10],[0x3EBB,11],[0x4000,12]],
+    i20: [[0,1],[0x1851,2],[0x22BE,3],[0x28F6,4],[0x2D45,5],[0x3086,6],[0x3320,7],[0x3549,8],[0x371E,9],[0x38B3,10],[0x3A12,11],[0x3B42,12],[0x3C47,13],[0x3D25,14],[0x3DDF,15],[0x3E7B,16],[0x3EFB,17],[0x3F64,18],[0x3FBA,19],[0x4000,20]],
+  };
+  function zoomRatio(pos: number, model: 'i12' | 'i20'): string {
+    const t = ZOOM_TABLE[model];
+    if (pos <= t[0][0]) return '1.0×';
+    for (let i = 0; i < t.length - 1; i++) {
+      const [p0, r0] = t[i], [p1, r1] = t[i + 1];
+      if (pos <= p1) return (r0 + ((pos - p0) / (p1 - p0)) * (r1 - r0)).toFixed(1) + '×';
+    }
+    return t[t.length - 1][1].toFixed(1) + '×';
+  }
+  let zoomX = $derived(zoomRatio($camZoomPos, activeCamera.model));
 
   const presets = [
     { idx: 1, name: 'Default' },
@@ -58,6 +82,27 @@
     if (vid) vid.style.display = 'none';
   }
 
+  // ch5-video reads url/sourcetype only at CONSTRUCTION — runtime setAttribute()
+  // is silently ignored on Crestron's Android Chromium. To switch the camera feed
+  // we REPLACE the #cam-preview element via insertAdjacentHTML (the firmware's
+  // normal custom-element upgrade path), then reposition it. Proven technique from
+  // 1beyond-multicam/CameraPreview.svelte.
+  function mountCameraStream(cam: Camera) {
+    const old = document.getElementById('cam-preview');
+    if (!old || !old.parentNode) return;
+    const url = rtspMain(cam);
+    const html =
+      '<ch5-video id="cam-preview" sourcetype="Network"' +
+      ` url="${url}" userid="${CAM_USER}" password="${CAM_PASS}"` +
+      ' size="custom" aspectratio="16:9" stretch="true" componentwasresized="true"' +
+      ' receivestateplay="CamPlay" sendeventstate="CamState" sendeventerrorcode="CamError"' +
+      ' sendeventerrormessage="CamErrorMsg" sendeventresolution="CamResolution"' +
+      ' style="display:block;position:fixed;z-index:0;"></ch5-video>';
+    old.insertAdjacentHTML('afterend', html);
+    old.remove();
+    requestAnimationFrame(syncVideoToWindow);
+  }
+
   // Hide the video element BEFORE the route change paints, otherwise the
   // native cutout lingers on top of the next page for a frame or two.
   // Svelte's onDestroy fires after the page swap, so we tear down here first.
@@ -68,7 +113,9 @@
 
   function selectCamera(cam: Camera) {
     activeCamera = cam;
-    publishAnalog(SIGNALS.cameraSelect, cam.selectIndex);
+    publishAnalog(SIGNALS.cameraSelect, cam.selectIndex);    // PTZ / preset / coords target
+    publishAnalog(SIGNALS.camActiveOutput, cam.outputIndex); // multicam USB output (I12 host)
+    mountCameraStream(cam);                                   // swap the live preview feed
   }
 
   // PTZ press-and-hold (rising edge starts movement, falling edge stops)
@@ -100,9 +147,23 @@
 
   function sendToVtc() { pulseDigital(SIGNALS.camSendToVtc); }
 
-  function setTrackingMode(mode: 1 | 2 | 3) {
-    publishAnalog(SIGNALS.camTrackingMode, mode);
-  }
+  // Framing / Q&A USB switch / shots (v2)
+  function togglePresenter() { publishDigital(SIGNALS.camPresenterFraming, !$camPresenterFramingFb); }
+  function toggleGroup() { publishDigital(SIGNALS.camGroupFraming, !$camGroupFramingFb); }
+  function setUsbOutput(n: 1 | 2 | 3) { publishAnalog(SIGNALS.camUsbOutput, n); }
+  function setZone(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camPresetZone, n); }
+  function setProfile(n: 1 | 2 | 3 | 4) { publishAnalog(SIGNALS.camTrackingProfile, n); }
+  function recallHome() { pulseDigital(SIGNALS.camHomeShot); }
+  function recallTrackingShot() { pulseDigital(SIGNALS.camTrackingShot); }
+
+  // PTZ speed sliders — local while dragging, published on release, synced from Fb.
+  let panSpeed = $state(12), tiltSpeed = $state(10), zoomSpeed = $state(4);
+  $effect(() => { const v = $camPanSpeedFb;  if (v >= 1) panSpeed = v; });
+  $effect(() => { const v = $camTiltSpeedFb; if (v >= 1) tiltSpeed = v; });
+  $effect(() => { zoomSpeed = $camZoomSpeedFb; });
+  function commitPanSpeed()  { publishAnalog(SIGNALS.camPanSpeed, panSpeed); }
+  function commitTiltSpeed() { publishAnalog(SIGNALS.camTiltSpeed, tiltSpeed); }
+  function commitZoomSpeed() { publishAnalog(SIGNALS.camZoomSpeed, zoomSpeed); }
 
   function setPreviewMode(mode: keyof typeof DEVICE_PROFILES) {
     previewMode = mode;
@@ -130,6 +191,8 @@
       syncVideoToWindow();
       resizeObs = new ResizeObserver(syncVideoToWindow);
       resizeObs.observe(videoWindow);
+      // Mount the active camera's RTSP feed (replaces the static stub element).
+      mountCameraStream(activeCamera);
     }
 
     // Page-change pre-emption: hide the body-level ch5-video the instant the
@@ -171,20 +234,22 @@
 
     <div class="work-area">
 
-      <!-- Camera selector sidebar -->
+      <!-- Multicam selector — switches USB output + PTZ/preset control + preview -->
       <div class="glass-card camera-sidebar">
-        <p class="panel-label">Cameras</p>
+        <p class="panel-label">Multicam · Active Feed</p>
         {#each CAMERAS as cam}
           <button
             class="btn camera-select-btn"
             class:active={activeCamera.id === cam.id}
+            class:live={$camActiveOutputFb === cam.outputIndex}
             onclick={() => selectCamera(cam)}
             aria-pressed={activeCamera.id === cam.id}
           >
             <strong>{cam.label}</strong>
-            <em>{cam.model}</em>
+            <em>{cam.model}{#if $camActiveOutputFb === cam.outputIndex} · ● live{/if}</em>
           </button>
         {/each}
+        <p class="cam-side-hint">Switches the USB output and the camera you control.</p>
       </div>
 
       <!-- Live preview + transparent PTZ overlay -->
@@ -198,6 +263,8 @@
           z-index:0 of the body and the Svelte UI is above it at z-index:1.
         -->
         <div class="video-container" bind:this={videoWindow}>
+          <!-- PTZ drive pad — Technician only (users use presets + framing) -->
+          {#if $role === 'tech'}
           <div class="ptz-overlay">
             <button
               class="icon-btn ptz-btn ptz-up"
@@ -256,83 +323,127 @@
               </svg>
             </button>
           </div>
+          {/if}
         </div>
+        {#if $role === 'tech'}
+        <div class="coords-bar">
+          <div class="coord"><span class="ck">Pan</span><span class="cv">{signed($camPanPos)}</span></div>
+          <div class="coord"><span class="ck">Tilt</span><span class="cv">{signed($camTiltPos)}</span></div>
+          <div class="coord"><span class="ck">Zoom</span><span class="cv">{$camZoomPos}</span></div>
+          <div class="coord"><span class="ck">Optical</span><span class="cv">{zoomX}</span></div>
+          <span class="coord-live">● live</span>
+        </div>
+        {/if}
       </div>
 
       <!-- Right-side controls -->
       <div class="glass-card controls-panel">
-        <div class="speed-block">
-          <label class="speed-label">
-            <span>Pan Speed</span>
-            <input type="range" class="slider" min="1" max="100" bind:value={panSpeed} aria-label="Pan speed" />
-            <span class="readout">{panSpeed}</span>
-          </label>
-          <label class="speed-label">
-            <span>Tilt Speed</span>
-            <input type="range" class="slider" min="1" max="100" bind:value={tiltSpeed} aria-label="Tilt speed" />
-            <span class="readout">{tiltSpeed}</span>
-          </label>
-        </div>
-
-        <div class="zoom-block">
+        <!-- Prominent zoom -->
+        <div class="zoom-prom">
           <span class="block-label">Zoom</span>
-          <button
-            class="icon-btn zoom-btn"
-            aria-label="Zoom in"
-            onmousedown={() => zoomStart('in')}
-            onmouseup={() => zoomEnd('in')}
-            onmouseleave={() => zoomEnd('in')}
-            ontouchstart={(e) => { e.preventDefault(); zoomStart('in'); }}
-            ontouchend={(e) => { e.preventDefault(); zoomEnd('in'); }}
-            ontouchcancel={() => zoomEnd('in')}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
-              <path d="M11 8v6M8 11h6M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </svg>
+          <div class="zoom-prom-row">
+            <button
+              class="zoom-big"
+              aria-label="Zoom out"
+              onmousedown={() => zoomStart('out')}
+              onmouseup={() => zoomEnd('out')}
+              onmouseleave={() => zoomEnd('out')}
+              ontouchstart={(e) => { e.preventDefault(); zoomStart('out'); }}
+              ontouchend={(e) => { e.preventDefault(); zoomEnd('out'); }}
+              ontouchcancel={() => zoomEnd('out')}
+            >−</button>
+            <button
+              class="zoom-big"
+              aria-label="Zoom in"
+              onmousedown={() => zoomStart('in')}
+              onmouseup={() => zoomEnd('in')}
+              onmouseleave={() => zoomEnd('in')}
+              ontouchstart={(e) => { e.preventDefault(); zoomStart('in'); }}
+              ontouchend={(e) => { e.preventDefault(); zoomEnd('in'); }}
+              ontouchcancel={() => zoomEnd('in')}
+            >+</button>
+          </div>
+          <span class="zoom-cap">press &amp; hold</span>
+        </div>
+
+        <!-- PTZ speed (wired) — Technician only -->
+        {#if $role === 'tech'}
+        <div class="ctl-sec">
+          <p class="block-label">PTZ Speed</p>
+          <label class="spd"><span class="spd-k">Pan</span><input type="range" min="1" max="24" bind:value={panSpeed} onchange={commitPanSpeed} aria-label="Pan speed" /><span class="spd-v">{panSpeed}</span></label>
+          <label class="spd"><span class="spd-k">Tilt</span><input type="range" min="1" max="20" bind:value={tiltSpeed} onchange={commitTiltSpeed} aria-label="Tilt speed" /><span class="spd-v">{tiltSpeed}</span></label>
+          <label class="spd"><span class="spd-k">Zoom</span><input type="range" min="0" max="7" bind:value={zoomSpeed} onchange={commitZoomSpeed} aria-label="Zoom speed" /><span class="spd-v">{zoomSpeed}</span></label>
+        </div>
+        {/if}
+
+        <!-- Framing on the I20 — independent presenter (live) + group (cached) tracking -->
+        <div class="ctl-sec">
+          <p class="block-label">Framing · I20</p>
+          <button class="btn toggle-row" class:on={$camPresenterFramingFb} onclick={togglePresenter} aria-pressed={$camPresenterFramingFb}>
+            <span>Presenter Tracking</span>
+            <span class="tg-state">{$camPresenterFramingFb ? '● ON' : 'OFF'}</span>
           </button>
-          <button
-            class="icon-btn zoom-btn"
-            aria-label="Zoom out"
-            onmousedown={() => zoomStart('out')}
-            onmouseup={() => zoomEnd('out')}
-            onmouseleave={() => zoomEnd('out')}
-            ontouchstart={(e) => { e.preventDefault(); zoomStart('out'); }}
-            ontouchend={(e) => { e.preventDefault(); zoomEnd('out'); }}
-            ontouchcancel={() => zoomEnd('out')}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" fill="none"/>
-              <path d="M8 11h6M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </svg>
+          <button class="btn toggle-row" class:on={$camGroupFramingFb} onclick={toggleGroup} aria-pressed={$camGroupFramingFb}>
+            <span>Group Tracking</span>
+            <span class="tg-state">{$camGroupFramingFb ? 'ON' : 'OFF'}</span>
           </button>
         </div>
 
+        <!-- Framing output mode (I12 host IS: presenter / group / auto) -->
+        <div class="ctl-sec">
+          <p class="block-label">Framing Output · I12</p>
+          <div class="seg">
+            <button class="seg-btn" class:active={$camUsbOutputFb === 1} onclick={() => setUsbOutput(1)}>Presenter</button>
+            <button class="seg-btn" class:active={$camUsbOutputFb === 2} onclick={() => setUsbOutput(2)}>Group</button>
+            <button class="seg-btn" class:active={$camUsbOutputFb === 3} onclick={() => setUsbOutput(3)}>Auto</button>
+          </div>
+        </div>
+
+
+        {#if $role === 'tech'}
         <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>
-
-        <div class="tracking-block">
-          <p class="block-label">Tracking Mode</p>
-          <button class="btn tracking-btn" class:active={$camTrackingModeFb === 1} onclick={() => setTrackingMode(1)}>People</button>
-          <button class="btn tracking-btn" class:active={$camTrackingModeFb === 2} onclick={() => setTrackingMode(2)}>Group</button>
-          <button class="btn tracking-btn" class:active={$camTrackingModeFb === 3} onclick={() => setTrackingMode(3)}>VX AutoSwitch</button>
-        </div>
+        {/if}
       </div>
 
     </div>
 
-    <!-- Presets row -->
-    <div class="presets-row glass-card">
-      <p class="block-label presets-label">Shot Presets</p>
-      <div class="presets-grid">
-        {#each presets as p}
-          <PresetButton
-            label={p.name}
-            onRecall={() => recallPreset(p.idx)}
-            onSave={() => savePreset(p.idx)}
-          />
-        {/each}
+    <!-- Bottom row: shot presets + (I20-only) zones / profiles -->
+    <div class="bottom-row">
+      <div class="presets-row glass-card">
+        <p class="block-label presets-label">Shot Presets</p>
+        <div class="presets-grid">
+          {#each presets as p}
+            <PresetButton
+              label={p.name}
+              onRecall={() => recallPreset(p.idx)}
+              onSave={() => savePreset(p.idx)}
+            />
+          {/each}
+          <button class="btn shot-btn" onclick={recallHome}>Home</button>
+          <button class="btn shot-btn" onclick={recallTrackingShot}>Tracking Shot</button>
+        </div>
       </div>
-      <p class="hint-row">Tap to recall · Hold 3 seconds to save</p>
+
+      {#if isPresenterCam && $role === 'tech'}
+        <div class="i20-row glass-card">
+          <div class="i20-block">
+            <p class="block-label">Preset Zones <span class="i20-tag">I20</span></p>
+            <div class="radio">
+              {#each [1, 2, 3, 4] as n}
+                <button class="btn radio-btn" class:active={$camPresetZoneFb === n} onclick={() => setZone(n as 1|2|3|4)}>{n}</button>
+              {/each}
+            </div>
+          </div>
+          <div class="i20-block">
+            <p class="block-label">Tracking Profiles <span class="i20-tag">I20</span></p>
+            <div class="radio">
+              {#each [1, 2, 3, 4] as n}
+                <button class="btn radio-btn" class:active={$camTrackingProfileFb === n} onclick={() => setProfile(n as 1|2|3|4)}>{n}</button>
+              {/each}
+            </div>
+          </div>
+        </div>
+      {/if}
     </div>
 
   </div>
@@ -357,7 +468,7 @@
     display: grid;
     /* Tightened from 92/168 + 20px padding + 16px gap so the work-area row gets
        ~64 more px of height for the camera preview. */
-    grid-template-rows: 72px 1fr 112px;
+    grid-template-rows: 72px 1fr 138px;
     gap: 12px;
     width: 100%;
     height: 100%;
@@ -487,56 +598,21 @@
   .ptz-right:active { transform: translateY(-50%) scale(0.92); }
 
   .controls-panel {
-    padding: 18px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 12px;
+    min-height: 0;
+    overflow-y: auto;
   }
-  .speed-block { display: flex; flex-direction: column; gap: 12px; }
-  .speed-label {
-    display: grid;
-    grid-template-columns: 1fr 1fr 36px;
-    gap: 8px;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-copy-muted);
-  }
-  .slider {
-    accent-color: var(--color-accent);
-  }
-  .readout {
-    text-align: right;
-    color: var(--color-copy-soft);
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .zoom-block {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: 8px;
-  }
-  .zoom-btn {
-    width: 56px;
-    height: 56px;
-  }
-
+  .spd { display: grid; grid-template-columns: 36px 1fr 26px; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--color-copy-muted); }
+  .spd-k { letter-spacing: 0.08em; text-transform: uppercase; }
+  .spd input[type="range"] { accent-color: var(--color-accent); width: 100%; }
+  .spd-v { text-align: right; color: var(--color-copy-soft); font-variant-numeric: tabular-nums; font-size: 13px; }
   .vtc-btn {
-    min-height: 60px;
+    min-height: 52px;
     font-size: 14px;
     font-weight: 700;
-  }
-
-  .tracking-block { display: flex; flex-direction: column; gap: 8px; }
-  .tracking-btn {
-    min-height: 48px;
-    text-align: left;
-    padding: 0 14px;
-    font-weight: 600;
   }
 
   .presets-row {
@@ -553,18 +629,60 @@
   }
   .presets-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
     flex: 1;
   }
-  .hint-row {
-    align-self: center;
-    margin: 0;
-    color: var(--color-copy-muted);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    writing-mode: vertical-rl;
+
+  /* ── v2 controls ──────────────────────────────────────────────────── */
+  .coords-bar {
+    display: flex; align-items: center; gap: 14px; justify-content: center;
+    padding: 6px 10px; border-radius: var(--radius-button);
+    background: rgba(15, 23, 42, 0.6); border: 0.5px solid var(--color-border);
+    font-family: ui-monospace, SFMono-Regular, monospace;
   }
+  .coord { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+  .coord .ck { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-copy-muted); }
+  .coord .cv { font-size: 17px; font-weight: 800; color: var(--color-accent); font-variant-numeric: tabular-nums; }
+  .coord-live { margin-left: auto; font-size: 9px; color: #34d399; }
+
+  .zoom-prom { display: flex; flex-direction: column; gap: 4px; }
+  .zoom-prom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .zoom-big {
+    height: 72px; border-radius: var(--radius-button);
+    border: 0.5px solid rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.12);
+    color: var(--color-accent); font-size: 34px; font-weight: 800; cursor: pointer;
+  }
+  .zoom-big:active { background: rgba(56, 189, 248, 0.28); transform: scale(0.97); }
+  .zoom-cap { text-align: center; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-copy-muted); }
+
+  .ctl-sec { display: flex; flex-direction: column; gap: 6px; }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 48px; padding: 0 14px; font-weight: 700; font-size: 14px;
+  }
+  .toggle-row.on { background: rgba(34, 197, 94, 0.14); border-color: rgba(34, 197, 94, 0.5); color: #86efac; }
+  .toggle-row .tg-state { font-size: 11px; font-weight: 800; }
+
+  .seg { display: flex; border: 0.5px solid var(--color-border); border-radius: var(--radius-button); overflow: hidden; }
+  .seg-btn {
+    flex: 1; padding: 11px 4px; border: none; border-right: 0.5px solid var(--color-border);
+    background: rgba(30, 41, 59, 0.5); color: var(--color-copy-soft); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn.active { background: rgba(56, 189, 248, 0.16); color: var(--color-accent); }
+
+  .cam-side-hint { margin: 6px 0 0; font-size: 9px; color: var(--color-copy-muted); line-height: 1.4; }
+  .camera-select-btn.live { border-color: rgba(52, 211, 153, 0.55); box-shadow: inset 3px 0 0 #34d399; }
+  .camera-select-btn.live em { color: #34d399; }
+
+  .bottom-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; min-height: 0; }
+  .bottom-row .presets-row { margin: 0; }
+  .shot-btn { min-height: 0; font-size: 13px; font-weight: 700; }
+  .i20-row { display: flex; gap: 18px; padding: 14px 18px; align-items: center; }
+  .i20-block { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .i20-tag { font-size: 8px; color: #f7b7c8; font-weight: 800; letter-spacing: 0.1em; margin-left: 4px; }
+  .radio { display: flex; gap: 6px; }
+  .radio-btn { flex: 1; min-height: 42px; font-size: 15px; font-weight: 800; }
+  .radio-btn.active { background: rgba(56, 189, 248, 0.16); border-color: var(--color-accent); color: var(--color-accent); }
 </style>

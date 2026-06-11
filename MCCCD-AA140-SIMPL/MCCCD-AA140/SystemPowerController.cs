@@ -13,6 +13,8 @@ namespace MCCCD_AA140
     {
         private readonly Contract _c;
         private readonly NvxRoutingService _nvx;
+        private readonly UsbSwitchService _usb;
+        private readonly ScreenRelayService _screens;
         private readonly CrestronControlSystem _cs;
 
         private bool _systemOn;
@@ -24,10 +26,12 @@ namespace MCCCD_AA140
         private ushort _lastD2 = 1;
         private ushort _lastD3 = 1;
 
-        public SystemPowerController(Contract c, NvxRoutingService nvx, CrestronControlSystem cs)
+        public SystemPowerController(Contract c, NvxRoutingService nvx, UsbSwitchService usb, ScreenRelayService screens, CrestronControlSystem cs)
         {
             _c = c;
             _nvx = nvx;
+            _usb = usb;
+            _screens = screens;
             _cs = cs;
         }
 
@@ -74,6 +78,15 @@ namespace MCCCD_AA140
                 _nvx.RouteSourceToDisplay(v, 4);
                 _c.AA140.Display4SourceFb((sig, m) => sig.UShortValue = v);
             };
+            // D5 (outside signage) — independently routable like D4.
+            _c.AA140.Display5Source += (s, a) => {
+                var v = a.SigArgs.Sig.UShortValue;
+                _nvx.RouteSourceToDisplay(v, 5);
+                _c.AA140.Display5SourceFb((sig, m) => sig.UShortValue = v);
+            };
+
+            // USB peripheral host selector (Room PC / AirMedia / Laptop). Owned by
+            // UsbSwitchService.Initialize(); the power sequence only seeds a default.
         }
 
         public void PowerUpSequence()
@@ -110,6 +123,15 @@ namespace MCCCD_AA140
             // Audio defaults to D1.
             _c.AA140.AudioOutputSelectFb((sig, m) => sig.UShortValue = 1);
 
+            // USB peripherals (camera + Shure) default to the in-room Room PC.
+            _usb.SelectHost(UsbSwitchService.UsbHost.RoomPc);
+
+            // Lower the projector screens when the room powers on (momentary pulse).
+            _screens.ScreenDown();
+
+            // Signage (D5) stays idle until explicitly routed.
+            _nvx.RouteSourceToDisplay(0, 5);
+            _c.AA140.Display5SourceFb((sig, m) => sig.UShortValue = 0);
         }
 
         public void PowerDownSequence()
@@ -123,17 +145,24 @@ namespace MCCCD_AA140
             _c.AA140.Display3PowerFb((sig, m) => sig.BoolValue = false);
             _c.AA140.Display4PowerFb((sig, m) => sig.BoolValue = false);
 
-            // Clear all decoder routes
+            // Clear all decoder routes (incl. D5 signage).
             _nvx.RouteSourceToDisplay(0, 1);
             _nvx.RouteSourceToDisplay(0, 2);
             _nvx.RouteSourceToDisplay(0, 3);
             _nvx.RouteSourceToDisplay(0, 4);
+            _nvx.RouteSourceToDisplay(0, 5);
 
             // Clear source feedbacks so the markers go gray.
             _c.AA140.Display1SourceFb((sig, m) => sig.UShortValue = 0);
             _c.AA140.Display2SourceFb((sig, m) => sig.UShortValue = 0);
             _c.AA140.Display3SourceFb((sig, m) => sig.UShortValue = 0);
             _c.AA140.Display4SourceFb((sig, m) => sig.UShortValue = 0);
+            _c.AA140.Display5SourceFb((sig, m) => sig.UShortValue = 0);
+
+            // USB host left as-is on power-down (don't strand a connected laptop).
+
+            // Raise the projector screens on shutdown (momentary pulse).
+            _screens.ScreenUp();
         }
     }
 }

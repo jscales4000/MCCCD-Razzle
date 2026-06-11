@@ -24,6 +24,7 @@ namespace MCCCD_AA140
         private const uint IPID_D30_DISP2     = 0x22;
         private const uint IPID_D30_DISP3     = 0x23;
         private const uint IPID_D30_DISP4     = 0x24;  // podium confidence monitor
+        private const uint IPID_D30_DISP5     = 0x25;  // outside signage display
 
         // Video multicast block: 239.8.0.x, EVEN addresses spaced by 4 per NVX rules.
         // AES67 NAX audio rides the adjacent ODD address (configured via Q-SYS / Core).
@@ -43,19 +44,20 @@ namespace MCCCD_AA140
         private DmNvxD30 _decDisp2;
         private DmNvxD30 _decDisp3;
         private DmNvxD30 _decDisp4;
+        private DmNvxD30 _decDisp5;
 
         // Source index 1..4 -> encoder stream URL. Pre-populated from the fixed
         // multicast block at Initialize() so routing doesn't depend on online timing.
         private string[] _sourceStreamUrls = new string[5];
 
         // Per-display pending URL — cached so we can re-apply the requested route
-        // once a decoder transitions from OFFLINE to ONLINE. Indices 1..4.
-        private string[] _pendingUrl = new string[5];
+        // once a decoder transitions from OFFLINE to ONLINE. Indices 1..5.
+        private string[] _pendingUrl = new string[6];
 
         // Tracks whether the receiver-side config (SessionInitiation / EnableAuto /
         // initial ServerUrl write) has succeeded for each decoder. Used by the
         // BaseEvent-driven retry so we stop attempting once it works.
-        private bool[] _rxConfigured = new bool[5];
+        private bool[] _rxConfigured = new bool[6];
 
         // Video sync polling. SDK exposes input sync as BoolOutputSig (has
         // BoolValue but no OutputChange event), so we poll at 1Hz rather than
@@ -125,16 +127,19 @@ namespace MCCCD_AA140
             _decDisp2 = new DmNvxD30(IPID_D30_DISP2, _cs);
             _decDisp3 = new DmNvxD30(IPID_D30_DISP3, _cs);
             _decDisp4 = new DmNvxD30(IPID_D30_DISP4, _cs);
+            _decDisp5 = new DmNvxD30(IPID_D30_DISP5, _cs);
 
             _decDisp1.Register();
             _decDisp2.Register();
             _decDisp3.Register();
             _decDisp4.Register();
+            _decDisp5.Register();
 
             WireDecoderOnline(_decDisp1, 1);
             WireDecoderOnline(_decDisp2, 2);
             WireDecoderOnline(_decDisp3, 3);
             WireDecoderOnline(_decDisp4, 4);
+            WireDecoderOnline(_decDisp5, 5);
 
             // TODO Stage B: wire HDMI sink-connected feedback to drive DisplayNPowerFb.
             // _decDispN.HdmiOut.SinkConnectedFeedback.OutputChange += ...
@@ -279,7 +284,7 @@ namespace MCCCD_AA140
         private void ReapplyRoutesForSource(string oldUrl, string newUrl)
         {
             if (oldUrl == newUrl) return;
-            for (int d = 1; d <= 4; d++) {
+            for (int d = 1; d <= 5; d++) {
                 if (_pendingUrl[d] != oldUrl) continue;
                 _pendingUrl[d] = newUrl;
                 var dec = GetDecoder(d);
@@ -515,6 +520,7 @@ namespace MCCCD_AA140
                 case 1: _c.AA140.Display1SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
                 case 2: _c.AA140.Display2SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
                 case 3: _c.AA140.Display3SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
+                case 5: _c.AA140.Display5SourceFb((sig, m) => sig.UShortValue = srcIndex); break;
             }
         }
 
@@ -579,6 +585,7 @@ namespace MCCCD_AA140
                 case 2: return _decDisp2;
                 case 3: return _decDisp3;
                 case 4: return _decDisp4;
+                case 5: return _decDisp5;
                 default: return null;
             }
         }

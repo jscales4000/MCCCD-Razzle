@@ -41,6 +41,8 @@ namespace MCCCD_AA140.Debug
         private SonyVplService _projectors;
         private NewlineService _newline;
         private AirMediaService _airmedia;
+        private UsbSwitchService _usb;
+        private ScreenRelayService _screens;
         private Contract _contract;
 
         public void Configure(
@@ -53,6 +55,8 @@ namespace MCCCD_AA140.Debug
             SonyVplService projectors,
             NewlineService newline,
             AirMediaService airmedia,
+            UsbSwitchService usb,
+            ScreenRelayService screens,
             Contract contract)
         {
             _store = store;
@@ -64,6 +68,8 @@ namespace MCCCD_AA140.Debug
             _projectors = projectors;
             _newline = newline;
             _airmedia = airmedia;
+            _usb = usb;
+            _screens = screens;
             _contract = contract;
         }
 
@@ -119,6 +125,8 @@ namespace MCCCD_AA140.Debug
                     else if (sub.StartsWith("/sony/",     StringComparison.OrdinalIgnoreCase)) HandleSonyPost(args, sub.Substring("/sony/".Length));
                     else if (sub.StartsWith("/newline/",  StringComparison.OrdinalIgnoreCase)) HandleNewlinePost(args, sub.Substring("/newline/".Length));
                     else if (sub.StartsWith("/airmedia/", StringComparison.OrdinalIgnoreCase)) HandleAirMediaPost(args, sub.Substring("/airmedia/".Length));
+                    else if (sub.StartsWith("/usb/",      StringComparison.OrdinalIgnoreCase)) HandleUsbPost(args, sub.Substring("/usb/".Length));
+                    else if (sub.StartsWith("/screen/",   StringComparison.OrdinalIgnoreCase)) HandleScreenPost(args, sub.Substring("/screen/".Length));
                     else                                         Serve404(args, "POST " + sub);
                 } else {
                     Serve404(args, method + " " + sub);
@@ -231,6 +239,25 @@ namespace MCCCD_AA140.Debug
         {
             if (_store == null) { ServeJson(args, 503, "{\"error\":\"no store\"}"); return; }
             key = key.Trim('/');
+
+            // /devices/<key>/ping — reachability probe, does not mutate config.
+            if (key.EndsWith("/ping", StringComparison.OrdinalIgnoreCase)) {
+                var pkey = key.Substring(0, key.Length - "/ping".Length).Trim('/');
+                var entry = _store.Get(pkey);
+                var phost = entry != null ? entry.Host : "";
+                var pr = DeviceProbe.Probe(pkey, phost);
+                var psb = new StringBuilder(96);
+                psb.Append("{\"ok\":true,\"key\":");
+                JsonProtocol.AppendString(psb, pkey);
+                psb.Append(",\"reachable\":").Append(pr.Reachable ? "true" : "false");
+                psb.Append(",\"detail\":");
+                JsonProtocol.AppendString(psb, pr.Detail ?? "");
+                psb.Append('}');
+                DebugTrace.Command(pkey, "ping", pr.Detail);
+                ServeJson(args, 200, psb.ToString());
+                return;
+            }
+
             var qs = args.Context.Request.QueryString;
             string host = qs?["host"];
             string enabledStr = qs?["enabled"];
@@ -271,8 +298,8 @@ namespace MCCCD_AA140.Debug
                     case "p300":     _audio?.ApplyConfig(host, enabled);       break;
                     case "mxa-a":    _mxa?.ApplyConfigA(host, enabled);         break;
                     case "mxa-b":    _mxa?.ApplyConfigB(host, enabled);         break;
-                    case "cam-1":    _cameras?.SetCameraIp(1, host);            break;
-                    case "cam-2":    _cameras?.SetCameraIp(2, host);            break;
+                    case "cam-1":    _cameras?.ApplyConfig(1, host, enabled);   break;
+                    case "cam-2":    _cameras?.ApplyConfig(2, host, enabled);   break;
                     case "sony-1":   _projectors?.ApplyConfig1(host, enabled); break;
                     case "sony-2":   _projectors?.ApplyConfig2(host, enabled); break;
                     case "newline":  _newline?.ApplyConfig(host, enabled);      break;
@@ -311,9 +338,26 @@ namespace MCCCD_AA140.Debug
                 case "preset-delete":
                     if (int.TryParse(qs?["id"], out int did)) _cameras.DeletePresetFromDebug(camId, (ushort)did);
                     break;
-                case "tracking":
-                    if (int.TryParse(qs?["mode"], out int tm)) _cameras.SetTrackingModeFromDebug(camId, (ushort)tm);
+                case "framing":
+                    _cameras.SetPresenterFramingFromDebug(qs?["on"] == "true" || qs?["on"] == "1");
                     break;
+                case "group-framing":
+                    _cameras.SetGroupFramingFromDebug(qs?["on"] == "true" || qs?["on"] == "1");
+                    break;
+                case "output":
+                    if (int.TryParse(qs?["n"], out int co)) _cameras.SetActiveOutputFromDebug((ushort)co);
+                    break;
+                case "usb":
+                    if (int.TryParse(qs?["out"], out int uo)) _cameras.SetUsbOutputFromDebug((ushort)uo);
+                    break;
+                case "zone":
+                    if (int.TryParse(qs?["n"], out int zn)) _cameras.SetPresetZoneFromDebug((ushort)zn);
+                    break;
+                case "profile":
+                    if (int.TryParse(qs?["n"], out int prn)) _cameras.SetTrackingProfileFromDebug((ushort)prn);
+                    break;
+                case "home":          _cameras.RecallHomeFromDebug(camId);         break;
+                case "tracking-shot": _cameras.RecallTrackingShotFromDebug(camId); break;
                 case "vtc":
                     _cameras.SendToVtcFromDebug(camId);
                     break;
@@ -417,8 +461,8 @@ namespace MCCCD_AA140.Debug
             var qs = args.Context.Request.QueryString;
 
             if (sub == "route") {
-                if (!int.TryParse(qs?["dec"], out int dec) || dec < 1 || dec > 3) {
-                    ServeJson(args, 400, "{\"error\":\"dec must be 1..3\"}"); return;
+                if (!int.TryParse(qs?["dec"], out int dec) || dec < 1 || dec > 5) {
+                    ServeJson(args, 400, "{\"error\":\"dec must be 1..5\"}"); return;
                 }
                 if (!int.TryParse(qs?["src"], out int src) || src < 0 || src > 4) {
                     ServeJson(args, 400, "{\"error\":\"src must be 0..4\"}"); return;
@@ -529,6 +573,35 @@ namespace MCCCD_AA140.Debug
                 default:      Serve404(args, "airmedia/" + action); return;
             }
             DebugTrace.Command("airmedia", action);
+            ServeOk(args);
+        }
+
+        // ─── /usb/host/<roompc|airmedia|laptop> ─────────────────────────
+
+        private void HandleUsbPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_usb == null) { ServeJson(args, 503, "{\"error\":\"no usb\"}"); return; }
+            var parts = sub.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 && parts[0].Equals("host", StringComparison.OrdinalIgnoreCase)) {
+                _usb.SelectHostFromDebug(parts[1].ToLowerInvariant());
+                DebugTrace.Command("usb-sw-400", "host", parts[1]);
+                ServeOk(args);
+                return;
+            }
+            Serve404(args, "usb/" + sub);
+        }
+
+        // ─── /screen/<up|down> — projector screen relays ────────────────
+
+        private void HandleScreenPost(HttpCwsRequestEventArgs args, string sub)
+        {
+            if (_screens == null) { ServeJson(args, 503, "{\"error\":\"no screens\"}"); return; }
+            var action = sub.Trim('/').ToLowerInvariant();
+            switch (action) {
+                case "up":   _screens.TriggerFromDebug("up");   break;
+                case "down": _screens.TriggerFromDebug("down"); break;
+                default:     Serve404(args, "screen/" + action); return;
+            }
             ServeOk(args);
         }
 

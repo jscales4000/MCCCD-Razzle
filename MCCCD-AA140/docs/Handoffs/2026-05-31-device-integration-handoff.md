@@ -35,7 +35,16 @@ Legend: ✅ live · ⚠️ partial · 🔴 needs work · ⚪ no control needed/o
 
 ---
 
-## ⚠️ NVX hardware discrepancy — RESOLVE FIRST
+## ⚠️ NVX hardware discrepancy — ✅ RESOLVED 2026-05-31
+
+> **RESOLVED:** The integrator/user confirmed a **DM-NVX-384 IS on the TX side** as source 4
+> (HDMI in1 / USB-C in3, internal auto-switch) — it just wasn't itemized on the signed proposal
+> (treat as a change/substitution). The `NvxRoutingService` 384 model is **correct**. The **5th
+> D30 = signage display outside the conference space** (now wired as D5). USB BYOD is handled by
+> the **USB-SW-400** host switch, separate from NVX video. Full design + implementation:
+> `docs/superpowers/specs/2026-05-31-device-integration-usb-signage-design.md` and
+> `docs/superpowers/plans/2026-05-31-device-integration-usb-signage.md`. The original analysis
+> below is kept for history.
 
 The signed BOM lists **3× DM-NVX-E30 + 5× DM-NVX-D30, and NO DM-NVX-384.** The code
 (`NvxRoutingService.cs`) models **4 encoders (3× E30 + 1× NVX-384 for "Laptop") + 4

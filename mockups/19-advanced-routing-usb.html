@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mockup 19 — Advanced Routing + USB Host Switch + D5 Signage</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: rgba(15, 23, 42, 0.96);
+    --panel-soft: rgba(15, 23, 42, 0.82);
+    --border: rgba(148, 163, 184, 0.22);
+    --copy: #e2e8f0;
+    --copy-soft: #94a3b8;
+    --copy-muted: #64748b;
+    --accent: #38bdf8;
+    --accent-soft: rgba(56, 189, 248, 0.18);
+    --accent-dim: rgba(56, 189, 248, 0.10);
+    --success: #22c55e;
+    --maroon: #8c1d40;
+    --rad: 14px;
+    --rad-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1280px; height: 800px; overflow: hidden;
+    background: var(--bg); color: var(--copy);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    user-select: none; -webkit-user-select: none;
+  }
+  body::before {
+    content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 500px;
+    background: radial-gradient(ellipse, rgba(56,189,248,.06), transparent 70%);
+    pointer-events: none;
+  }
+  .stage {
+    width: 100%; height: 100%;
+    display: grid;
+    grid-template-rows: 92px 1fr 104px;
+    grid-template-columns: 96px 1fr 268px;
+    grid-template-areas:
+      "header header header"
+      "rail   tiles  usb"
+      "footer footer footer";
+    gap: 12px; padding: 12px;
+  }
+  header { grid-area: header; background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad); }
+  .rail  { grid-area: rail;  background: var(--panel-soft); border: 0.5px solid var(--border); border-radius: var(--rad); }
+  .tiles { grid-area: tiles; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 12px; }
+  .usb   { grid-area: usb;   background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad); }
+  footer { grid-area: footer; background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad); }
+
+  .hdr { height: 100%; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+  .hdr-copy .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--copy-muted); margin-bottom: 4px; }
+  .hdr-copy h1 { font-size: 28px; font-weight: 900; letter-spacing: -.02em; }
+  .hdr-right { display: flex; align-items: center; gap: 12px; }
+  .status-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .status-pill.online { background: rgba(34,197,94,.1); border: 0.5px solid rgba(34,197,94,.25); color: #86efac; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+  .hdr-btn { background: transparent; border: 0.5px solid var(--border); color: var(--copy-soft); padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .hdr-btn:hover { color: var(--copy); border-color: var(--accent-soft); }
+
+  /* SOURCE RAIL */
+  .rail { display: flex; flex-direction: column; align-items: center; padding: 14px 6px 12px; gap: 10px; }
+  .rail-title { font-size: 10px; font-weight: 800; letter-spacing: .22em; color: var(--copy-muted); }
+  .rail-help { font-size: 9px; font-weight: 600; color: var(--copy-muted); text-align: center; line-height: 1.3; margin-bottom: 6px; }
+  .chip {
+    width: 80px; min-height: 80px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 6px;
+    background: linear-gradient(180deg, rgba(30,41,59,.7), rgba(30,41,59,.5));
+    border: 0.5px solid var(--border); border-radius: var(--rad-sm);
+    color: var(--copy-soft); cursor: pointer;
+    transition: border-color 160ms, color 160ms, box-shadow 160ms;
+  }
+  .chip:hover { color: var(--copy); border-color: var(--accent-soft); }
+  .chip.armed { border-color: var(--accent); color: var(--copy); box-shadow: 0 0 0 1.5px var(--accent-soft), 0 0 16px var(--accent-soft); }
+  .chip-ico { color: var(--copy-soft); }
+  .chip:hover .chip-ico, .chip.armed .chip-ico { color: var(--accent); }
+  .chip-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+
+  /* DISPLAY TILES */
+  .tile {
+    background: var(--panel); border: 0.5px solid var(--border); border-radius: var(--rad);
+    display: grid; grid-template-rows: auto 1fr; padding: 12px; gap: 8px;
+    transition: border-color 200ms, box-shadow 200ms;
+  }
+  body.any-armed .tile { border-color: var(--accent-soft); background-color: var(--accent-dim); cursor: pointer; }
+  .tile.signage { border-color: rgba(140,29,64,.5); }
+  .tile.signage .tile-label { color: #f7b7c8; }
+  .tile-head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--copy-muted); }
+  .tile-power { width: 8px; height: 8px; border-radius: 50%; background: rgba(100,116,139,.3); }
+  .tile-power.on { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,.6); }
+  .tile-sub { font-size: 9px; font-weight: 700; letter-spacing: .1em; color: var(--copy-muted); margin-left: auto; }
+  .tile-slot {
+    border-radius: var(--rad-sm); display: flex; align-items: center; justify-content: center;
+    min-height: 88px; background: rgba(15,23,42,.4); border: 1px dashed transparent;
+  }
+  .slot-empty { font-size: 12px; color: var(--copy-muted); font-style: italic; }
+  .landed { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .landed .chip-ico { color: var(--accent); }
+  .landed-label { font-size: 13px; font-weight: 700; }
+
+  /* USB HOST PANEL */
+  .usb { padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .usb-title { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; }
+  .usb-desc { font-size: 11px; line-height: 1.5; color: var(--copy-soft); }
+  .usb-desc b { color: var(--copy); }
+  .usb-flow { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--copy-muted); font-weight: 700; letter-spacing: .04em; margin: 2px 0 4px; }
+  .usb-flow .pill { padding: 4px 8px; border: 0.5px solid var(--border); border-radius: 6px; }
+  .usb-hosts { display: flex; flex-direction: column; gap: 10px; }
+  .usb-host {
+    display: flex; align-items: center; gap: 12px; padding: 14px 14px;
+    background: rgba(30,41,59,.5); border: 1px solid var(--border); border-radius: var(--rad-sm);
+    color: var(--copy-soft); cursor: pointer; transition: all 160ms; text-align: left; width: 100%;
+  }
+  .usb-host:hover { color: var(--copy); border-color: var(--accent-soft); }
+  .usb-host.active { background: var(--accent-dim); border-color: var(--accent); color: var(--copy); box-shadow: 0 0 0 1px var(--accent-soft); }
+  .usb-host .uh-ico { color: var(--copy-soft); }
+  .usb-host.active .uh-ico { color: var(--accent); }
+  .usb-host .uh-name { font-size: 14px; font-weight: 700; }
+  .usb-host .uh-tag { display: block; font-size: 10px; font-weight: 600; color: var(--copy-muted); margin-top: 2px; }
+  .usb-host .uh-dot { margin-left: auto; width: 9px; height: 9px; border-radius: 50%; background: rgba(100,116,139,.3); }
+  .usb-host.active .uh-dot { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,.6); }
+  .usb-foot { margin-top: auto; font-size: 10px; color: var(--copy-muted); line-height: 1.5; }
+
+  /* FOOTER */
+  .ftr { height: 100%; display: flex; align-items: stretch; padding: 12px 18px; gap: 12px; }
+  .ftr-power { display: flex; align-items: center; gap: 8px; padding: 0 18px; background: rgba(140,29,64,.5); border: 0.5px solid rgba(140,29,64,.7); border-radius: var(--rad-sm); color: #fecdd3; cursor: pointer; font-size: 13px; font-weight: 700; }
+  .ftr-divider { width: 1px; background: var(--border); }
+  .ftr-mics, .ftr-vol { display: flex; align-items: center; gap: 8px; }
+  .ftr-label { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--copy-muted); margin-right: 4px; }
+  .ftr-btn { padding: 0 16px; min-height: 56px; background: rgba(30,41,59,.5); border: 0.5px solid var(--border); border-radius: var(--rad-sm); color: var(--copy-soft); font-size: 13px; font-weight: 700; cursor: pointer; }
+  .ftr-btn:hover { color: var(--copy); }
+  .ftr-vol { margin-left: auto; }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <header>
+      <div class="hdr">
+        <div class="hdr-copy">
+          <p class="eyebrow">CH5 Touch Panel · Advanced Routing</p>
+          <h1>AA140</h1>
+        </div>
+        <div class="hdr-right">
+          <div class="status-pill online"><span class="status-dot"></span><span>Online</span></div>
+          <button class="hdr-btn">Cameras</button>
+          <button class="hdr-btn">Settings</button>
+        </div>
+      </div>
+    </header>
+
+    <aside class="rail">
+      <p class="rail-title">SOURCES</p>
+      <p class="rail-help">tap a source, then a display</p>
+      <button class="chip" data-source="roomPc">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        <span class="chip-label">Room PC</span>
+      </button>
+      <button class="chip" data-source="extPc">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="18" cy="9" r="1.4" fill="currentColor"/></svg>
+        <span class="chip-label">Ext PC</span>
+      </button>
+      <button class="chip" data-source="airMedia">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></svg>
+        <span class="chip-label">AirMedia</span>
+      </button>
+      <button class="chip" data-source="laptop">
+        <svg class="chip-ico" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="5" width="16" height="10" rx="1.5"/><path d="M2 19h20"/></svg>
+        <span class="chip-label">Laptop</span>
+        <span style="font-size:8px;color:var(--copy-muted)">384 · HDMI/USB-C</span>
+      </button>
+    </aside>
+
+    <main class="tiles">
+      <section class="tile" data-display="d1"><div class="tile-head"><span class="tile-power on"></span><span class="tile-label">DISPLAY 1</span></div><div class="tile-slot" data-routed="roomPc"></div></section>
+      <section class="tile" data-display="d2"><div class="tile-head"><span class="tile-power on"></span><span class="tile-label">DISPLAY 2</span></div><div class="tile-slot" data-routed="airMedia"></div></section>
+      <section class="tile" data-display="d3"><div class="tile-head"><span class="tile-power on"></span><span class="tile-label">DISPLAY 3</span></div><div class="tile-slot" data-routed=""></div></section>
+      <section class="tile" data-display="d4"><div class="tile-head"><span class="tile-power on"></span><span class="tile-label">DISPLAY 4</span><span class="tile-sub">PODIUM</span></div><div class="tile-slot" data-routed="roomPc"></div></section>
+      <section class="tile signage" data-display="d5"><div class="tile-head"><span class="tile-power"></span><span class="tile-label">DISPLAY 5</span><span class="tile-sub">OUTSIDE SIGNAGE</span></div><div class="tile-slot" data-routed=""></div></section>
+      <section class="tile" style="border-style:dashed;opacity:.6"><div class="tile-head"><span class="tile-label" style="color:var(--copy-muted)">AUDIO FOLLOWS</span></div><div class="tile-slot" style="border:none"><span class="slot-empty">Display 1 →&nbsp;program</span></div></section>
+    </main>
+
+    <aside class="usb">
+      <div class="usb-title">USB Peripherals → Host</div>
+      <div class="usb-flow"><span class="pill">Camera + Mic</span> <span>→</span> <span class="pill" id="usb-current">Room PC</span></div>
+      <div class="usb-desc">Picking a host routes the room <b>camera + Shure mic/speaker</b> to it through the USB‑SW‑400. One tap — no separate USB step.</div>
+      <div class="usb-hosts">
+        <button class="usb-host active" data-host="roomPc">
+          <svg class="uh-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          <span><span class="uh-name">Room PC</span><span class="uh-tag">in‑room fixed PC</span></span>
+          <span class="uh-dot"></span>
+        </button>
+        <button class="usb-host" data-host="airMedia">
+          <svg class="uh-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12a10 10 0 0 1 14 0"/><path d="M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></svg>
+          <span><span class="uh-name">AirMedia</span><span class="uh-tag">wireless BYOD</span></span>
+          <span class="uh-dot"></span>
+        </button>
+        <button class="usb-host" data-host="laptop">
+          <svg class="uh-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="4" y="5" width="16" height="10" rx="1.5"/><path d="M2 19h20"/></svg>
+          <span><span class="uh-name">Laptop</span><span class="uh-tag">USB‑C via 384</span></span>
+          <span class="uh-dot"></span>
+        </button>
+      </div>
+      <div class="usb-foot">Power‑up default: <b style="color:var(--copy-soft)">Room PC</b>. Selection is independent of video routing.</div>
+    </aside>
+
+    <footer>
+      <div class="ftr">
+        <button class="ftr-power">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.5 7.5a8 8 0 1 0 11 0"/></svg>
+          <span>Power</span>
+        </button>
+        <div class="ftr-divider"></div>
+        <div class="ftr-mics"><span class="ftr-label">MICS</span><button class="ftr-btn">Lav</button><button class="ftr-btn">Handheld</button></div>
+        <div class="ftr-divider"></div>
+        <div class="ftr-vol"><button class="ftr-btn">Vol −</button><button class="ftr-btn">Mute</button><button class="ftr-btn">Vol +</button></div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+  const SOURCES = {
+    roomPc:   { label: 'Room PC',  svg: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>' },
+    extPc:    { label: 'Ext PC',   svg: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="18" cy="9" r="1.4" fill="currentColor"/>' },
+    airMedia: { label: 'AirMedia', svg: '<path d="M5 12a10 10 0 0 1 14 0" stroke-linecap="round"/><path d="M8.5 15.5a5 5 0 0 1 7 0" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/>' },
+    laptop:   { label: 'Laptop',   svg: '<rect x="4" y="5" width="16" height="10" rx="1.5" stroke-linejoin="round"/><path d="M2 19h20" stroke-linejoin="round"/>' },
+  };
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const $  = (s, r=document) => r.querySelector(s);
+
+  const state = { armed: null, routing: { d1:'roomPc', d2:'airMedia', d3:null, d4:'roomPc', d5:null }, usbHost: 'roomPc' };
+
+  function renderSlot(id) {
+    const slot = $(`.tile[data-display="${id}"] .tile-slot`);
+    const src = state.routing[id];
+    slot.dataset.routed = src || '';
+    if (!src) { slot.innerHTML = '<span class="slot-empty">— No source —</span>'; return; }
+    const m = SOURCES[src];
+    slot.innerHTML = `<div class="landed"><svg class="chip-ico" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8">${m.svg}</svg><span class="landed-label">${m.label}</span></div>`;
+  }
+  Object.keys(state.routing).forEach(renderSlot);
+
+  function arm(src) {
+    if (state.armed === src) { disarm(); return; }
+    disarm();
+    state.armed = src;
+    document.body.classList.add('any-armed');
+    $(`.chip[data-source="${src}"]`).classList.add('armed');
+  }
+  function disarm() {
+    if (state.armed) $(`.chip[data-source="${state.armed}"]`)?.classList.remove('armed');
+    state.armed = null;
+    document.body.classList.remove('any-armed');
+  }
+  $$('.chip').forEach(c => c.addEventListener('click', e => { e.stopPropagation(); arm(c.dataset.source); }));
+  $$('.tile[data-display]').forEach(t => t.addEventListener('click', () => {
+    if (!state.armed) return;
+    const tp = $('.tile-power', t); if (tp) tp.classList.add('on');
+    state.routing[t.dataset.display] = state.armed;
+    renderSlot(t.dataset.display);
+    disarm();
+  }));
+  document.addEventListener('click', e => { if (state.armed && !e.target.closest('.chip') && !e.target.closest('.tile')) disarm(); });
+
+  $$('.usb-host').forEach(h => h.addEventListener('click', () => {
+    state.usbHost = h.dataset.host;
+    $$('.usb-host').forEach(x => x.classList.toggle('active', x === h));
+    $('#usb-current').textContent = SOURCES[h.dataset.host].label;
+  }));
+  </script>
+</body>
+</html>
