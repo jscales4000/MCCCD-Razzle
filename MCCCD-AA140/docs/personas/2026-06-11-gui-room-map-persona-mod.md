@@ -1,9 +1,9 @@
 # FRED Persona Mod — GUI Room-Plan / RCP Map Builder
 
-**Status:** PENDING UPLOAD — FRED MCP was offline on 2026-06-11 when this was
-authored. Apply to the MCCCD-AA140 project's UX/Touchpanel persona (or create a
-dedicated "Room-Map GUI Builder" persona) via `mcp__fred__*` persona tools when
-FRED is reachable.
+**Status:** UPLOADED 2026-06-11 — created in FRED as library persona
+**"GUI Room-Map / RCP Builder"** (`86ddf28e-1020-4104-bd83-91fdd052b635`,
+division `crestron`) and assigned to the MCCCD-AA140 project at priority 8.
+This doc is now the offline reference copy.
 
 **Companion skill:** `.claude/skills/gui-room-map/SKILL.md` in this repo holds
 the full methodology; this mod is the persona-rule distillation.
