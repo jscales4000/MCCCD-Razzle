@@ -265,8 +265,10 @@
 
       <!-- Display strip — per-display route targets with live feedback.
            All-targeted is the default; first tap from that state solos the
-           tapped display, later taps toggle, and a quiet-period timer in
-           router.ts reverts a narrowed set to All. -->
+           tapped display, later taps toggle. Routing a source clears the
+           grouping back to All (router.ts), so each route starts a fresh
+           pick-displays → tap-source loop; a quiet-period timer covers
+           picked-but-never-routed sets. -->
       <div class="target-caption" class:narrowed={!targetsAreAll} aria-live="polite">
         Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
       </div>

@@ -1,9 +1,9 @@
 <!--
   RoomPlan — architectural top-down plan for AA140.
 
-  Renders a realistic static scene (double-line walls, door swing, conference
-  table + chairs, podium, projector throw cones, speakers, cameras, mic
-  arrays) plus four interactive DisplayMarker instances driven by the
+  Renders a realistic static scene (double-line walls, door swing, classroom
+  seating rows, podium, projector throw cones, speakers, aimed PTZ cameras,
+  mic arrays) plus four interactive DisplayMarker instances driven by the
   parent's reactive state. The scene layer is pure decoration: every scene
   element is aria-hidden and pointer-events:none, so the DisplayMarker
   buttons remain the only touch layer (≥44px targets, single tap).
@@ -51,14 +51,13 @@
   let d1Live = $derived(displays.some(d => d.id === 'd1' && d.activeSource && d.powerOn));
   let d2Live = $derived(displays.some(d => d.id === 'd2' && d.activeSource && d.powerOn));
 
-  // Chair seats around the conference table, % of plan box. Six per long
-  // side. Head seats are omitted — the table's short ends face the podium
-  // and rear wall walkways.
-  const CHAIRS_TOP = [36, 44, 52, 60].map(left => ({ left, top: 21 }));
-  const CHAIRS_BOTTOM = [36, 44, 52, 60].map(left => ({ left, top: 51 }));
-  const CHAIRS_LEFT = [{ left: 29.5, top: 30 }, { left: 29.5, top: 42 }];
-  const CHAIRS_RIGHT = [{ left: 66.5, top: 30 }, { left: 66.5, top: 42 }];
-  const CHAIRS = [...CHAIRS_TOP, ...CHAIRS_BOTTOM, ...CHAIRS_LEFT, ...CHAIRS_RIGHT];
+  // Classroom seating — two banks (left/right of a center aisle), three
+  // rows per bank, all seats facing the front (bottom) of the room.
+  const SEAT_ROWS = [26, 38, 50]; // % from top, one per row
+  const SEAT_COLS_LEFT = [15, 23, 31, 39];
+  const SEAT_COLS_RIGHT = [61, 69, 77, 85];
+  const SEATS = SEAT_ROWS.flatMap(top =>
+    [...SEAT_COLS_LEFT, ...SEAT_COLS_RIGHT].map(left => ({ left, top })));
 
   const micLive = true; // visual hint — could be driven by mic-mute stores later
 </script>
@@ -93,12 +92,9 @@
       <div class="projector p1" class:lit={d1Live}>VPL</div>
       <div class="projector p2" class:lit={d2Live}>VPL</div>
 
-      <!-- Conference table + chairs -->
-      <div class="table">
-        <span class="table-label">Conference</span>
-      </div>
-      {#each CHAIRS as c}
-        <div class="chair" style={`left: ${c.left}%; top: ${c.top}%;`}></div>
+      <!-- Classroom seating — 3 rows left + 3 rows right, center aisle -->
+      {#each SEATS as s}
+        <div class="seat" style={`left: ${s.left}%; top: ${s.top}%;`}></div>
       {/each}
 
       <!-- Wall speakers — rear-left aligns with D3, front pair flanks Cam1 -->
@@ -106,11 +102,15 @@
       <div class="speaker fl"></div>
       <div class="speaker fr"></div>
 
-      <!-- Cameras: Cam2 at rear (top-center), Cam1 at front (bottom-center) -->
-      <div class="cam cam-2">2</div>
-      <div class="cam cam-1">1</div>
+      <!-- PTZ cameras with field-of-view wedges showing their aim:
+           Cam1 (Front wall, I20) looks back across the seating; Cam2
+           (Rear wall, I12) looks down toward the podium. -->
+      <div class="cam-fov fov-1"></div>
+      <div class="cam-fov fov-2"></div>
+      <div class="cam cam-1"><span class="cam-lens"></span>CAM 1</div>
+      <div class="cam cam-2"><span class="cam-lens"></span>CAM 2</div>
 
-      <!-- Ceiling mic arrays -->
+      <!-- Ceiling mic arrays, centered over each seating bank -->
       <div class="mic mxa-a" class:live={micLive}>MXA</div>
       <div class="mic mxa-b" class:live={micLive}>MXA</div>
 
@@ -323,35 +323,18 @@
     background: linear-gradient(180deg, rgba(245, 166, 35, 0.22), rgba(245, 166, 35, 0.04));
   }
 
-  /* ── Conference table + chairs ──────────────────────────────────────── */
-  .table {
+  /* ── Classroom seating ──────────────────────────────────────────────── */
+  /* Front-facing seats: flat front edge toward the screens (bottom), softly
+     rounded backrest toward the rear. */
+  .seat {
     position: absolute;
-    top: 25%;
-    left: 32%;
-    width: 32%;
-    height: 22%;
-    border-radius: 16px;
-    background: linear-gradient(180deg, rgba(71, 85, 105, 0.30), rgba(51, 65, 85, 0.18));
-    border: 1.5px solid rgba(148, 163, 184, 0.45);
-    box-shadow: inset 0 0 18px rgba(8, 16, 30, 0.5);
-    display: grid;
-    place-items: center;
-  }
-  .table-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.26em;
-    text-transform: uppercase;
-    color: rgba(148, 163, 184, 0.55);
-  }
-  .chair {
-    position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 15px;
     transform: translate(-50%, -50%);
-    border-radius: 5px;
+    border-radius: 7px 7px 3px 3px;
     background: rgba(51, 65, 85, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.35);
+    border-top-width: 2px;
   }
 
   /* ── Speakers ───────────────────────────────────────────────────────── */
@@ -368,27 +351,58 @@
   .speaker.fl { bottom: 2px; left: 38%; width: 6%;  }
   .speaker.fr { bottom: 2px; left: 56%; width: 6%;  }
 
-  /* ── Cameras ────────────────────────────────────────────────────────── */
+  /* ── PTZ cameras ────────────────────────────────────────────────────── */
+  /* Camera body + protruding lens stub on the aim side + translucent FOV
+     wedge into the room, so each camera reads as a aimed PTZ unit. Both
+     bodies sit fully INSIDE the plan walls. */
   .cam {
     position: absolute;
-    width: 38px;
-    height: 30px;
-    background: rgba(120, 200, 130, 0.20);
+    width: 54px;
+    height: 24px;
+    background: rgba(120, 200, 130, 0.18);
     border: 1.5px solid rgba(120, 200, 130, 0.7);
     border-radius: 6px;
     display: grid;
     place-items: center;
     color: rgba(190, 240, 200, 0.95);
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 800;
+    letter-spacing: 0.08em;
+    z-index: 1;
   }
-  .cam.cam-1 { bottom: -10px; left: 50%; transform: translateX(-50%); }
-  .cam.cam-2 { top: 5%; left: 50%; transform: translateX(-50%); }
-  .cam::before {
-    content: 'Cam';
-    font-size: 9px;
-    font-weight: 800;
-    margin-right: 2px;
+  .cam.cam-1 { bottom: 2%; left: 50%; transform: translateX(-50%); }
+  .cam.cam-2 { top: 2%; left: 50%; transform: translateX(-50%); }
+  .cam-lens {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 6px;
+    border-radius: 2px;
+    background: rgba(120, 200, 130, 0.8);
+  }
+  /* Lens points the way the camera looks: Cam1 up into the room, Cam2 down */
+  .cam.cam-1 .cam-lens { top: -6px; }
+  .cam.cam-2 .cam-lens { bottom: -6px; }
+
+  .cam-fov {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 34%;
+    height: 20%;
+  }
+  /* Cam1 wedge: apex at the front-wall camera, opening toward the seats */
+  .cam-fov.fov-1 {
+    bottom: calc(2% + 26px);
+    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+    background: linear-gradient(0deg, rgba(120, 200, 130, 0.18), rgba(120, 200, 130, 0.02));
+  }
+  /* Cam2 wedge: apex at the rear-wall camera, opening toward the podium */
+  .cam-fov.fov-2 {
+    top: calc(2% + 26px);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    background: linear-gradient(180deg, rgba(120, 200, 130, 0.18), rgba(120, 200, 130, 0.02));
   }
 
   /* ── Ceiling mics ───────────────────────────────────────────────────── */
@@ -405,26 +419,16 @@
     font-size: 8px;
     font-weight: 800;
   }
-  .mic::before {
-    content: '';
-    position: absolute;
-    inset: -8px;
-    border: 1px dashed rgba(245, 166, 35, 0.18);
-    border-radius: 50%;
+  /* Live state lights the mic's own edge — no external dot/halo. */
+  .mic.live {
+    border-color: var(--color-success);
+    box-shadow:
+      0 0 10px rgba(34, 197, 94, 0.40),
+      inset 0 0 8px rgba(34, 197, 94, 0.22);
   }
-  .mic.live::after {
-    content: '';
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-success);
-    box-shadow: 0 0 8px var(--color-success);
-  }
-  .mic.mxa-a { top: 30%; left: 19%; }
-  .mic.mxa-b { top: 30%; right: 19%; }
+  /* Centered over each seating bank (ceiling layer, drawn above the seats) */
+  .mic.mxa-a { top: 37%; left: 27%; transform: translate(-50%, -50%); }
+  .mic.mxa-b { top: 37%; left: 73%; transform: translate(-50%, -50%); }
 
   /* ── Podium ─────────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {

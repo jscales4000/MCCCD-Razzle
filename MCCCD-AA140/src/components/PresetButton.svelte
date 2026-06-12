@@ -70,7 +70,7 @@
 </script>
 
 <button
-  class="btn preset-btn"
+  class="preset-btn"
   class:pressing
   class:saved
   onmousedown={startPress}
@@ -108,6 +108,20 @@
     gap: 4px;
     min-height: 72px;
     padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+    color: var(--color-copy);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 160ms ease, border-color 160ms ease;
+  }
+  .preset-btn:hover { background: rgba(51, 65, 85, 0.7); }
+  .preset-btn:active { background: rgba(51, 65, 85, 0.85); }
+  .preset-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
   .preset-label {
     font-size: 14px;

@@ -49,7 +49,8 @@
 <style>
   .vol-popup {
     position: fixed;
-    right: 22px;
+    left: 50%;
+    transform: translateX(-50%);
     bottom: 110px;        /* sits just above the 80px footer (+14px gap) */
     z-index: 900;
     background: rgba(12, 20, 36, 0.98);
@@ -103,8 +104,8 @@
   }
 
   @keyframes vp-rise {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translate(-50%, 8px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
   }
 
   @media (prefers-reduced-motion: reduce) {

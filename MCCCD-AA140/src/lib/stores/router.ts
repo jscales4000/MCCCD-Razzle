@@ -173,13 +173,14 @@ export function resetTargetDisplays(): void {
   targetDisplays.set(new Set(ALL_DISPLAYS));
 }
 
-/** Route a source to the current Home target set. A narrowed set is kept
- *  alive (timer refreshed, not reset) so sequential routes to the same
- *  display work; the quiet-period timer restores the all-targeted default. */
+/** Route a source to the current Home target set, then clear the grouping
+ *  back to the all-targeted default. The intended loop: pick displays →
+ *  tap a source → it routes → selection resets → pick again. The quiet-period
+ *  timer above only covers the "picked displays but never routed" case. */
 export function routeSourceToTargets(value: 1 | 2 | 3 | 4): void {
   const targets = get(targetDisplays);
   targets.forEach((d) => publishAnalog(SET_SIGNAL_BY_DISPLAY[d], value));
-  if (!allTargeted(targets)) refreshTargetResetTimer();
+  resetTargetDisplays();
 }
 
 // ── Outside signage (D5) ───────────────────────────────────────────────

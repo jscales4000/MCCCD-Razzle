@@ -16,11 +16,11 @@ label + icon), power dot (`Display{N}PowerFb`), and a target ring when selected.
   route-everywhere behavior). Zero behavior change for the default path.
 - Tapping a chip while ALL are targeted **solos** that display (intent: "just this
   one"). Further taps toggle membership. Untoggling the last chip reverts to All.
-- A narrowed set is **transient**: a 10s quiet-period timer (refreshed by chip taps
-  and by routes) reverts it to All, and Home's `onMount` resets it — so a solo left
-  behind can never trap the next presenter. Routing does NOT immediately reset the
-  set, so sequential routes to the same display work. (Revised per adversarial
-  review — the original reset-after-route silently clobbered sequential workflows.)
+- **Routing clears the grouping** (revised 2026-06-11 per user direction): after a
+  source tap routes to the narrowed set, the set resets to All — the intended loop
+  is pick displays → tap source → selection clears → pick again. A 10s quiet-period
+  timer still reverts a set that was picked but never routed, and Home's `onMount`
+  resets it, so a solo left behind can never trap the next presenter.
 - A live caption directly above the strip states the destination in words ("Source
   goes to: All Displays · tap a display to limit" / "D2 + D4") — feedback is
   mandatory, never color alone; targeted chips also carry a check glyph.

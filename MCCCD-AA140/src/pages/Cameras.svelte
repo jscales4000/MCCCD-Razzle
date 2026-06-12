@@ -106,9 +106,9 @@
   // Hide the video element BEFORE the route change paints, otherwise the
   // native cutout lingers on top of the next page for a frame or two.
   // Svelte's onDestroy fires after the page swap, so we tear down here first.
-  function leaveCameras(target: 'home' | 'settings' = 'home') {
+  function leaveCameras() {
     hideVideo();
-    goToPage(target);
+    goToPage('home');
   }
 
   function selectCamera(cam: Camera) {
@@ -220,26 +220,31 @@
 <div class="panel-stage">
   <div class="app-shell layout-cameras">
 
-    <header class="app-header glass-card">
-      <button class="btn back-btn" onclick={() => leaveCameras('home')}>← Home</button>
-      <div class="header-copy">
-        <p class="eyebrow">CH5 Touch Panel</p>
-        <h1>{ROOM_NAME} — Cameras</h1>
-      </div>
-      <div class="status-pill" class:online={$panelOnline}>
-        <span class="status-dot"></span>
-        <span>{$panelOnline ? 'Online' : 'Offline'}</span>
-      </div>
+    <header class="cam-header">
+      <button class="back-btn" onclick={() => leaveCameras()} aria-label="Back to Home" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Home
+      </button>
+      <div class="sep"></div>
+      <span class="room">{ROOM_NAME}</span>
+      <div class="sep"></div>
+      <span class="eyebrow-h">Cameras · Live Preview</span>
+      <div class="hsp"></div>
+      <span class="online-pill" class:ok={$panelOnline} class:off={!$panelOnline}>
+        <span class="pdot"></span>{$panelOnline ? 'Online' : 'Offline'}
+      </span>
     </header>
 
     <div class="work-area">
 
       <!-- Multicam selector — switches USB output + PTZ/preset control + preview -->
-      <div class="glass-card camera-sidebar">
+      <div class="cam-card camera-sidebar">
         <p class="panel-label">Multicam · Active Feed</p>
         {#each CAMERAS as cam}
           <button
-            class="btn camera-select-btn"
+            class="camera-select-btn"
             class:active={activeCamera.id === cam.id}
             class:live={$camActiveOutputFb === cam.outputIndex}
             onclick={() => selectCamera(cam)}
@@ -253,7 +258,7 @@
       </div>
 
       <!-- Live preview + transparent PTZ overlay -->
-      <div class="glass-card preview-panel">
+      <div class="cam-card preview-panel">
         <p class="panel-label">Preview — {activeCamera.label} ({activeCamera.model})</p>
         <!--
           .video-window is a positioning HINT for the body-level <ch5-video>
@@ -337,7 +342,7 @@
       </div>
 
       <!-- Right-side controls -->
-      <div class="glass-card controls-panel">
+      <div class="cam-card controls-panel">
         <!-- Prominent zoom -->
         <div class="zoom-prom">
           <span class="block-label">Zoom</span>
@@ -379,11 +384,11 @@
         <!-- Framing on the I20 — independent presenter (live) + group (cached) tracking -->
         <div class="ctl-sec">
           <p class="block-label">Framing · I20</p>
-          <button class="btn toggle-row" class:on={$camPresenterFramingFb} onclick={togglePresenter} aria-pressed={$camPresenterFramingFb}>
+          <button class="toggle-row" class:on={$camPresenterFramingFb} onclick={togglePresenter} aria-pressed={$camPresenterFramingFb}>
             <span>Presenter Tracking</span>
             <span class="tg-state">{$camPresenterFramingFb ? '● ON' : 'OFF'}</span>
           </button>
-          <button class="btn toggle-row" class:on={$camGroupFramingFb} onclick={toggleGroup} aria-pressed={$camGroupFramingFb}>
+          <button class="toggle-row" class:on={$camGroupFramingFb} onclick={toggleGroup} aria-pressed={$camGroupFramingFb}>
             <span>Group Tracking</span>
             <span class="tg-state">{$camGroupFramingFb ? 'ON' : 'OFF'}</span>
           </button>
@@ -401,7 +406,7 @@
 
 
         {#if $role === 'tech'}
-        <button class="btn vtc-btn" onclick={sendToVtc}>Send to VTC</button>
+        <button class="vtc-btn" onclick={sendToVtc}>Send to VTC</button>
         {/if}
       </div>
 
@@ -409,7 +414,7 @@
 
     <!-- Bottom row: shot presets + (I20-only) zones / profiles -->
     <div class="bottom-row">
-      <div class="presets-row glass-card">
+      <div class="presets-row cam-card">
         <p class="block-label presets-label">Shot Presets</p>
         <div class="presets-grid">
           {#each presets as p}
@@ -419,18 +424,18 @@
               onSave={() => savePreset(p.idx)}
             />
           {/each}
-          <button class="btn shot-btn" onclick={recallHome}>Home</button>
-          <button class="btn shot-btn" onclick={recallTrackingShot}>Tracking Shot</button>
+          <button class="shot-btn" onclick={recallHome}>Home</button>
+          <button class="shot-btn" onclick={recallTrackingShot}>Tracking Shot</button>
         </div>
       </div>
 
       {#if isPresenterCam && $role === 'tech'}
-        <div class="i20-row glass-card">
+        <div class="i20-row cam-card">
           <div class="i20-block">
             <p class="block-label">Preset Zones <span class="i20-tag">I20</span></p>
             <div class="radio">
               {#each [1, 2, 3, 4] as n}
-                <button class="btn radio-btn" class:active={$camPresetZoneFb === n} onclick={() => setZone(n as 1|2|3|4)}>{n}</button>
+                <button class="radio-btn" class:active={$camPresetZoneFb === n} onclick={() => setZone(n as 1|2|3|4)}>{n}</button>
               {/each}
             </div>
           </div>
@@ -438,7 +443,7 @@
             <p class="block-label">Tracking Profiles <span class="i20-tag">I20</span></p>
             <div class="radio">
               {#each [1, 2, 3, 4] as n}
-                <button class="btn radio-btn" class:active={$camTrackingProfileFb === n} onclick={() => setProfile(n as 1|2|3|4)}>{n}</button>
+                <button class="radio-btn" class:active={$camTrackingProfileFb === n} onclick={() => setProfile(n as 1|2|3|4)}>{n}</button>
               {/each}
             </div>
           </div>
@@ -466,15 +471,93 @@
 <style>
   .layout-cameras {
     display: grid;
-    /* Tightened from 92/168 + 20px padding + 16px gap so the work-area row gets
-       ~64 more px of height for the camera preview. */
-    grid-template-rows: 72px 1fr 138px;
+    /* Compact 60px header (matches the routing page) keeps the work-area row
+       tall for the camera preview. */
+    grid-template-rows: 60px 1fr 138px;
     gap: 12px;
     width: 100%;
     height: 100%;
     padding: 12px;
   }
-  .back-btn { min-height: 56px; padding: 0 18px; font-size: 13px; margin-right: 16px; }
+
+  /* ── Header — same idiom as the Display Routing page header ─────────── */
+  .cam-header {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    min-height: 44px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border);
+    background: rgba(30, 41, 59, 0.5);
+    color: var(--color-copy-soft);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 110ms ease, color 110ms ease, border-color 110ms ease;
+  }
+  .back-btn:hover {
+    background: rgba(30, 41, 59, 0.85);
+    color: var(--color-copy);
+    border-color: var(--color-accent-soft);
+  }
+  .back-btn:active { transform: scale(0.97); }
+  .room { font-size: 18px; font-weight: 900; color: var(--color-copy); }
+  .sep  { width: 1px; height: 20px; background: var(--color-border); }
+  .eyebrow-h {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-copy-muted);
+  }
+  .hsp { flex: 1; }
+  .online-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .online-pill.ok {
+    background: rgba(34, 197, 94, 0.08);
+    border: 0.5px solid rgba(34, 197, 94, 0.25);
+    color: #86efac;
+  }
+  .online-pill.off {
+    background: rgba(100, 116, 139, 0.08);
+    border: 0.5px solid rgba(100, 116, 139, 0.25);
+    color: #94a3b8;
+  }
+  .pdot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 5px currentColor;
+  }
+
+  /* ── Surface cards — theme-panel surfaces (replaces .glass-card here) ── */
+  .cam-card {
+    background: var(--color-panel);
+    border: 0.5px solid var(--color-border);
+    border-radius: 14px;
+  }
 
   .work-area {
     display: grid;
@@ -504,14 +587,31 @@
   .camera-select-btn {
     text-align: left;
     padding: 12px 14px;
-    height: auto;
     min-height: 56px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+    color: var(--color-copy-soft);
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
   }
-  .camera-select-btn strong { font-size: 16px; font-weight: 700; }
+  .camera-select-btn:hover { background: rgba(51, 65, 85, 0.7); }
+  .camera-select-btn:active {
+    transform: scale(0.97);
+    background: rgba(51, 65, 85, 0.85);
+    transition-duration: 90ms;
+  }
+  .camera-select-btn.active {
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    background: var(--color-accent-dim);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+  .camera-select-btn strong { font-size: 16px; font-weight: 700; color: var(--color-copy); }
+  .camera-select-btn.active strong { color: var(--color-accent); }
   .camera-select-btn em { font-style: normal; font-size: 12px; color: var(--color-copy-muted); }
 
   /*
@@ -613,7 +713,16 @@
     min-height: 52px;
     font-size: 14px;
     font-weight: 700;
+    border-radius: 10px;
+    background: var(--color-accent-dim);
+    border: 0.5px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+    color: var(--color-accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 160ms ease;
   }
+  .vtc-btn:active { background: var(--color-accent-soft); transform: scale(0.97); }
 
   .presets-row {
     display: flex;
@@ -649,28 +758,38 @@
   .zoom-prom { display: flex; flex-direction: column; gap: 4px; }
   .zoom-prom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .zoom-big {
-    height: 72px; border-radius: var(--radius-button);
-    border: 0.5px solid rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.12);
+    height: 72px; border-radius: 10px;
+    border: 0.5px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    background: var(--color-accent-dim);
     color: var(--color-accent); font-size: 34px; font-weight: 800; cursor: pointer;
   }
-  .zoom-big:active { background: rgba(56, 189, 248, 0.28); transform: scale(0.97); }
+  .zoom-big:active { background: var(--color-accent-soft); transform: scale(0.97); }
   .zoom-cap { text-align: center; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-copy-muted); }
 
   .ctl-sec { display: flex; flex-direction: column; gap: 6px; }
   .toggle-row {
     display: flex; align-items: center; justify-content: space-between;
     min-height: 48px; padding: 0 14px; font-weight: 700; font-size: 14px;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+    color: var(--color-copy-soft);
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease;
   }
+  .toggle-row:active { transform: scale(0.97); transition-duration: 90ms; }
   .toggle-row.on { background: rgba(34, 197, 94, 0.14); border-color: rgba(34, 197, 94, 0.5); color: #86efac; }
   .toggle-row .tg-state { font-size: 11px; font-weight: 800; }
 
-  .seg { display: flex; border: 0.5px solid var(--color-border); border-radius: var(--radius-button); overflow: hidden; }
+  .seg { display: flex; border: 0.5px solid var(--color-border); border-radius: 10px; overflow: hidden; }
   .seg-btn {
-    flex: 1; padding: 11px 4px; border: none; border-right: 0.5px solid var(--color-border);
+    flex: 1; min-height: 44px; padding: 11px 4px; border: none; border-right: 0.5px solid var(--color-border);
     background: rgba(30, 41, 59, 0.5); color: var(--color-copy-soft); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: background-color 160ms ease, color 160ms ease;
   }
   .seg-btn:last-child { border-right: none; }
-  .seg-btn.active { background: rgba(56, 189, 248, 0.16); color: var(--color-accent); }
+  .seg-btn:active { background: rgba(51, 65, 85, 0.85); }
+  .seg-btn.active { background: var(--color-accent-soft); color: var(--color-accent); }
 
   .cam-side-hint { margin: 6px 0 0; font-size: 9px; color: var(--color-copy-muted); line-height: 1.4; }
   .camera-select-btn.live { border-color: rgba(52, 211, 153, 0.55); box-shadow: inset 3px 0 0 #34d399; }
@@ -678,11 +797,35 @@
 
   .bottom-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; min-height: 0; }
   .bottom-row .presets-row { margin: 0; }
-  .shot-btn { min-height: 0; font-size: 13px; font-weight: 700; }
+  .shot-btn {
+    font-size: 13px; font-weight: 700;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+    color: var(--color-copy-soft);
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease;
+  }
+  .shot-btn:hover { background: rgba(51, 65, 85, 0.7); }
+  .shot-btn:active { background: rgba(51, 65, 85, 0.85); transform: scale(0.97); }
   .i20-row { display: flex; gap: 18px; padding: 14px 18px; align-items: center; }
   .i20-block { flex: 1; display: flex; flex-direction: column; gap: 8px; }
   .i20-tag { font-size: 8px; color: #f7b7c8; font-weight: 800; letter-spacing: 0.1em; margin-left: 4px; }
   .radio { display: flex; gap: 6px; }
-  .radio-btn { flex: 1; min-height: 42px; font-size: 15px; font-weight: 800; }
-  .radio-btn.active { background: rgba(56, 189, 248, 0.16); border-color: var(--color-accent); color: var(--color-accent); }
+  .radio-btn {
+    flex: 1; min-height: 44px; font-size: 15px; font-weight: 800;
+    border-radius: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+    color: var(--color-copy-soft);
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+  .radio-btn:active { background: rgba(51, 65, 85, 0.85); transform: scale(0.97); }
+  .radio-btn.active { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .back-btn, .camera-select-btn, .toggle-row, .seg-btn,
+    .vtc-btn, .shot-btn, .radio-btn, .zoom-big { transition: none; }
+  }
 </style>
