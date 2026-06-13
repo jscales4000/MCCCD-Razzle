@@ -2,6 +2,90 @@
 
 ---
 
+## v0.6.0 — UI Polish Pass + Full GitHub Backup (2026-06-13)
+**Agent:** Claude Code (claude-opus-4-8, 1M)
+**Session type:** UI polish / Crestron CH5 Svelte + repo backup
+**Branch:** `main` (pushed to `origin/main`)
+**FRED project:** MCCCD-AA140 Touchpanel (`c1937681-e57d-4354-aa58-a5b0f6e9ca23`)
+
+> **Log gap note:** This log was last updated at v0.5.0 (2026-05-01). The
+> intervening month of work — name-based contract fix, device-integration
+> (USB-SW-400 host switch, D5 signage, debug ping), cameras v2 (multicam
+> switch, framing/tracking, live VISCA coords, zones/profiles), projector
+> screen relay, User/Technician PIN view modes, the Home display-select strip
+> + Control-Source flag + realistic room map, and the IP address plan — landed
+> in git history and FRED tasks but was never logged here. This entry resumes
+> the log at the current HEAD and does not attempt to restate that history;
+> see `git log` and FRED for the detail.
+
+### Summary
+Acted on a five-item UI punch list, created a reusable room-map skill + FRED
+persona, synced FRED task state, then backed the entire repository up to GitHub
+so it can be picked up cleanly on another machine.
+
+### UI changes (commit `9d25813`)
+- **Home — routing clears the grouping.** `routeSourceToTargets()` now calls
+  `resetTargetDisplays()` after publishing, so the flow loops: pick display
+  chips → tap a source → it routes → grouping resets to All → pick again. The
+  10s quiet-period timer is kept only for sets picked but never routed. (Per
+  explicit user direction — overrides the earlier timer-keep design.)
+- **Volume popup centered.** `VolumePopup.svelte` moved from bottom-right to
+  horizontally centered above the footer (`left:50%` + `translateX(-50%)`,
+  rise keyframe updated to keep the centering transform).
+- **Room map rework** (`RoomPlan.svelte`): conference table + chairs removed,
+  replaced by 3 rows of front-facing classroom seats in left/right banks with a
+  center aisle; Cam1 moved fully inside the front wall; both cameras redrawn as
+  aimed PTZ units (body + lens stub on the aim side + translucent FOV wedge —
+  Cam1 looks back over the seats, Cam2 toward the podium); mic live-state now
+  lights the mic's own edge (green border + glow) instead of an external dot +
+  dashed halo; mics centered over the seating banks.
+- **Cameras page resync** (`Cameras.svelte`, `PresetButton.svelte`): retired the
+  legacy slate `.glass-card` + hardcoded-blue look. Now matches the app theme —
+  routing-style compact header (back button / room / eyebrow / online pill),
+  navy `.cam-card` surfaces, and flat amber-token buttons across camera select,
+  framing toggles, segment switch, zone/profile radios, zoom, presets, and Send
+  to VTC. Also fixed the long-standing `leaveCameras('settings')` type error
+  (signature is now parameterless); `svelte-check` is down to the single known
+  pre-existing `MicVolumeModal.svelte:64` error.
+
+### Skill + persona (commits `9d25813`, `f01e1f0`)
+- New project skill `.claude/skills/gui-room-map/SKILL.md` — two-layer
+  touch/scene architecture, % geometry + collision checklist, architectural
+  idioms (aimed PTZ cams, classroom seating, edge-lit mics), feedback-only state.
+- New FRED library persona **"GUI Room-Map / RCP Builder"**
+  (`86ddf28e-1020-4104-bd83-91fdd052b635`, division `crestron`), assigned to the
+  project at priority 8. Offline reference copy at
+  `MCCCD-AA140/docs/personas/2026-06-11-gui-room-map-persona-mod.md`.
+
+### FRED task sync
+- `c6d01695` (Cameras `'settings'` type error) → **review** (fixed this session).
+- New review task `b4dbc7c0` covering this session's batch for on-glass verify.
+
+### Deploy state
+- **TS-1070 (.80):** deployed (`546 KB` .ch5z, PROJECTLOAD OK, UI restarted).
+- **TSW-1070 (.78):** OFFLINE — run `npm run deploy:wall` when it returns.
+- Processor contract unchanged (panel-only session).
+
+### Backup / GitHub
+- `main` pushed to `origin/main` (upstream set); `origin/main` was ~70 commits
+  behind and is now current at `f01e1f0`.
+- Feature branches pushed for complete backup: `feat/device-integration-usb-signage`,
+  `feat/screen-relay-and-view-modes`, `fix/name-based-contract`, and
+  `feat/drag-drop-router-mockup` (was ahead 8).
+- Untracked Excel crash-recovery artifact `MCCCD_AA140_Equipment_List(AutoRecovered).xlsx`
+  left out of the repo intentionally (not project source; the canonical
+  equipment-list xlsx is already tracked).
+
+### Pick-up notes for another machine
+1. `git clone https://github.com/jscales4000/MCCCD-Razzle.git` → `git checkout main`.
+2. FRED project ID lives in `./CLAUDE.md` and `.fred.json`; load tasks + personas
+   at session start.
+3. Panel build: `cd MCCCD-AA140 && npm install && node build.mjs` (never
+   `vite build` directly — `#` in the path breaks Rollup). Deploy with
+   `npm run deploy:both`.
+
+---
+
 ## v0.5.0 — CH5 Page-Type Mockup Sprint (2026-05-01)
 **Agent:** Windsurf Cascade
 **Session type:** Design / CH5 UX Exploration
