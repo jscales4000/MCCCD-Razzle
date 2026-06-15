@@ -31,6 +31,7 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initAudioMixerStateSignals, teardownAudioMixerStateSignals,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
@@ -39,6 +40,8 @@
   // they don't fire a callback storm when this page isn't mounted. Per-audit H4.
   onMount(initMicLevelSubscriptions);
   onDestroy(teardownMicLevelSubscriptions);
+  onMount(initAudioMixerStateSignals);
+  onDestroy(teardownAudioMixerStateSignals);
 
   // ── Header actions ─────────────────────────────────────────────────
   function volDown() { pulseDigital(SIGNALS.volumeDown); }
