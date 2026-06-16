@@ -137,7 +137,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | pending iter-9 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
 | 2026-05-04 | Loop final summary (this iter) | pending iter-9 | All HIGH addressed, stop conditions met |
-| 2026-06-16 | H4-followup routing signal gate (scoped) | pending iter-10 | index-*.js −664 B (76,557 B); `routingModeFb` + `autoRouteEnableFb` now gated to DisplayRouting onMount/onDestroy |
+| 2026-06-16 | H4-followup routing signal gate (scoped) | 77f3134 | index-*.js −664 B (76,557 B); `routingModeFb` + `autoRouteEnableFb` now gated to DisplayRouting onMount/onDestroy |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
