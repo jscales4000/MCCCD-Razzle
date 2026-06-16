@@ -10,7 +10,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -31,6 +31,8 @@
     display3SourceFb,
     display4SourceFb,
     routingModeFb,
+    initRoutingSignals,
+    teardownRoutingSignals,
   } from '../lib/stores/signals';
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
@@ -150,6 +152,11 @@
     if (target.closest('.popover') || target.closest('.marker') || target.closest('.sd-row')) return;
     closePopover();
   }
+
+  // Gate routing signals per-page (audit H4-followup). Subscribe on mount,
+  // release on destroy so the crcomlib registry is clean when Home is active.
+  onMount(initRoutingSignals);
+  onDestroy(teardownRoutingSignals);
 
   onMount(() => {
     document.addEventListener('pointerdown', onDocPointerDown);

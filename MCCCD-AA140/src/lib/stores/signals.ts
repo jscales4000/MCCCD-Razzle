@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { SIGNALS } from '../contract';
-import { subscribeAnalog, subscribeDigital, unsubscribeAnalog } from '../CrComLib';
+import { subscribeAnalog, subscribeDigital, unsubscribeAnalog, unsubscribeDigital } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor. Components publish commands via the typed CrComLib helpers
@@ -125,8 +125,8 @@ export function initSignals(): void {
 
   subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
 
-  subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
-  subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
+  // routingModeFb / autoRouteEnableFb subscribed lazily — see initRoutingSignals()
+  // below. Only DisplayRouting reads them; gated per-page (audit H4-followup).
 
   subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
   subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
@@ -164,4 +164,25 @@ export function teardownMicLevelSubscriptions(): void {
   micCeiling1Level.set(0);
   micCeiling2Level.set(0);
   micCeiling3Level.set(0);
+}
+
+// ── DisplayRouting lazy subscriptions ────────────────────────────────────
+// Audit H4-followup: routingModeFb (analog) and autoRouteEnableFb (digital)
+// are only consumed by DisplayRouting. Keep them out of the always-on set so
+// the crcomlib registry doesn't hold dead callbacks at idle on Home.
+
+let routingAnalogSubId  = '';
+let routingDigitalSubId = '';
+
+export function initRoutingSignals(): void {
+  if (routingAnalogSubId) return; // idempotent
+  routingAnalogSubId  = subscribeAnalog(SIGNALS.routingModeFb,      (v) => routingModeFb.set(v));
+  routingDigitalSubId = subscribeDigital(SIGNALS.autoRouteEnableFb, (v) => autoRouteEnableFb.set(v));
+}
+
+export function teardownRoutingSignals(): void {
+  if (routingAnalogSubId)  { unsubscribeAnalog(routingAnalogSubId);   routingAnalogSubId  = ''; }
+  if (routingDigitalSubId) { unsubscribeDigital(routingDigitalSubId); routingDigitalSubId = ''; }
+  routingModeFb.set(0);
+  autoRouteEnableFb.set(false);
 }
