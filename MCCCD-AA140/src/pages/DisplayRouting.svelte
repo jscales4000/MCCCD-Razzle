@@ -10,7 +10,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -31,7 +31,13 @@
     display3SourceFb,
     display4SourceFb,
     routingModeFb,
+    initRoutingSignals,
+    teardownRoutingSignals,
   } from '../lib/stores/signals';
+
+  // Gate routing-mode signals per H4-followup: only live while this page is mounted.
+  onMount(initRoutingSignals);
+  onDestroy(teardownRoutingSignals);
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
   import DisplayStatusCard from '../components/routing/DisplayStatusCard.svelte';
