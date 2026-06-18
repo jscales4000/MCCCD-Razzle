@@ -31,14 +31,16 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initMixerStateSubscriptions, teardownMixerStateSubscriptions,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
-  // Mic level meters (10 Hz from Shure P300 SAMPLE_IN) are subscribed lazily so
-  // they don't fire a callback storm when this page isn't mounted. Per-audit H4.
-  onMount(initMicLevelSubscriptions);
-  onDestroy(teardownMicLevelSubscriptions);
+  // Mic level meters (10 Hz from Shure P300 SAMPLE_IN) and mixer state signals
+  // (trim/lineOut/connected/scene/link) are subscribed lazily — only while this
+  // page is mounted. Per-audit H4 (levels) and H4-followup (mixer state).
+  onMount(() => { initMicLevelSubscriptions(); initMixerStateSubscriptions(); });
+  onDestroy(() => { teardownMicLevelSubscriptions(); teardownMixerStateSubscriptions(); });
 
   // ── Header actions ─────────────────────────────────────────────────
   function volDown() { pulseDigital(SIGNALS.volumeDown); }
