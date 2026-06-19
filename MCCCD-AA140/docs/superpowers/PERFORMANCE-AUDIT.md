@@ -137,7 +137,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
 | 2026-05-04 | Loop final summary | f5201e1 | All HIGH addressed, stop conditions met (original loop end) |
-| 2026-06-19 | H4-followup per-page signal gating | pending iter-10 | 21 subscriptions removed from always-on; JS -503 B net (mixed with 3-week feature delta); camTrackingModeFb left always-on (Cameras.svelte protected) |
+| 2026-06-19 | H4-followup per-page signal gating | 6546f46 | 21 subscriptions removed from always-on; JS -503 B net (mixed with 3-week feature delta); camTrackingModeFb left always-on (Cameras.svelte protected) |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
