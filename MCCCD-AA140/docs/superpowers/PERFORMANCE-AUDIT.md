@@ -137,7 +137,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | pending iter-9 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
 | 2026-05-04 | Loop final summary (this iter) | pending iter-9 | All HIGH addressed, stop conditions met |
-| 2026-06-20 | H4-followup routing+mixer state gating | pending iter-10 | index JS +343 B (function overhead); runtime: 4 fewer idle crcomlib subscriptions (routingModeFb, autoRouteEnableFb, sceneRecallFb, audioLinkCeilings12Fb) |
+| 2026-06-20 | H4-followup routing+mixer state gating | 6076a9d | index JS +343 B (function overhead); runtime: 4 fewer idle crcomlib subscriptions (routingModeFb, autoRouteEnableFb, sceneRecallFb, audioLinkCeilings12Fb) |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
