@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { SIGNALS } from '../contract';
-import { subscribeAnalog, subscribeDigital, unsubscribeAnalog } from '../CrComLib';
+import { subscribeAnalog, subscribeDigital, unsubscribeAnalog, unsubscribeDigital } from '../CrComLib';
 
 // One Svelte store per piece of UI state. Each store mirrors a feedback signal
 // from the processor. Components publish commands via the typed CrComLib helpers
@@ -125,12 +125,9 @@ export function initSignals(): void {
 
   subscribeAnalog(SIGNALS.camTrackingModeFb,   (v) => camTrackingModeFb.set(v === 2 ? 2 : v === 3 ? 3 : 1));
 
-  subscribeAnalog(SIGNALS.routingModeFb,       (v) => routingModeFb.set(v));
-  subscribeDigital(SIGNALS.autoRouteEnableFb,  (v) => autoRouteEnableFb.set(v));
-
+  // routingModeFb / autoRouteEnableFb: DisplayRouting-only — see initRoutingSubscriptions()
+  // sceneRecallFb / audioLinkCeilings12Fb: AudioMixer-only — see initAudioMixerStateSubscriptions()
   subscribeAnalog(SIGNALS.progAudioLevelFb,      (v) => progAudioLevelFb.set(v));
-  subscribeAnalog(SIGNALS.sceneRecallFb,         (v) => sceneRecallFb.set(v));
-  subscribeDigital(SIGNALS.audioLinkCeilings12Fb,(v) => audioLinkCeilings12Fb.set(v));
 }
 
 // ── Per-page lazy subscriptions ──────────────────────────────────────
@@ -164,4 +161,43 @@ export function teardownMicLevelSubscriptions(): void {
   micCeiling1Level.set(0);
   micCeiling2Level.set(0);
   micCeiling3Level.set(0);
+}
+
+// ── Per-page lazy subscriptions: routing mode (DisplayRouting-only) ──────────
+// routingModeFb and autoRouteEnableFb are consumed exclusively by DisplayRouting.
+// Gate them so they're only live while DisplayRouting is mounted, reducing the
+// crcomlib subscription registry by 2 entries on all other pages.
+let routingAnalogIds: string[] = [];
+let routingDigitalIds: string[] = [];
+
+export function initRoutingSubscriptions(): void {
+  if (routingAnalogIds.length > 0) return; // idempotent
+  routingAnalogIds  = [subscribeAnalog(SIGNALS.routingModeFb,      (v) => routingModeFb.set(v))];
+  routingDigitalIds = [subscribeDigital(SIGNALS.autoRouteEnableFb, (v) => autoRouteEnableFb.set(v))];
+}
+
+export function teardownRoutingSubscriptions(): void {
+  routingAnalogIds.forEach(id => { if (id) unsubscribeAnalog(id); });
+  routingDigitalIds.forEach(id => { if (id) unsubscribeDigital(id); });
+  routingAnalogIds  = [];
+  routingDigitalIds = [];
+}
+
+// ── Per-page lazy subscriptions: audio mixer state (AudioMixer-only) ─────────
+// sceneRecallFb and audioLinkCeilings12Fb are consumed exclusively by AudioMixer.
+// Gate them so they're only live while AudioMixer is mounted.
+let mixerStateAnalogIds: string[] = [];
+let mixerStateDigitalIds: string[] = [];
+
+export function initAudioMixerStateSubscriptions(): void {
+  if (mixerStateAnalogIds.length > 0) return; // idempotent
+  mixerStateAnalogIds  = [subscribeAnalog(SIGNALS.sceneRecallFb,          (v) => sceneRecallFb.set(v))];
+  mixerStateDigitalIds = [subscribeDigital(SIGNALS.audioLinkCeilings12Fb, (v) => audioLinkCeilings12Fb.set(v))];
+}
+
+export function teardownAudioMixerStateSubscriptions(): void {
+  mixerStateAnalogIds.forEach(id => { if (id) unsubscribeAnalog(id); });
+  mixerStateDigitalIds.forEach(id => { if (id) unsubscribeDigital(id); });
+  mixerStateAnalogIds  = [];
+  mixerStateDigitalIds = [];
 }

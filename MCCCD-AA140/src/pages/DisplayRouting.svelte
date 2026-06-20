@@ -31,6 +31,8 @@
     display3SourceFb,
     display4SourceFb,
     routingModeFb,
+    initRoutingSubscriptions,
+    teardownRoutingSubscriptions,
   } from '../lib/stores/signals';
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
@@ -152,8 +154,12 @@
   }
 
   onMount(() => {
+    initRoutingSubscriptions();
     document.addEventListener('pointerdown', onDocPointerDown);
-    return () => document.removeEventListener('pointerdown', onDocPointerDown);
+    return () => {
+      document.removeEventListener('pointerdown', onDocPointerDown);
+      teardownRoutingSubscriptions();
+    };
   });
 
   // ── Audio-follows hint (read-only, sidebar) ─────────────────────────────
