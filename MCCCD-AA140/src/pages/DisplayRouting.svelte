@@ -10,7 +10,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -31,6 +31,8 @@
     display3SourceFb,
     display4SourceFb,
     routingModeFb,
+    initRoutingSignals,
+    teardownRoutingSignals,
   } from '../lib/stores/signals';
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
@@ -74,6 +76,10 @@
   let openDisplay = $state<DisplayId | null>(null);
   let anchor = $state<{ top: number; left: number; width: number; height: number; containerHeight: number; containerWidth: number } | null>(null);
   let planCellEl: HTMLDivElement | undefined = $state();
+
+  // Gate routing signals to this page (audit H4-followup).
+  onMount(initRoutingSignals);
+  onDestroy(teardownRoutingSignals);
 
   // ── Header: mode + auto-route ──────────────────────────────────────────
   const MODES: Array<{ value: 1 | 2 | 3; label: string }> = [
