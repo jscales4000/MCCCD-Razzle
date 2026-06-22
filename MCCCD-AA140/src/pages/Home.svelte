@@ -327,6 +327,20 @@
           Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
         </div>
       {/if}
+      {#if $homeRouteMode === 'source' && $armedSource}
+        <button
+          class="send-all"
+          onclick={() => { routeArmedToAll(); if (armedValue) flashCard(armedValue); }}
+          type="button"
+          aria-label={`Send ${armedLabel} to all four displays`}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+          Send to All
+        </button>
+      {/if}
       <div class="disp-strip" role="group" aria-label="Choose which displays receive the source">
         {#each DISPLAYS as d}
           {@const ds = displayStates[d.id]}
@@ -877,6 +891,33 @@
       0 0 0 1px rgba(245, 166, 35, 0.15);
   }
   .adv-float:active { transform: translateY(0); }
+
+  /* Send to All — source-mode minimal-touch shortcut; only rendered while a
+     source is armed. Prominent amber, mirrors .adv-float, ≥52px. */
+  .send-all {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 11px;
+    background-color: #f5a623;
+    background-image: linear-gradient(180deg, #f9b94a, #ec9415);
+    border: 1px solid rgba(245, 166, 35, 0.6);
+    color: #1a1208;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(245, 166, 35, 0.32), 0 0 0 1px rgba(245, 166, 35, 0.1);
+    transition: filter 110ms ease, transform 110ms ease;
+  }
+  .send-all:hover { filter: brightness(1.06); }
+  .send-all:active { transform: scale(0.97); transition-duration: 90ms; }
 
   /* Footer styles live in AppFooter.svelte. */
 
