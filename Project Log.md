@@ -2,6 +2,79 @@
 
 ---
 
+## v0.7.0 — Home Source-Select Workflow Toggle + Backup (2026-06-22)
+**Agent:** Claude Code (claude-opus-4-8, 1M)
+**Session type:** Feature (Svelte panel) — brainstorm → spec → plan → subagent-driven build → debug
+**Branch:** `feat/home-source-select-toggle` (pushed to `origin`)
+**FRED project:** MCCCD-AA140 Touchpanel (`c1937681-e57d-4354-aa58-a5b0f6e9ca23`)
+
+> **FRED status:** FRED was intermittently **unreachable/degraded** this session
+> (`api_service: false`; Tailscale/Mac-Boogie services down). Live FRED catch-up
+> + handoff were done from the repo's offline copies. A FRED handoff doc is
+> **deferred** until FRED is back online.
+
+### Summary
+Built a live A/B toggle on the Home page to evaluate two source-selection
+workflows on glass, then deployed both halves of the system and backed
+everything up with explicit, named, revertable restore points.
+
+### Feature — source-select workflow toggle (commits `549fc32`..`91a8bed`)
+A toggle above the source row flips Home between two workflows:
+- **A — Destination-first (unchanged):** narrow display chips → tap a source →
+  routes to the targeted set → grouping resets. The original "multi-select"
+  behavior, byte-for-byte.
+- **B — Source-first "paint" (new):** tap a source to **arm** it (persistent) →
+  tap display chips to route the armed source **immediately** (live feedback per
+  tap) → **Send to All** shortcut → persists until a different source is armed.
+
+Pure panel-side — rides existing `Display{N}Source` set + `Display{N}SourceFb`
+feedback; no contract/processor change. Built with brainstorming → writing-plans
+→ subagent-driven-development (7 tasks, per-task spec+quality review, opus
+whole-branch review, one fix wave). State in `lib/stores/session.ts`
+(`homeRouteMode`) + `lib/stores/router.ts` (`armForPaint`, `routeArmedToAll`,
+reuses `armedSource`/`routeSource`); UI + animations in `pages/Home.svelte`.
+`svelte-check` clean except the known pre-existing `MicVolumeModal.svelte:64`.
+
+### On-glass bug fixed (commit `91a8bed`)
+Source-first arm self-destructed: the module-level click-outside-disarm listener
+in `router.ts` (an Advanced-Routing affordance keyed to `.chip`/`.tile`)
+disarmed `armedSource` on the very tap that armed it (Home uses `.hero-card`/
+`.disp-chip`) — "Send to All flashed then vanished," and chip painting dropped
+the arm after one tap. Root-caused via static event-flow trace; fixed by guarding
+the listener to no-op while `homeRouteMode === 'source'`. Advanced Routing
+(default destination mode) unaffected.
+
+### Deploy state
+- Earlier this session: **processor `.cpz` rebuilt + redeployed** to RMC4 `.198`
+  (slot 01, `PROGLOAD` OK; CWS debug live) and **panel redeployed** to TS-1070
+  `.80`. The toggle feature is deployed to `.80` (`PROJECTLOAD` OK).
+- **TSW-1070 wall `.78`: OFFLINE** all session — run `npm run deploy:wall` when
+  it returns.
+
+### Backup & revert (this entry's purpose)
+Two annotated restore-point tags, both pushed to `origin`:
+- **`pre-source-select-toggle-baseline` → `1879f0b`** — the **pre-toggle**
+  (original multi-select / destination-first-only) state, = v0.6.0. Also the tip
+  of `origin/main`.
+- **`v-2026-06-22-source-select-toggle` → `91a8bed`** — the **current** state
+  (toggle feature + bug fix), tip of `feat/home-source-select-toggle`.
+
+**To revert the panel to pre-toggle behavior:**
+`git checkout pre-source-select-toggle-baseline` (or `1879f0b`) →
+`cd MCCCD-AA140 && npm run build && npm run deploy:both`. `main` is unchanged, so
+the baseline is always reachable. The feature is isolated on its branch and not
+merged to `main`.
+
+### Open / next
+- Decide finish path for the branch (merge / PR / keep) — was mid-decision.
+- Tap-highlight ("transparent blue overlay on press"): the new controls
+  (`.mode-seg`, `.send-all`, `.hero-card`, `.disp-chip`) don't inherit the
+  `-webkit-tap-highlight-color: transparent` base rule used in `global.css`;
+  documented follow-up to add it.
+- Write the FRED handoff once FRED is reachable.
+
+---
+
 ## v0.6.0 — UI Polish Pass + Full GitHub Backup (2026-06-13)
 **Agent:** Claude Code (claude-opus-4-8, 1M)
 **Session type:** UI polish / Crestron CH5 Svelte + repo backup
