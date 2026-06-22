@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
   import { pulseDigital } from '../lib/CrComLib';
   import { SIGNALS, ROOM_NAME } from '../lib/contract';
   import {
@@ -315,7 +316,7 @@
            pick-displays → tap-source loop; a quiet-period timer covers
            picked-but-never-routed sets. -->
       {#if $homeRouteMode === 'source'}
-        <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite">
+        <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite" transition:fade={{ duration: 200 }}>
           {#if armedLabel}
             Sending <strong>{armedLabel}</strong><span class="tc-hint"> · tap displays, or Send to All</span>
           {:else}
@@ -333,6 +334,7 @@
           onclick={() => { routeArmedToAll(); if (armedValue) flashCard(armedValue); }}
           type="button"
           aria-label={`Send ${armedLabel} to all four displays`}
+          transition:fade={{ duration: 200 }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -771,6 +773,22 @@
       box-shadow: 0 0 0 0 rgba(245, 166, 35, 0), 0 0 0 rgba(245, 166, 35, 0);
     }
   }
+  /* Source-mode paint accent: a quick edge pulse on a chip when it receives the
+     armed source. Reuses the chip's own border so the accent is on the element
+     itself (no detached halo). Applied via .has-armed appearing. */
+  .disp-chip.has-armed {
+    animation: chip-paint 280ms ease-out;
+  }
+  @keyframes chip-paint {
+    0%   { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.55), 0 0 22px rgba(34, 197, 94, 0.3); }
+    100% { box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35), 0 0 14px rgba(34, 197, 94, 0.1); }
+  }
+  /* Armed card breathing stripe — subtle, ≤300ms loop disabled; one-shot lift. */
+  .hero-card.armed { animation: card-arm 220ms ease-out; }
+  @keyframes card-arm {
+    0%   { transform: translateY(0) scale(0.99); }
+    100% { transform: translateY(-2px) scale(1); }
+  }
   .hc-ico {
     color: var(--color-copy-soft, #94a3b8);
     transition: color 220ms ease;
@@ -979,5 +997,9 @@
     .sync-dot.live { animation: none; }
     .hc-sub-token { transition: none; }
     .disp-chip, .target-caption, .dc-pwr { transition: none; }
+    .mode-seg { transition: none; }
+    .disp-chip.has-armed { animation: none; }
+    .hero-card.armed { animation: none; }
+    .send-all { transition: none; }
   }
 </style>
