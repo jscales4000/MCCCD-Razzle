@@ -1,6 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { publishAnalog } from '../CrComLib';
 import { SIGNALS } from '../contract';
+import { homeRouteMode } from './session';
 import {
   display1SourceFb,
   display2SourceFb,
@@ -475,6 +476,13 @@ export function onPointerCancel(_e: PointerEvent): void {
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (e) => {
     if (!get(armedSource)) return;
+    // Home's source-first "paint" mode owns its armed source — it persists
+    // until a different source is tapped and is cleared on Home mount. The
+    // click-outside disarm below is an Advanced-Routing affordance keyed to
+    // .chip/.tile; Home's controls are .hero-card/.disp-chip, so without this
+    // guard the very tap that arms a source on Home immediately disarms it
+    // (the "Send to All button flashes then vanishes" bug).
+    if (get(homeRouteMode) === 'source') return;
     const target = e.target as Element | null;
     const onChip = target?.closest('.chip');
     const onTile = target?.closest('.tile');
