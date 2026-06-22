@@ -101,6 +101,10 @@
       : DISPLAYS.filter(d => $targetDisplays.has(d.id)).map(d => d.num).join(' + ')
   );
 
+  // Source-mode helpers: the armed source's analog value + display label.
+  let armedValue = $derived($armedSource ? ROUTER_SOURCES[$armedSource].value : null);
+  let armedLabel = $derived($armedSource ? ROUTER_SOURCES[$armedSource].label : null);
+
   // AirMedia rolls 4 signals (sync + 3 sharing methods) into the tri-state model.
   // Sharing-method priority on simultaneous fire: TX3 > AirPlay > Miracast.
   function airMediaState(sync: boolean, miracast: boolean, airplay: boolean, tx3: boolean) {
@@ -310,16 +314,28 @@
            grouping back to All (router.ts), so each route starts a fresh
            pick-displays → tap-source loop; a quiet-period timer covers
            picked-but-never-routed sets. -->
-      <div class="target-caption" class:narrowed={!targetsAreAll} aria-live="polite">
-        Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
-      </div>
+      {#if $homeRouteMode === 'source'}
+        <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite">
+          {#if armedLabel}
+            Sending <strong>{armedLabel}</strong><span class="tc-hint"> · tap displays, or Send to All</span>
+          {:else}
+            <strong>Pick a source</strong><span class="tc-hint"> · then tap displays to send</span>
+          {/if}
+        </div>
+      {:else}
+        <div class="target-caption" class:narrowed={!targetsAreAll} aria-live="polite">
+          Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
+        </div>
+      {/if}
       <div class="disp-strip" role="group" aria-label="Choose which displays receive the source">
         {#each DISPLAYS as d}
           {@const ds = displayStates[d.id]}
           {@const targeted = $targetDisplays.has(d.id) && !targetsAreAll}
+          {@const hasArmed = $homeRouteMode === 'source' && armedValue != null && ds.sourceFb === armedValue}
           <button
             class="disp-chip"
-            class:targeted
+            class:targeted={targeted && $homeRouteMode !== 'source'}
+            class:has-armed={hasArmed}
             class:powered={ds.powerOn}
             onclick={() => onChipTap(d)}
             aria-pressed={targeted}
@@ -331,8 +347,8 @@
               <span class="dc-label">{d.label}</span>
               <span class="dc-src" class:none={!sourceFromValue(ds.sourceFb)}>{fbLabel(ds.sourceFb)}</span>
             </span>
-            {#if targeted}
-              <svg class="dc-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            {#if (targeted && $homeRouteMode !== 'source') || hasArmed}
+              <svg class="dc-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class:check-green={hasArmed}>
                 <path d="M4 12.5l5.5 5.5L20 6.5"/>
               </svg>
             {/if}
@@ -619,6 +635,18 @@
     background-color: rgba(245, 166, 35, 0.08);
     box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.35), 0 0 16px rgba(245, 166, 35, 0.12);
   }
+  /* Source-mode "this display already shows the armed source" — feedback-driven
+     (from Display{N}SourceFb), edge-lit like .targeted but paired with the check
+     glyph below so state never rides on color alone. */
+  .disp-chip.has-armed {
+    border-color: rgba(34, 197, 94, 0.5);
+    background-color: rgba(34, 197, 94, 0.08);
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35), 0 0 14px rgba(34, 197, 94, 0.1);
+  }
+  .disp-chip.has-armed .dc-id {
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.4);
+  }
   .dc-id {
     flex-shrink: 0;
     font-size: 13px;
@@ -668,6 +696,7 @@
     flex-shrink: 0;
     color: #f5a623;
   }
+  .dc-check.check-green { color: #86efac; }
   .dc-pwr {
     flex-shrink: 0;
     width: 8px;
