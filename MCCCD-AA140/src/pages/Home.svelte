@@ -26,6 +26,8 @@
   import HomeSplash from '../components/HomeSplash.svelte';
   import VolIcon from '../lib/ui/VolIcon.svelte';
 
+  const prefersReducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // ── Source buttons (Mockup 22 — Centered Hero) ──
   // Tapping a source routes it to the current display target set (the strip
   // below the hero row). Default-meeting assumption: all four displays
@@ -254,7 +256,7 @@
           class="mode-seg"
           class:on={$homeRouteMode === 'destination'}
           aria-pressed={$homeRouteMode === 'destination'}
-          onclick={() => homeRouteMode.set('destination')}
+          onclick={() => { homeRouteMode.set('destination'); resetTargetDisplays(); }}
           type="button"
         >Display <span class="seg-arrow" aria-hidden="true">→</span> Source</button>
         <button
@@ -316,7 +318,7 @@
            pick-displays → tap-source loop; a quiet-period timer covers
            picked-but-never-routed sets. -->
       {#if $homeRouteMode === 'source'}
-        <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite" transition:fade={{ duration: 200 }}>
+        <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite" transition:fade={{ duration: prefersReducedMotion ? 0 : 200 }}>
           {#if armedLabel}
             Sending <strong>{armedLabel}</strong><span class="tc-hint"> · tap displays, or Send to All</span>
           {:else}
@@ -334,7 +336,7 @@
           onclick={() => { routeArmedToAll(); if (armedValue) flashCard(armedValue); }}
           type="button"
           aria-label={`Send ${armedLabel} to all four displays`}
-          transition:fade={{ duration: 200 }}
+          transition:fade={{ duration: prefersReducedMotion ? 0 : 200 }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -354,8 +356,8 @@
             class:has-armed={hasArmed}
             class:powered={ds.powerOn}
             onclick={() => onChipTap(d)}
-            aria-pressed={targeted}
-            aria-label={`${d.num} ${d.label} — showing ${fbLabel(ds.sourceFb)}, power ${ds.powerOn ? 'on' : 'off'}${targeted ? ', targeted' : ''}`}
+            aria-pressed={(targeted && $homeRouteMode !== 'source') || hasArmed}
+            aria-label={`${d.num} ${d.label} — showing ${fbLabel(ds.sourceFb)}, power ${ds.powerOn ? 'on' : 'off'}${(targeted && $homeRouteMode !== 'source') ? ', targeted' : ''}${hasArmed ? ', showing armed source' : ''}`}
             type="button"
           >
             <span class="dc-id">{d.num}</span>
@@ -528,18 +530,6 @@
     position: relative;
     min-height: 0;
     gap: 24px;
-  }
-  .eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
-    color: var(--color-copy-soft, #94a3b8);
-    background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.4), transparent);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-align: center;
   }
   /* ── Mode toggle — Workflow A/B switch above the source row ── */
   .mode-toggle {
