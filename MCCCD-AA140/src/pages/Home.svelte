@@ -16,7 +16,8 @@
     SOURCES as ROUTER_SOURCES,
     routeSourceToTargets, sourceFromValue,
     targetDisplays, toggleTargetDisplay, allTargeted, resetTargetDisplays,
-    type DisplayId,
+    armedSource, armForPaint, routeArmedToAll, routeSource, disarm,
+    type DisplayId, type SourceId,
   } from '../lib/stores/router';
   import { goToPage } from '../lib/stores/page';
   import { userPoweredOn, homeRouteMode } from '../lib/stores/session';
@@ -45,12 +46,32 @@
   // target set (the persistent active/Control treatment tracks D1 only).
   let flashedSource = $state<number | null>(null);
   let flashTimerId: ReturnType<typeof setTimeout> | null = null;
-  function selectSourceForTargets(value: 1 | 2 | 3 | 4) {
-    routeSourceToTargets(value);
+  function flashCard(value: number) {
     flashedSource = null;
     if (flashTimerId) clearTimeout(flashTimerId);
     requestAnimationFrame(() => { flashedSource = value; });
     flashTimerId = setTimeout(() => { flashedSource = null; }, 300);
+  }
+
+  // Source-card tap. Destination mode: route to the current target set + reset
+  // (Workflow A, unchanged). Source mode: arm the source for painting (no route).
+  function onSourceTap(src: { value: 1 | 2 | 3 | 4; key: SourceId }) {
+    if ($homeRouteMode === 'source') {
+      armForPaint(src.key);
+    } else {
+      routeSourceToTargets(src.value);
+    }
+    flashCard(src.value);
+  }
+
+  // Display-chip tap. Destination mode: toggle target membership (Workflow A).
+  // Source mode: immediately route the armed source to this display (paint).
+  function onChipTap(d: { id: DisplayId }) {
+    if ($homeRouteMode === 'source') {
+      if ($armedSource) routeSource($armedSource, d.id);
+    } else {
+      toggleTargetDisplay(d.id);
+    }
   }
 
   // ── Display strip (route targets + live per-display feedback) ──
@@ -149,6 +170,10 @@
     // Every arrival at Home starts from the route-everywhere default — a
     // narrowed target set left by a previous visit must not survive nav.
     resetTargetDisplays();
+    // Likewise, never inherit a source armed on another page (or a prior Home
+    // visit). Mode flips within a single visit keep the armed source; leaving
+    // and returning starts clean.
+    disarm();
 
     // Preview Dock is dev-only — never runs on the panel itself. Wrapping
     // in import.meta.env.DEV lets Vite tree-shake the entire branch
@@ -241,8 +266,9 @@
           <button
             class="hero-card"
             class:active={$display1SourceFb === src.value}
+            class:armed={$homeRouteMode === 'source' && $armedSource === src.key}
             class:route-flash={flashedSource === src.value}
-            onclick={() => selectSourceForTargets(src.value)}
+            onclick={() => onSourceTap(src)}
             aria-label={`Send ${src.name} to ${targetCaption} — sync ${s.state}`}
           >
             <span class="sync-dot {s.state}" aria-hidden="true"></span>
@@ -295,7 +321,7 @@
             class="disp-chip"
             class:targeted
             class:powered={ds.powerOn}
-            onclick={() => toggleTargetDisplay(d.id)}
+            onclick={() => onChipTap(d)}
             aria-pressed={targeted}
             aria-label={`${d.num} ${d.label} — showing ${fbLabel(ds.sourceFb)}, power ${ds.powerOn ? 'on' : 'off'}${targeted ? ', targeted' : ''}`}
             type="button"
@@ -738,6 +764,29 @@
   }
   .hero-card.active .hc-ico,
   .hero-card.active .hc-name { color: #f5a623; }
+
+  /* Armed state (source-first mode): persistent amber treatment driven by
+     armedSource, mirroring .active but independent of D1 feedback. */
+  .hero-card.armed {
+    border-color: rgba(245, 166, 35, 0.55);
+    box-shadow:
+      0 0 0 1px rgba(245, 166, 35, 0.4),
+      0 0 28px rgba(245, 166, 35, 0.2);
+  }
+  .hero-card.armed::after {
+    content: 'ARMED';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #f5a623;
+    pointer-events: none;
+  }
+  .hero-card.armed .hc-ico,
+  .hero-card.armed .hc-name { color: #f5a623; }
 
   /* Control Source flag — labeled badge on the card whose source D1 is showing.
      D1's route is the room authority (program audio follows it; BYOD USB follows
