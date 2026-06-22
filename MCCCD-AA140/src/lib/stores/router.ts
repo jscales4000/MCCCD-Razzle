@@ -183,6 +183,28 @@ export function routeSourceToTargets(value: 1 | 2 | 3 | 4): void {
   resetTargetDisplays();
 }
 
+/** Arm a source for source-first "paint" mode (Home). Unlike armChip(), there
+ *  is NO 4s auto-disarm — the armed source persists until a different source is
+ *  armed, so Home's source mode keeps page state between actions. Does NOT set
+ *  the body 'any-armed' class (that drives Advanced-Routing tile dimming, which
+ *  Home has no use for). */
+export function armForPaint(sourceId: SourceId): void {
+  if (armedTimeoutId) {
+    clearTimeout(armedTimeoutId);
+    armedTimeoutId = null;
+  }
+  armedSource.set(sourceId);
+}
+
+/** Route the currently-armed source to all four displays at once. No-op when
+ *  nothing is armed. Backs Home source-mode "Send to All". routeSource() already
+ *  no-ops a display that shows the source, so this is safe to spam. */
+export function routeArmedToAll(): void {
+  const armed = get(armedSource);
+  if (!armed) return;
+  ALL_DISPLAYS.forEach((d) => routeSource(armed, d));
+}
+
 // ── Outside signage (D5) ───────────────────────────────────────────────
 // Routed independently and kept OFF the in-room map (the display is outside
 // the conference space). Publishes Display5Source; marker/state come from
