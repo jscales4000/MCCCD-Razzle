@@ -19,7 +19,7 @@
     type DisplayId,
   } from '../lib/stores/router';
   import { goToPage } from '../lib/stores/page';
-  import { userPoweredOn } from '../lib/stores/session';
+  import { userPoweredOn, homeRouteMode } from '../lib/stores/session';
   import Aa140Footer from '../components/Aa140Footer.svelte';
   import HomeSplash from '../components/HomeSplash.svelte';
   import VolIcon from '../lib/ui/VolIcon.svelte';
@@ -219,7 +219,22 @@
         </svg>
         Advanced Routing →
       </button>
-      <div class="eyebrow">— Choose your source —</div>
+      <div class="mode-toggle" role="group" aria-label="Source selection workflow">
+        <button
+          class="mode-seg"
+          class:on={$homeRouteMode === 'destination'}
+          aria-pressed={$homeRouteMode === 'destination'}
+          onclick={() => homeRouteMode.set('destination')}
+          type="button"
+        >Display <span class="seg-arrow" aria-hidden="true">→</span> Source</button>
+        <button
+          class="mode-seg"
+          class:on={$homeRouteMode === 'source'}
+          aria-pressed={$homeRouteMode === 'source'}
+          onclick={() => homeRouteMode.set('source')}
+          type="button"
+        >Source <span class="seg-arrow" aria-hidden="true">→</span> Display</button>
+      </div>
       <div class="src-row">
         {#each SOURCES as src}
           {@const s = sourceStates[src.key]}
@@ -468,6 +483,42 @@
     color: transparent;
     text-align: center;
   }
+  /* ── Mode toggle — Workflow A/B switch above the source row ── */
+  .mode-toggle {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background-color: rgba(8, 16, 30, 0.6);
+    border: 0.5px solid rgba(148, 163, 184, 0.18);
+  }
+  .mode-seg {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 44px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--color-copy-soft, #94a3b8);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+  .mode-seg .seg-arrow { opacity: 0.6; padding: 0 2px; }
+  .mode-seg:active { transform: scale(0.97); transition-duration: 90ms; }
+  .mode-seg.on {
+    color: #1a1208;
+    font-weight: 800;
+    background-color: #f5a623;
+    background-image: linear-gradient(180deg, #f9b94a, #ec9415);
+    box-shadow: 0 2px 10px rgba(245, 166, 35, 0.3);
+  }
+  .mode-seg.on .seg-arrow { opacity: 0.85; }
   .src-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
