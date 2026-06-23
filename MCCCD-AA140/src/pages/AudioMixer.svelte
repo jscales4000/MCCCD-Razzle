@@ -31,12 +31,15 @@
     micLavMuteFb, micHandheldMuteFb,
     micCeiling1MuteFb, micCeiling2MuteFb,
     initMicLevelSubscriptions, teardownMicLevelSubscriptions,
+    initAudioMixerSubscriptions, teardownAudioMixerSubscriptions,
   } from '../lib/stores/signals';
   import MixerChannel from '../components/mixer/MixerChannel.svelte';
   import MasterStrip from '../components/mixer/MasterStrip.svelte';
 
-  // Mic level meters (10 Hz from Shure P300 SAMPLE_IN) are subscribed lazily so
-  // they don't fire a callback storm when this page isn't mounted. Per-audit H4.
+  // Gate all AudioMixer-specific signals to this page's lifecycle (audit H4-followup).
+  onMount(initAudioMixerSubscriptions);
+  onDestroy(teardownAudioMixerSubscriptions);
+  // Mic level meters are gated separately (H4 original) — they fire 10-30 Hz.
   onMount(initMicLevelSubscriptions);
   onDestroy(teardownMicLevelSubscriptions);
 
