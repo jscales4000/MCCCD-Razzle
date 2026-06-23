@@ -136,7 +136,7 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H7 SVG sprite | DEFERRED | After H5 only 5 inline SVGs left in Home, all distinct single-instance; sprite consolidation no longer cost-effective |
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
 | 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
-| 2026-06-23 | H4-followup per-page signal gating | pending iter-10 | initSignals 39→9 subs at boot; +9 gated to DisplayRouting, +18 to AudioMixer; 5 dead ceiling3 subs removed; bundle +238 B |
+| 2026-06-23 | H4-followup per-page signal gating | be816fc | initSignals 39→9 subs at boot; +9 gated to DisplayRouting, +18 to AudioMixer; 5 dead ceiling3 subs removed; bundle +238 B |
 
 ## Iter-10 addendum (2026-06-23) — H4-followup completed
 
