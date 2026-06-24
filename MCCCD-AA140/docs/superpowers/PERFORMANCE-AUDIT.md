@@ -59,7 +59,7 @@
 
 ## MEDIUM priority
 
-- [ ] **M1. Move `unsubscribeSerial` / `publishSerial` exports out of `CrComLib.ts` (or annotate `/* @__PURE__ */`)** — *files: `src/lib/CrComLib.ts`* — *risk: low* — *expected: ~150 B JS (esbuild already tree-shakes, but verify)*
+- [x] **M1. Move `unsubscribeSerial` / `publishSerial` exports out of `CrComLib.ts` (or annotate `/* @__PURE__ */`)** — *files: `src/lib/CrComLib.ts`* — *risk: low* — *expected: ~150 B JS (esbuild already tree-shakes, but verify)* — **DONE iter-10** — *actual: 0 B delta — esbuild was already tree-shaking all four unused exports (`publishSerial`, `subscribeSerial`, `unsubscribeSerial`, `unsubscribeDigital`). Bundle hashes unchanged before/after. Deleted from source for correctness; `unsubscribeAnalog` kept (used by `signals.ts` mic-level teardown).*
   > `publishSerial`, `subscribeSerial`, `unsubscribeSerial`, `unsubscribeAnalog`, `unsubscribeDigital` are exported but verified unused project-wide via grep. Vite/Rollup's tree-shaker should eliminate them already, but the wrappers reference `window.CrComLib?.publishEvent` which is not pure-marked, so the optimizer may keep them. Either delete the unused exports (keep them in a separate `CrComLib.unused.ts` reference file if they're documentation), or annotate the file with `/* @__NO_SIDE_EFFECTS__ */` on each function so esbuild can drop dead branches. After change, run `npm run build` and confirm `index-*.js` shrunk; if not, the optimizer was already handling it and this item is a no-op — mark done with note.
 
 - [ ] **M2. Use `transform: scale()` (not `box-shadow` size) for the `.btn:active` press feedback** — *files: `src/global.css` (`.btn:active`, `.btn::before`, `.icon-btn:active`)* — *risk: low* — *expected: avoids paint+layout per press; cleaner 60 fps press animations on TS-1070*
@@ -135,8 +135,9 @@ The loop **must halt** when any of the following holds:
 | 2026-05-04 | H6 dev-only Preview Dock guard | a91152c | JS -1,700 B (-2.2%), beat prediction 2x; resize listener gone in prod |
 | 2026-05-04 | H7 SVG sprite | DEFERRED | After H5 only 5 inline SVGs left in Home, all distinct single-instance; sprite consolidation no longer cost-effective |
 | 2026-05-04 | H8 drop dev-debug overlay from prod HTML | e5db80e | dist/index.html -436 B; opt-in via BUILD_DEBUG_OVERLAY=1 |
-| 2026-05-04 | M7 passive document click | pending iter-9 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
-| 2026-05-04 | Loop final summary (this iter) | pending iter-9 | All HIGH addressed, stop conditions met |
+| 2026-05-04 | M7 passive document click | f5201e1 | JS +11 B for `{ passive: true }`; touch-dispatch hygiene |
+| 2026-05-04 | Loop final summary (this iter) | f5201e1 | All HIGH addressed, stop conditions met |
+| 2026-06-09 | M1 drop unused CrComLib exports | bc7f1f7 | 0 B delta (esbuild already tree-shook them); source cleanup only |
 
 ## Final summary (loop ended 2026-05-04 ~02:33 PT, 9 iterations)
 
