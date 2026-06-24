@@ -1,11 +1,10 @@
 # Handoff — MCCCD-AA140 Touchpanel — 2026-06-24 (Boogie / LB)
 
-> **FRED status: DOWN this session.** FRED's API was degraded the whole session
-> (`health_check` → `api_service: false`; `find_tasks` → `read_timeout`). All
-> FRED reads used the repo's offline copies; **all FRED writes (task sync,
-> handoff doc, activity log) are DEFERRED** — the exact operations are staged in
-> §8 below to apply in one pass when FRED returns. This file + `Project Log.md`
-> are the durable record meanwhile.
+> **FRED status: was DOWN, now SYNCED.** FRED's API was degraded for most of the
+> session (`api_service: false` / `read_timeout`), so the handoff was written to
+> the repo first. FRED recovered later on 2026-06-24 and the sync was applied —
+> see §8 for the created task/doc/activity IDs. This file + `Project Log.md`
+> remain the durable mirror.
 
 ## 1. Header
 - **Date:** 2026-06-24 (work spanned 2026-06-21 → 06-24)
@@ -78,15 +77,10 @@
   - **CWS debug:** `https://192.168.2.198/cws/aa140/debug/` (live; `/devices` shows cam-1/cam-2/airmedia enabled, P300/MXA/Sony/Newline off-net)
 - **Panels:** TS-1070 tabletop `.80` (deployed, current) · TSW-1070 wall `.78` (OFFLINE all session)
 
-## 8. FRED sync — PENDING (apply when FRED API is back)
-The source-select toggle is **not yet tracked in FRED** (no task existed; this session's work was user-initiated). Apply in one pass:
-
-1. **Create + set to review** (the implemented feature, awaiting Jordan's glass test):
-   `manage_task(action="create", project_id="c1937681-e57d-4354-aa58-a5b0f6e9ca23", title="Home source-select workflow toggle (destination-first ⇄ source-first paint)", description="Toggle above source row; source-first arm/paint + Send-to-All; click-outside-disarm fix. Branch feat/home-source-select-toggle @ df0d5c5, deployed to .80. Spec/plan in docs/superpowers. Awaiting on-glass A/B + branch-finish decision.", status="review", assignee="User", feature="home", task_order=96)`
-2. **Create todo** (tap-highlight follow-up):
-   `manage_task(action="create", project_id="…", title="Add -webkit-tap-highlight-color:transparent to new Home controls (.mode-seg/.send-all/.hero-card/.disp-chip)", description="New controls don't inherit .btn/.icon-btn base rule; blue tap overlay shows on press. Add the rule (+ user-select:none) as one shared selector.", status="todo", assignee="AI IDE Agent", feature="home", task_order=70)`
-3. **Create the handoff doc in FRED** from this file's content:
-   `manage_document(action="create", project_id="…", document_type="handoff", title="Handoff — MCCCD-AA140 — 2026-06-24 (LB)", content=<this file>)`
-4. **Log activity:**
-   `log_agent_activity("Claude Code (claude-opus-4-8 [1m])", "session", "Shipped Home source-select workflow toggle (destination-first ⇄ source-first paint) + fixed click-outside-disarm on-glass bug; deployed to TS-1070 .80; backed up branch + restore tags. RMC4 serial/MAC retrieved. Next: Jordan A/B on glass + branch-finish decision; apply tap-highlight fix.", machine_name="Boogie (LB)")`
-5. **Stale review items to confirm/close** (flagged in catch-up; Jordan decides): `7ba44fad` (device-integration merge — already in `main`), `c6d01695` (Cameras `:66` type error — already fixed). Leave for Jordan per handoff convention.
+## 8. FRED sync — APPLIED 2026-06-24
+FRED's API recovered later on 2026-06-24 and the staged sync was applied in one pass:
+1. **Feature task `d084d25c`** created → **review** (assignee `User`, feature `home`, order 97) — the implemented toggle, awaiting Jordan's on-glass A/B.
+2. **Tap-highlight task `66d80765`** created → **todo** (assignee `AI IDE Agent`, feature `home`, order 70).
+3. **Handoff doc `3183899f`** created in FRED (`document_type="handoff"`), mirroring this file.
+4. **Activity `f2cd17ae`** logged (session summary).
+5. **Stale review items LEFT for Jordan** (not auto-closed per convention): `7ba44fad` (device-integration merge — already in `main`), `c6d01695` (Cameras `:66` type error — already fixed).
