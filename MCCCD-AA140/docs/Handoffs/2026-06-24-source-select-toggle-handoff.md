@@ -34,7 +34,8 @@
 - **Dev server stopped** (was `bgbh4g1yr`). Restart for in-browser testing: `cd MCCCD-AA140 && npm run dev` (last ran on `http://localhost:5174/`).
 
 ## 4. Awaiting Jordan
-- **On-glass A/B of both workflows** (TS-1070 `.80`, processor live) — confirm the click-outside-disarm fix and decide which workflow wins (or keep the toggle). Specifically: source-first arm persists, Send-to-All stays put, painting keeps the source armed across taps; destination-first unchanged; Advanced Routing still arms/disarms normally.
+- ✅ **DECISION (Jordan, 2026-06-24): keep "Source → Display" (source-first / the second tab).** The disarm fix is acceptable. **Next session picks up here:** decide whether to make source-first the **default** Home workflow and whether to **keep or remove the toggle**, then implement + re-verify on glass + finish the branch.
+- ~~On-glass A/B of both workflows — decide which wins~~ → resolved above (source-first).
 - **Decision: branch finish** — merge / PR / keep.
 - **Decision: tap-highlight** — apply the `-webkit-tap-highlight-color: transparent` fix to the new controls now, or fold into a broader pass (§5/§6).
 - Pre-existing review items still awaiting Jordan (from catch-up): `b4dbc7c0` (on-glass verify of the 2026-06-11 UI batch), `1c950487` (gate Cameras Home/Tracking-Shot — confirmed still unfixed), wall `.78` deploy when it returns.
