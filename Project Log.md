@@ -2,6 +2,56 @@
 
 ---
 
+## v0.8.0 — Source-First Consolidation + Merge to main (2026-06-24)
+**Agent:** Claude Code (claude-opus-4-8, 1M)
+**Session type:** Feature decision + consolidation + tap-highlight fix + merge
+**Branch:** `feat/home-source-select-toggle` @ `287ac31` → **merged to `main`**
+**FRED project:** MCCCD-AA140 Touchpanel (`c1937681-e57d-4354-aa58-a5b0f6e9ca23`)
+**FRED status:** healthy.
+
+### Summary
+Jordan picked **Workflow B (source-first "paint")** after the on-glass A/B. Made
+source-first the **sole** Home workflow, commented out the destination-first
+(Workflow A) code for now (production deletes it), removed the A/B toggle, fixed
+the CH5 tap-highlight on the new controls, deployed to `.80`, and merged the
+branch to `main`.
+
+### Done
+- **Source-first is now the only workflow.** Removed the toggle from `Home.svelte`;
+  pinned `homeRouteMode` to `'source'` in `session.ts`. All Workflow-A paths
+  commented + tagged `RETIRED; delete in production` (handlers, deriveds, onMount
+  reset, toggle markup + CSS, A caption, `targeted`-chip logic, reduced-motion
+  rule). Source-tap now *arms*; aria-label updated.
+  - `homeRouteMode` deliberately **kept as a store** (not deleted): `router.ts`'s
+    module-level click-outside-disarm guard reads `$homeRouteMode === 'source'`
+    to no-op on Home. Production cleanup drops the store **and** that guard check
+    together.
+- **Tap-highlight "blue overlay on press" fixed** (FRED `66d80765`): shared rule
+  in `src/global.css` gives `.hero-card`/`.disp-chip`/`.send-all`
+  `-webkit-tap-highlight-color: transparent` + `user-select:none`. `.mode-seg`
+  excluded (toggle removed).
+- **Verify:** `svelte-check` clean except the 2 known pre-existing problems
+  (`MicVolumeModal:64`, `ConfirmShutdownModal:29`). Built + **deployed to
+  tabletop `.80`** (PROJECTLOAD OK).
+- **Merged** `feat/home-source-select-toggle` → `main`.
+
+### Commit
+- `287ac31` feat(home): make source-first the sole workflow; comment out destination-first.
+
+### FRED
+- Handoff doc `2a9138d2` created.
+- Tasks: `66d80765` todo → **review** (tap-highlight); `d084d25c` review, updated
+  with the source-first decision; `391d7a70` **created** (button-press latency —
+  next work).
+
+### Next
+- **Button-press latency** (`391d7a70`): branch `perf/button-press-latency` off
+  `main`, adversarial-dev a fix for the on-glass tap lag.
+- Jordan: on-glass confirm source-first-only build + tap-highlight gone on `.80`.
+- Wall `.78` deploy when it returns.
+
+---
+
 ## v0.7.0 — Home Source-Select Workflow Toggle + Backup (2026-06-22)
 **Agent:** Claude Code (claude-opus-4-8, 1M)
 **Session type:** Feature (Svelte panel) — brainstorm → spec → plan → subagent-driven build → debug
