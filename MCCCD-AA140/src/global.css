@@ -164,6 +164,16 @@ button {
   transition: background 140ms ease, transform 80ms ease, border-color 140ms ease;
 }
 
+/* Bespoke Home controls don't use the shared .btn/.icon-btn base, so they need
+   the CH5 capacitive-panel tap-highlight suppression applied explicitly. */
+.hero-card,
+.disp-chip,
+.send-all {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .btn::before {
   content: "";
   position: absolute;

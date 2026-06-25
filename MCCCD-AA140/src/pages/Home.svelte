@@ -15,13 +15,18 @@
   } from '../lib/stores/signals';
   import {
     SOURCES as ROUTER_SOURCES,
-    routeSourceToTargets, sourceFromValue,
-    targetDisplays, toggleTargetDisplay, allTargeted, resetTargetDisplays,
+    sourceFromValue,
+    // Workflow A (destination-first) — RETIRED 2026-06-24; commented for
+    // reference, delete in production:
+    //   routeSourceToTargets, targetDisplays, toggleTargetDisplay,
+    //   allTargeted, resetTargetDisplays,
     armedSource, armForPaint, routeArmedToAll, routeSource, disarm,
     type DisplayId, type SourceId,
   } from '../lib/stores/router';
   import { goToPage } from '../lib/stores/page';
-  import { userPoweredOn, homeRouteMode } from '../lib/stores/session';
+  import { userPoweredOn } from '../lib/stores/session';
+  // homeRouteMode is now pinned to 'source' (session.ts); the A/B toggle is
+  // removed, so Home no longer reads it. Production: drop the store entirely.
   import Aa140Footer from '../components/Aa140Footer.svelte';
   import HomeSplash from '../components/HomeSplash.svelte';
   import VolIcon from '../lib/ui/VolIcon.svelte';
@@ -56,25 +61,23 @@
     flashTimerId = setTimeout(() => { flashedSource = null; }, 300);
   }
 
-  // Source-card tap. Destination mode: route to the current target set + reset
-  // (Workflow A, unchanged). Source mode: arm the source for painting (no route).
+  // Source-card tap (Workflow B — source-first): arm the source for painting.
+  // Each subsequent display-chip tap routes the armed source live. The tapped
+  // card flashes for immediate feedback.
   function onSourceTap(src: { value: 1 | 2 | 3 | 4; key: SourceId }) {
-    if ($homeRouteMode === 'source') {
-      armForPaint(src.key);
-    } else {
-      routeSourceToTargets(src.value);
-    }
+    armForPaint(src.key);
     flashCard(src.value);
+    // --- Workflow A (destination-first) — RETIRED; delete in production ---
+    // if ($homeRouteMode === 'source') { armForPaint(src.key); }
+    // else { routeSourceToTargets(src.value); }
   }
 
-  // Display-chip tap. Destination mode: toggle target membership (Workflow A).
-  // Source mode: immediately route the armed source to this display (paint).
+  // Display-chip tap (Workflow B — source-first): immediately route the armed
+  // source to this display (paint). No-op until a source is armed.
   function onChipTap(d: { id: DisplayId }) {
-    if ($homeRouteMode === 'source') {
-      if ($armedSource) routeSource($armedSource, d.id);
-    } else {
-      toggleTargetDisplay(d.id);
-    }
+    if ($armedSource) routeSource($armedSource, d.id);
+    // --- Workflow A (destination-first) — RETIRED; delete in production ---
+    // else { toggleTargetDisplay(d.id); }
   }
 
   // ── Display strip (route targets + live per-display feedback) ──
@@ -97,12 +100,13 @@
     d4: { sourceFb: $display4SourceFb, powerOn: $display4PowerFb },
   });
 
-  let targetsAreAll = $derived(allTargeted($targetDisplays));
-  let targetCaption = $derived(
-    targetsAreAll
-      ? 'All Displays'
-      : DISPLAYS.filter(d => $targetDisplays.has(d.id)).map(d => d.num).join(' + ')
-  );
+  // Workflow A (destination-first) — RETIRED; delete in production:
+  // let targetsAreAll = $derived(allTargeted($targetDisplays));
+  // let targetCaption = $derived(
+  //   targetsAreAll
+  //     ? 'All Displays'
+  //     : DISPLAYS.filter(d => $targetDisplays.has(d.id)).map(d => d.num).join(' + ')
+  // );
 
   // Source-mode helpers: the armed source's analog value + display label.
   let armedValue = $derived($armedSource ? ROUTER_SOURCES[$armedSource].value : null);
@@ -174,12 +178,10 @@
   }
 
   onMount(() => {
-    // Every arrival at Home starts from the route-everywhere default — a
-    // narrowed target set left by a previous visit must not survive nav.
-    resetTargetDisplays();
-    // Likewise, never inherit a source armed on another page (or a prior Home
-    // visit). Mode flips within a single visit keep the armed source; leaving
-    // and returning starts clean.
+    // Workflow A (destination-first) — RETIRED; delete in production:
+    //   resetTargetDisplays();  // reset the display target set on each arrival
+    // Never inherit a source armed on another page (or a prior Home visit) —
+    // leaving and returning starts clean.
     disarm();
 
     // Preview Dock is dev-only — never runs on the panel itself. Wrapping
@@ -251,6 +253,8 @@
         </svg>
         Advanced Routing →
       </button>
+      <!-- Workflow A/B toggle — REMOVED 2026-06-24 (Jordan chose source-first).
+           Kept here commented for reference; delete in production.
       <div class="mode-toggle" role="group" aria-label="Source selection workflow">
         <button
           class="mode-seg"
@@ -267,16 +271,17 @@
           type="button"
         >Source <span class="seg-arrow" aria-hidden="true">→</span> Display</button>
       </div>
+      -->
       <div class="src-row">
         {#each SOURCES as src}
           {@const s = sourceStates[src.key]}
           <button
             class="hero-card"
             class:active={$display1SourceFb === src.value}
-            class:armed={$homeRouteMode === 'source' && $armedSource === src.key}
+            class:armed={$armedSource === src.key}
             class:route-flash={flashedSource === src.value}
             onclick={() => onSourceTap(src)}
-            aria-label={`Send ${src.name} to ${targetCaption} — sync ${s.state}`}
+            aria-label={`Arm ${src.name} for routing — sync ${s.state}`}
           >
             <span class="sync-dot {s.state}" aria-hidden="true"></span>
             {#if $display1SourceFb === src.value}
@@ -317,20 +322,20 @@
            grouping back to All (router.ts), so each route starts a fresh
            pick-displays → tap-source loop; a quiet-period timer covers
            picked-but-never-routed sets. -->
-      {#if $homeRouteMode === 'source'}
-        <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite" transition:fade={{ duration: prefersReducedMotion ? 0 : 200 }}>
-          {#if armedLabel}
-            Sending <strong>{armedLabel}</strong><span class="tc-hint"> · tap displays, or Send to All</span>
-          {:else}
-            <strong>Pick a source</strong><span class="tc-hint"> · then tap displays to send</span>
-          {/if}
-        </div>
-      {:else}
-        <div class="target-caption" class:narrowed={!targetsAreAll} aria-live="polite">
-          Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
-        </div>
-      {/if}
-      {#if $homeRouteMode === 'source' && $armedSource}
+      <!-- Workflow B (source-first) caption -->
+      <div class="target-caption" class:narrowed={$armedSource != null} aria-live="polite" transition:fade={{ duration: prefersReducedMotion ? 0 : 200 }}>
+        {#if armedLabel}
+          Sending <strong>{armedLabel}</strong><span class="tc-hint"> · tap displays, or Send to All</span>
+        {:else}
+          <strong>Pick a source</strong><span class="tc-hint"> · then tap displays to send</span>
+        {/if}
+      </div>
+      <!-- Workflow A (destination-first) caption — RETIRED; delete in production:
+      <div class="target-caption" class:narrowed={!targetsAreAll} aria-live="polite">
+        Source goes to: <strong>{targetCaption}</strong>{#if targetsAreAll}<span class="tc-hint"> · tap a display to limit</span>{/if}
+      </div>
+      -->
+      {#if $armedSource}
         <button
           class="send-all"
           onclick={() => { routeArmedToAll(); if (armedValue) flashCard(armedValue); }}
@@ -348,16 +353,14 @@
       <div class="disp-strip" role="group" aria-label="Choose which displays receive the source">
         {#each DISPLAYS as d}
           {@const ds = displayStates[d.id]}
-          {@const targeted = $targetDisplays.has(d.id) && !targetsAreAll}
-          {@const hasArmed = $homeRouteMode === 'source' && armedValue != null && ds.sourceFb === armedValue}
+          {@const hasArmed = armedValue != null && ds.sourceFb === armedValue}
           <button
             class="disp-chip"
-            class:targeted={targeted && $homeRouteMode !== 'source'}
             class:has-armed={hasArmed}
             class:powered={ds.powerOn}
             onclick={() => onChipTap(d)}
-            aria-pressed={(targeted && $homeRouteMode !== 'source') || hasArmed}
-            aria-label={`${d.num} ${d.label} — showing ${fbLabel(ds.sourceFb)}, power ${ds.powerOn ? 'on' : 'off'}${(targeted && $homeRouteMode !== 'source') ? ', targeted' : ''}${hasArmed ? ', showing armed source' : ''}`}
+            aria-pressed={hasArmed}
+            aria-label={`${d.num} ${d.label} — showing ${fbLabel(ds.sourceFb)}, power ${ds.powerOn ? 'on' : 'off'}${hasArmed ? ', showing armed source' : ''}`}
             type="button"
           >
             <span class="dc-id">{d.num}</span>
@@ -365,7 +368,7 @@
               <span class="dc-label">{d.label}</span>
               <span class="dc-src" class:none={!sourceFromValue(ds.sourceFb)}>{fbLabel(ds.sourceFb)}</span>
             </span>
-            {#if (targeted && $homeRouteMode !== 'source') || hasArmed}
+            {#if hasArmed}
               <svg class="dc-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class:check-green={hasArmed}>
                 <path d="M4 12.5l5.5 5.5L20 6.5"/>
               </svg>
@@ -531,7 +534,9 @@
     min-height: 0;
     gap: 24px;
   }
-  /* ── Mode toggle — Workflow A/B switch above the source row ── */
+  /* ── Mode toggle — Workflow A/B switch — REMOVED 2026-06-24; delete in
+        production. Commented to avoid unused-selector warnings now the toggle
+        markup is gone.
   .mode-toggle {
     display: inline-flex;
     gap: 4px;
@@ -567,6 +572,7 @@
     box-shadow: 0 2px 10px rgba(245, 166, 35, 0.3);
   }
   .mode-seg.on .seg-arrow { opacity: 0.85; }
+  */
   .src-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -636,11 +642,13 @@
     background-color: rgba(51, 65, 85, 0.85);
     transition-duration: 90ms;
   }
+  /* Workflow A (destination-first) targeted chip — RETIRED; delete in production:
   .disp-chip.targeted {
     border-color: rgba(245, 166, 35, 0.55);
     background-color: rgba(245, 166, 35, 0.08);
     box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.35), 0 0 16px rgba(245, 166, 35, 0.12);
   }
+  */
   /* Source-mode "this display already shows the armed source" — feedback-driven
      (from Display{N}SourceFb), edge-lit like .targeted but paired with the check
      glyph below so state never rides on color alone. */
@@ -664,10 +672,12 @@
     border-radius: 6px;
     line-height: 1.1;
   }
+  /* Workflow A targeted chip id — RETIRED; delete in production:
   .disp-chip.targeted .dc-id {
     color: #f5a623;
     border-color: rgba(245, 166, 35, 0.4);
   }
+  */
   .dc-body {
     display: flex;
     flex-direction: column;
@@ -987,7 +997,7 @@
     .sync-dot.live { animation: none; }
     .hc-sub-token { transition: none; }
     .disp-chip, .target-caption, .dc-pwr { transition: none; }
-    .mode-seg { transition: none; }
+    /* .mode-seg { transition: none; }  — Workflow A toggle RETIRED */
     .disp-chip.has-armed { animation: none; }
     .hero-card.armed { animation: none; }
     .send-all { transition: none; }
