@@ -1,6 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { publishAnalog } from '../CrComLib';
 import { SIGNALS } from '../contract';
+import { homeRouteMode } from './session';
 import {
   display1SourceFb,
   display2SourceFb,
@@ -181,6 +182,28 @@ export function routeSourceToTargets(value: 1 | 2 | 3 | 4): void {
   const targets = get(targetDisplays);
   targets.forEach((d) => publishAnalog(SET_SIGNAL_BY_DISPLAY[d], value));
   resetTargetDisplays();
+}
+
+/** Arm a source for source-first "paint" mode (Home). Unlike armChip(), there
+ *  is NO 4s auto-disarm — the armed source persists until a different source is
+ *  armed, so Home's source mode keeps page state between actions. Does NOT set
+ *  the body 'any-armed' class (that drives Advanced-Routing tile dimming, which
+ *  Home has no use for). */
+export function armForPaint(sourceId: SourceId): void {
+  if (armedTimeoutId) {
+    clearTimeout(armedTimeoutId);
+    armedTimeoutId = null;
+  }
+  armedSource.set(sourceId);
+}
+
+/** Route the currently-armed source to all four displays at once. No-op when
+ *  nothing is armed. Backs Home source-mode "Send to All". routeSource() already
+ *  no-ops a display that shows the source, so this is safe to spam. */
+export function routeArmedToAll(): void {
+  const armed = get(armedSource);
+  if (!armed) return;
+  ALL_DISPLAYS.forEach((d) => routeSource(armed, d));
 }
 
 // ── Outside signage (D5) ───────────────────────────────────────────────
@@ -453,6 +476,13 @@ export function onPointerCancel(_e: PointerEvent): void {
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (e) => {
     if (!get(armedSource)) return;
+    // Home's source-first "paint" mode owns its armed source — it persists
+    // until a different source is tapped and is cleared on Home mount. The
+    // click-outside disarm below is an Advanced-Routing affordance keyed to
+    // .chip/.tile; Home's controls are .hero-card/.disp-chip, so without this
+    // guard the very tap that arms a source on Home immediately disarms it
+    // (the "Send to All button flashes then vanishes" bug).
+    if (get(homeRouteMode) === 'source') return;
     const target = e.target as Element | null;
     const onChip = target?.closest('.chip');
     const onTile = target?.closest('.tile');
