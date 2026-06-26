@@ -537,14 +537,38 @@ namespace MCCCD_AA140.Debug
                 case "hdmi2":     if (id == 1) _projectors.SelectHdmi2(1); else _projectors.SelectHdmi2(2); break;
                 case "power-status": _projectors.QueryPowerStatus(id); break;
                 case "baud": {
-                    var rs = args.Context.Request.QueryString != null ? args.Context.Request.QueryString["rate"] : null;
-                    int rate; if (int.TryParse(rs, out rate)) _projectors.SetBaud(id, rate);
+                    var qs2 = args.Context.Request.QueryString;
+                    var rs = qs2 != null ? qs2["rate"] : null;
+                    var ps = qs2 != null ? qs2["parity"] : null;
+                    int rate; if (int.TryParse(rs, out rate)) {
+                        int par = (ps == "even" || ps == "1") ? 1 : (ps == "odd" || ps == "2") ? 2 : 0;
+                        _projectors.SetBaud(id, rate, par);
+                    }
+                    break;
+                }
+                case "raw": {
+                    var hx = args.Context.Request.QueryString != null ? args.Context.Request.QueryString["hex"] : null;
+                    var bytes = HexToBytes(hx);
+                    if (bytes != null && bytes.Length > 0) _projectors.SendRaw(id, bytes);
                     break;
                 }
                 default:          Serve404(args, "sony/" + sub); return;
             }
             DebugTrace.Command("sony-" + id, action);
             ServeOk(args);
+        }
+
+        // Parse a hex string ("A9172E..." or "A9 17 2E" / "0x.."/"$..") to bytes.
+        private static byte[] HexToBytes(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            var clean = s.Replace(" ", "").Replace(",", "").Replace("0x", "").Replace("0X", "").Replace("$", "");
+            if (clean.Length == 0 || clean.Length % 2 != 0) return null;
+            var b = new byte[clean.Length / 2];
+            for (int i = 0; i < b.Length; i++) {
+                if (!byte.TryParse(clean.Substring(i * 2, 2), System.Globalization.NumberStyles.HexNumber, null, out b[i])) return null;
+            }
+            return b;
         }
 
         // ─── /sony/status (GET) — projector serial-path diagnostics ─────

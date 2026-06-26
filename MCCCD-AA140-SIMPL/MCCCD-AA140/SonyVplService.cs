@@ -81,7 +81,8 @@ namespace MCCCD_AA140
         public int    RxBytes1      { get { return _proj1.RxBytes; } }
         public int    RxBytes2      { get { return _proj2.RxBytes; } }
 
-        public void SetBaud(int projector, int baud) { GetProj(projector)?.SetBaud(baud); }
+        public void SetBaud(int projector, int baud, int parity) { GetProj(projector)?.SetBaud(baud, parity); }
+        public void SendRaw(int projector, byte[] data) { GetProj(projector)?.SendRaw(data); }
 
         private Projector GetProj(int n)
         {
@@ -103,6 +104,7 @@ namespace MCCCD_AA140
             private int _rxBytes;
             private readonly StringBuilder _rxBuf = new StringBuilder();
             private CTimer _setupTimer;
+            private CTimer _pollTimer;
             private readonly object _lock = new object();
 
             public Projector(Func<ComPort> portGetter, string name)
@@ -121,23 +123,27 @@ namespace MCCCD_AA140
 
             // Reconfigure the COM baud at runtime (diagnostic baud sweep) and
             // reset the rx counters so a fresh reply is unambiguous.
-            public void SetBaud(int baud)
+            // parity: 0=None, 1=Even, 2=Odd. FHZ90 ADCP serial wants 8-E-1.
+            public void SetBaud(int baud, int parity)
             {
                 if (_port == null) return;
+                var par = parity == 1 ? ComPort.eComParityType.ComspecParityEven
+                        : parity == 2 ? ComPort.eComParityType.ComspecParityOdd
+                        :               ComPort.eComParityType.ComspecParityNone;
                 try {
                     _port.SetComPortSpec(
                         BaudOf(baud),
                         ComPort.eComDataBits.ComspecDataBits8,
-                        ComPort.eComParityType.ComspecParityNone,
+                        par,
                         ComPort.eComStopBits.ComspecStopBits1,
                         ComPort.eComProtocolType.ComspecProtocolRS232,
                         ComPort.eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
                         ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
                         false);
-                    lock (_lock) { _ready = true; _online = false; _lastResponse = ""; _rxBytes = 0; _rxBuf.Length = 0; }
-                    ErrorLog.Notice("Sony {0}: baud -> {1}", _name, baud);
+                    lock (_lock) { _ready = true; _lastResponse = ""; _rxBytes = 0; _rxBuf.Length = 0; }
+                    ErrorLog.Notice("Sony {0}: comspec -> {1} 8-{2}-1", _name, baud, parity == 1 ? "E" : parity == 2 ? "O" : "N");
                 } catch (Exception ex) {
-                    ErrorLog.Error("Sony {0}: SetBaud {1}: {2}", _name, baud, ex.Message);
+                    ErrorLog.Error("Sony {0}: SetBaud {1}/{2}: {3}", _name, baud, parity, ex.Message);
                 }
             }
 
@@ -158,13 +164,32 @@ namespace MCCCD_AA140
             {
                 lock (_lock) { _enabled = true; }
                 SetupPort();
+                // Periodic keepalive/poll: until the projector has answered, re-assert
+                // the 8-E-1 spec (boot-time SetComPortSpec can land before the NVX COM
+                // is online and not take) and poll power_status; once online, keep
+                // polling for live power feedback. Self-heals after a power cycle.
+                _pollTimer?.Dispose();
+                _pollTimer = new CTimer(_ => Poll(), null, 12000, 12000);
             }
 
             public void Stop()
             {
                 lock (_lock) { _enabled = false; _ready = false; _online = false; }
                 try { _setupTimer?.Dispose(); _setupTimer = null; } catch { }
+                try { _pollTimer?.Dispose(); _pollTimer = null; } catch { }
                 try { if (_port != null) _port.SerialDataReceived -= OnSerial; } catch { }
+            }
+
+            private void Poll()
+            {
+                bool en, on; lock (_lock) { en = _enabled; on = _online; }
+                if (!en) return;
+                if (on) { Send("power_status ?"); return; }
+                // Not heard from yet: re-assert 8-E-1, then transmit after a short
+                // settle (the NVX UART needs a moment after SetComPortSpec — the
+                // proven manual sequence had this gap; back-to-back drops the byte).
+                SetBaud(38400, 1);
+                new CTimer(_ => { if (Enabled) Send("power_status ?"); }, 800);
             }
 
             private void ScheduleRetry()
@@ -192,10 +217,12 @@ namespace MCCCD_AA140
                 catch (Exception ex) { ErrorLog.Warn("Sony {0}: COM register threw: {1}", _name, ex.Message); }
 
                 try {
+                    // FHZ90 ADCP serial = 38400, 8 data, EVEN parity, 1 stop, no flow.
+                    // (8-N-1 silently parity-garbles every byte — confirmed on glass.)
                     _port.SetComPortSpec(
                         ComPort.eComBaudRates.ComspecBaudRate38400,
                         ComPort.eComDataBits.ComspecDataBits8,
-                        ComPort.eComParityType.ComspecParityNone,
+                        ComPort.eComParityType.ComspecParityEven,
                         ComPort.eComStopBits.ComspecStopBits1,
                         ComPort.eComProtocolType.ComspecProtocolRS232,
                         ComPort.eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
@@ -204,7 +231,7 @@ namespace MCCCD_AA140
                     _port.SerialDataReceived -= OnSerial;
                     _port.SerialDataReceived += OnSerial;
                     lock (_lock) { _ready = true; }
-                    ErrorLog.Notice("Sony {0}: COM ready @38400-8N1 (port id {1})", _name, _port.ID);
+                    ErrorLog.Notice("Sony {0}: COM ready @38400-8E1 (port id {1})", _name, _port.ID);
                 }
                 catch (Exception ex) {
                     ErrorLog.Error("Sony {0}: SetComPortSpec: {1}", _name, ex.Message);
@@ -225,6 +252,25 @@ namespace MCCCD_AA140
                     ErrorLog.Notice("Sony {0}: -> {1}", _name, command);
                 }
                 catch (Exception ex) { ErrorLog.Error("Sony {0}: send: {1}", _name, ex.Message); }
+            }
+
+            // Send arbitrary bytes (binary Sony protocol test). ComPort.Send(string)
+            // emits each char's low byte, so map bytes -> chars to send raw.
+            public void SendRaw(byte[] data)
+            {
+                bool ok; lock (_lock) { ok = _ready && _enabled; }
+                if (!ok || _port == null || data == null || data.Length == 0) {
+                    ErrorLog.Notice("Sony {0}: raw drop (not ready/empty)", _name); return;
+                }
+                lock (_lock) { _rxBytes = 0; _lastResponse = ""; _rxBuf.Length = 0; }
+                var chars = new char[data.Length];
+                for (int i = 0; i < data.Length; i++) chars[i] = (char)data[i];
+                try {
+                    _port.Send(new string(chars));
+                    var hex = new StringBuilder();
+                    foreach (var b in data) hex.Append(b.ToString("X2")).Append(' ');
+                    ErrorLog.Notice("Sony {0}: raw-> {1}", _name, hex.ToString().Trim());
+                } catch (Exception ex) { ErrorLog.Error("Sony {0}: raw send: {1}", _name, ex.Message); }
             }
 
             private void OnSerial(ComPort port, ComPortSerialDataEventArgs args)
