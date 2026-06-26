@@ -109,7 +109,7 @@ namespace MCCCD_AA140
                 _mxa        = new ShureMxaService(_contract, this);
                 _airmedia   = new AirMediaService(_contract, this);
                 _cameras    = new CameraService(_contract, this);
-                _projectors = new SonyVplService(_contract, this);
+                _projectors = new SonyVplService(_contract, this, _nvx);
                 _newline    = new NewlineService(_contract, this);
                 _usb        = new UsbSwitchService(_contract, this);
                 _screens    = new ScreenRelayService(_contract, this);

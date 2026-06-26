@@ -46,8 +46,8 @@ namespace MCCCD_AA140.Debug
             { "p300",     new Entry { Host = "192.168.2.151", Enabled = true  } },
             { "mxa-a",    new Entry { Host = "192.168.2.181", Enabled = true  } },
             { "mxa-b",    new Entry { Host = "192.168.2.182", Enabled = true  } },
-            { "sony-1",   new Entry { Host = "192.168.2.191", Enabled = false } },
-            { "sony-2",   new Entry { Host = "192.168.2.192", Enabled = false } },
+            { "sony-1",   new Entry { Host = "nvx-d1-com", Enabled = true } },  // RS-232 via D1 NVX-D30 COM
+            { "sony-2",   new Entry { Host = "nvx-d2-com", Enabled = true } },  // RS-232 via D2 NVX-D30 COM
             { "newline",  new Entry { Host = "192.168.2.195", Enabled = false } },
             { "airmedia", new Entry { Host = "192.168.1.177", Enabled = true  } },
             { "cam-1",    new Entry { Host = "192.168.2.174", Enabled = true  } },  // IV-CAM-I20 (VISCA 5500)

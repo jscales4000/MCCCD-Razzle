@@ -534,6 +534,7 @@ namespace MCCCD_AA140.Debug
                 case "power-off": if (id == 1) _projectors.PowerOff(1);    else _projectors.PowerOff(2);    break;
                 case "hdmi1":     if (id == 1) _projectors.SelectHdmi1(1); else _projectors.SelectHdmi1(2); break;
                 case "hdmi2":     if (id == 1) _projectors.SelectHdmi2(1); else _projectors.SelectHdmi2(2); break;
+                case "power-status": _projectors.QueryPowerStatus(id); break;
                 default:          Serve404(args, "sony/" + sub); return;
             }
             DebugTrace.Command("sony-" + id, action);
