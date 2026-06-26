@@ -78,6 +78,10 @@ namespace MCCCD_AA140
         public bool   Ready2        { get { return _proj2.Ready; } }
         public string PortId1       { get { return _proj1.PortId; } }
         public string PortId2       { get { return _proj2.PortId; } }
+        public int    RxBytes1      { get { return _proj1.RxBytes; } }
+        public int    RxBytes2      { get { return _proj2.RxBytes; } }
+
+        public void SetBaud(int projector, int baud) { GetProj(projector)?.SetBaud(baud); }
 
         private Projector GetProj(int n)
         {
@@ -96,6 +100,7 @@ namespace MCCCD_AA140
             private bool _enabled;
             private bool _online;
             private string _lastResponse = "";
+            private int _rxBytes;
             private readonly StringBuilder _rxBuf = new StringBuilder();
             private CTimer _setupTimer;
             private readonly object _lock = new object();
@@ -112,6 +117,40 @@ namespace MCCCD_AA140
             public bool   Ready        { get { lock (_lock) { return _ready; } } }
             public bool   PortResolved { get { return _port != null; } }
             public string PortId       { get { try { return _port != null ? _port.ID.ToString() : "none"; } catch { return "err"; } } }
+            public int    RxBytes      { get { lock (_lock) { return _rxBytes; } } }
+
+            // Reconfigure the COM baud at runtime (diagnostic baud sweep) and
+            // reset the rx counters so a fresh reply is unambiguous.
+            public void SetBaud(int baud)
+            {
+                if (_port == null) return;
+                try {
+                    _port.SetComPortSpec(
+                        BaudOf(baud),
+                        ComPort.eComDataBits.ComspecDataBits8,
+                        ComPort.eComParityType.ComspecParityNone,
+                        ComPort.eComStopBits.ComspecStopBits1,
+                        ComPort.eComProtocolType.ComspecProtocolRS232,
+                        ComPort.eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
+                        ComPort.eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
+                        false);
+                    lock (_lock) { _ready = true; _online = false; _lastResponse = ""; _rxBytes = 0; _rxBuf.Length = 0; }
+                    ErrorLog.Notice("Sony {0}: baud -> {1}", _name, baud);
+                } catch (Exception ex) {
+                    ErrorLog.Error("Sony {0}: SetBaud {1}: {2}", _name, baud, ex.Message);
+                }
+            }
+
+            private static ComPort.eComBaudRates BaudOf(int b)
+            {
+                switch (b) {
+                    case 9600:   return ComPort.eComBaudRates.ComspecBaudRate9600;
+                    case 19200:  return ComPort.eComBaudRates.ComspecBaudRate19200;
+                    case 57600:  return ComPort.eComBaudRates.ComspecBaudRate57600;
+                    case 115200: return ComPort.eComBaudRates.ComspecBaudRate115200;
+                    default:     return ComPort.eComBaudRates.ComspecBaudRate38400;
+                }
+            }
 
             public void SetEnabled(bool value) { if (value) Start(); else Stop(); }
 
@@ -191,6 +230,7 @@ namespace MCCCD_AA140
             private void OnSerial(ComPort port, ComPortSerialDataEventArgs args)
             {
                 if (args == null || string.IsNullOrEmpty(args.SerialData)) return;
+                lock (_lock) { _rxBytes += args.SerialData.Length; }
                 _rxBuf.Append(args.SerialData);
                 ProcessLines();
             }

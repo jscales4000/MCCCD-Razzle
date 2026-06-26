@@ -536,6 +536,11 @@ namespace MCCCD_AA140.Debug
                 case "hdmi1":     if (id == 1) _projectors.SelectHdmi1(1); else _projectors.SelectHdmi1(2); break;
                 case "hdmi2":     if (id == 1) _projectors.SelectHdmi2(1); else _projectors.SelectHdmi2(2); break;
                 case "power-status": _projectors.QueryPowerStatus(id); break;
+                case "baud": {
+                    var rs = args.Context.Request.QueryString != null ? args.Context.Request.QueryString["rate"] : null;
+                    int rate; if (int.TryParse(rs, out rate)) _projectors.SetBaud(id, rate);
+                    break;
+                }
                 default:          Serve404(args, "sony/" + sub); return;
             }
             DebugTrace.Command("sony-" + id, action);
@@ -551,6 +556,7 @@ namespace MCCCD_AA140.Debug
               .Append(",\"portResolved\":").Append(_projectors.PortResolved1 ? "true" : "false")
               .Append(",\"ready\":").Append(_projectors.Ready1 ? "true" : "false")
               .Append(",\"online\":").Append(_projectors.Projector1Online ? "true" : "false")
+              .Append(",\"rx\":").Append(_projectors.RxBytes1)
               .Append(",\"portId\":");
             JsonProtocol.AppendString(sb, _projectors.PortId1);
             sb.Append(",\"last\":");
@@ -559,6 +565,7 @@ namespace MCCCD_AA140.Debug
               .Append(",\"portResolved\":").Append(_projectors.PortResolved2 ? "true" : "false")
               .Append(",\"ready\":").Append(_projectors.Ready2 ? "true" : "false")
               .Append(",\"online\":").Append(_projectors.Projector2Online ? "true" : "false")
+              .Append(",\"rx\":").Append(_projectors.RxBytes2)
               .Append(",\"portId\":");
             JsonProtocol.AppendString(sb, _projectors.PortId2);
             sb.Append(",\"last\":");
