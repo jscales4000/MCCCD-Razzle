@@ -113,6 +113,7 @@ namespace MCCCD_AA140.Debug
                     else if (Eq(sub, "/debug.css"))             ServeResource(args, "debug.css");
                     else if (Eq(sub, "/events"))                HandleEventsPoll(args);
                     else if (Eq(sub, "/devices"))               HandleDevicesGet(args);
+                    else if (Eq(sub, "/sony/status"))           HandleSonyStatusGet(args);
                     else                                         Serve404(args, sub);
                 } else if (method == "POST") {
                     if      (sub.StartsWith("/devices/", StringComparison.OrdinalIgnoreCase)) HandleDevicePost(args, sub.Substring("/devices/".Length));
@@ -539,6 +540,31 @@ namespace MCCCD_AA140.Debug
             }
             DebugTrace.Command("sony-" + id, action);
             ServeOk(args);
+        }
+
+        // ─── /sony/status (GET) — projector serial-path diagnostics ─────
+        private void HandleSonyStatusGet(HttpCwsRequestEventArgs args)
+        {
+            if (_projectors == null) { ServeJson(args, 503, "{\"error\":\"no sony\"}"); return; }
+            var sb = new StringBuilder(256);
+            sb.Append("{\"proj1\":{\"enabled\":").Append(_projectors.Enabled1 ? "true" : "false")
+              .Append(",\"portResolved\":").Append(_projectors.PortResolved1 ? "true" : "false")
+              .Append(",\"ready\":").Append(_projectors.Ready1 ? "true" : "false")
+              .Append(",\"online\":").Append(_projectors.Projector1Online ? "true" : "false")
+              .Append(",\"portId\":");
+            JsonProtocol.AppendString(sb, _projectors.PortId1);
+            sb.Append(",\"last\":");
+            JsonProtocol.AppendString(sb, _projectors.LastStatus1 ?? "");
+            sb.Append("},\"proj2\":{\"enabled\":").Append(_projectors.Enabled2 ? "true" : "false")
+              .Append(",\"portResolved\":").Append(_projectors.PortResolved2 ? "true" : "false")
+              .Append(",\"ready\":").Append(_projectors.Ready2 ? "true" : "false")
+              .Append(",\"online\":").Append(_projectors.Projector2Online ? "true" : "false")
+              .Append(",\"portId\":");
+            JsonProtocol.AppendString(sb, _projectors.PortId2);
+            sb.Append(",\"last\":");
+            JsonProtocol.AppendString(sb, _projectors.LastStatus2 ?? "");
+            sb.Append("}}");
+            ServeJson(args, 200, sb.ToString());
         }
 
         // ─── /newline/<action> ──────────────────────────────────────────

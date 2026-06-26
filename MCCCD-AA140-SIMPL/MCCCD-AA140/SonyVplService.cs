@@ -69,6 +69,16 @@ namespace MCCCD_AA140
         public string LastStatus1      { get { return _proj1.LastResponse; } }
         public string LastStatus2      { get { return _proj2.LastResponse; } }
 
+        // Diagnostics (exposed via /sony/status) — pinpoints where the serial
+        // path breaks: portResolved (NVX ComPorts[1] non-null), ready
+        // (SetComPortSpec ok), online (got a reply), last (the reply text).
+        public bool   PortResolved1 { get { return _proj1.PortResolved; } }
+        public bool   PortResolved2 { get { return _proj2.PortResolved; } }
+        public bool   Ready1        { get { return _proj1.Ready; } }
+        public bool   Ready2        { get { return _proj2.Ready; } }
+        public string PortId1       { get { return _proj1.PortId; } }
+        public string PortId2       { get { return _proj2.PortId; } }
+
         private Projector GetProj(int n)
         {
             switch (n) { case 1: return _proj1; case 2: return _proj2; default: return null; }
@@ -99,6 +109,9 @@ namespace MCCCD_AA140
             public bool   Enabled      { get { lock (_lock) { return _enabled; } } }
             public bool   IsOnline     { get { lock (_lock) { return _online; } } }
             public string LastResponse { get { lock (_lock) { return _lastResponse; } } }
+            public bool   Ready        { get { lock (_lock) { return _ready; } } }
+            public bool   PortResolved { get { return _port != null; } }
+            public string PortId       { get { try { return _port != null ? _port.ID.ToString() : "none"; } catch { return "err"; } } }
 
             public void SetEnabled(bool value) { if (value) Start(); else Stop(); }
 
