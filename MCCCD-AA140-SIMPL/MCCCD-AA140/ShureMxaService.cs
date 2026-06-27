@@ -23,9 +23,11 @@ namespace MCCCD_AA140
     /// </summary>
     public class ShureMxaService
     {
-        // TODO field-config: real IPs from the user once the arrays are on the LAN.
-        private const string MXA_A_HOST = "192.168.2.181";
-        private const string MXA_B_HOST = "192.168.2.182";
+        // Verified live 2026-06-26 (MXA920-S, Shure ASCII on :2202). Operative IPs
+        // at runtime come from DeviceConfigStore -> ApplyConfigA/B(); these constants
+        // are only the ctor seed / display fallback. Keep both in sync.
+        private const string MXA_A_HOST = "10.1.33.132"; // AA140-CM-01
+        private const string MXA_B_HOST = "10.1.33.133"; // AA140-CM-02
         private const int    MXA_PORT   = 2202;
 
         private readonly Contract _c;

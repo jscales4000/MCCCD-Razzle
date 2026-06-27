@@ -46,6 +46,17 @@ namespace MCCCD_AA140
         private DmNvxD30 _decDisp4;
         private DmNvxD30 _decDisp5;
 
+        // RS-232 to the Sony projectors rides the COM port on the D1 / D2
+        // decoders (co-located at those displays). Null until the decoder is
+        // registered + online; SonyVplService resolves these lazily and retries.
+        public ComPort Disp1ComPort { get { return GetCom(_decDisp1); } }
+        public ComPort Disp2ComPort { get { return GetCom(_decDisp2); } }
+        private static ComPort GetCom(DmNvxD30 dec)
+        {
+            try { return (dec != null && dec.ComPorts != null && dec.ComPorts.Contains(1)) ? dec.ComPorts[1] : null; }
+            catch { return null; }
+        }
+
         // Source index 1..4 -> encoder stream URL. Pre-populated from the fixed
         // multicast block at Initialize() so routing doesn't depend on online timing.
         private string[] _sourceStreamUrls = new string[5];

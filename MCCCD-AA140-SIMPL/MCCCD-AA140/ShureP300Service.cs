@@ -20,8 +20,11 @@ namespace MCCCD_AA140
     /// </summary>
     public class ShureP300Service
     {
-        // TODO field-config: replace stub IP with the actual P300-IMX control interface IP
-        private const string P300_HOST = "192.168.2.151";
+        // Verified live 2026-06-26: P300-IMX answers Shure ASCII on 10.1.33.131:2202
+        // (DEVICE_ID AA140-P300-DSP-01, FW 6.9.0.104). NOTE: the operative IP at
+        // runtime comes from DeviceConfigStore -> ApplyConfig(); this constant is
+        // only the ctor seed / display fallback. Keep both in sync.
+        private const string P300_HOST = "10.1.33.131";
         private const int    P300_PORT = 2202;
 
         // TODO field-config: channel numbers come from the Shure Designer file the DSP

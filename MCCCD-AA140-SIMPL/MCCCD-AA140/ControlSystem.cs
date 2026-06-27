@@ -109,11 +109,11 @@ namespace MCCCD_AA140
                 _mxa        = new ShureMxaService(_contract, this);
                 _airmedia   = new AirMediaService(_contract, this);
                 _cameras    = new CameraService(_contract, this);
-                _projectors = new SonyVplService(_contract, this);
+                _projectors = new SonyVplService(_contract, this, _nvx);
                 _newline    = new NewlineService(_contract, this);
                 _usb        = new UsbSwitchService(_contract, this);
                 _screens    = new ScreenRelayService(_contract, this);
-                _power      = new SystemPowerController(_contract, _nvx, _usb, _screens, this);
+                _power      = new SystemPowerController(_contract, _nvx, _usb, _screens, _projectors, this);
 
                 _deviceStore = new MCCCD_AA140.Debug.DeviceConfigStore();
                 _debug       = new MCCCD_AA140.Debug.DebugServer();

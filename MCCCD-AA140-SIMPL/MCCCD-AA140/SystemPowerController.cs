@@ -15,6 +15,7 @@ namespace MCCCD_AA140
         private readonly NvxRoutingService _nvx;
         private readonly UsbSwitchService _usb;
         private readonly ScreenRelayService _screens;
+        private readonly SonyVplService _projectors;
         private readonly CrestronControlSystem _cs;
 
         private bool _systemOn;
@@ -26,12 +27,13 @@ namespace MCCCD_AA140
         private ushort _lastD2 = 1;
         private ushort _lastD3 = 1;
 
-        public SystemPowerController(Contract c, NvxRoutingService nvx, UsbSwitchService usb, ScreenRelayService screens, CrestronControlSystem cs)
+        public SystemPowerController(Contract c, NvxRoutingService nvx, UsbSwitchService usb, ScreenRelayService screens, SonyVplService projectors, CrestronControlSystem cs)
         {
             _c = c;
             _nvx = nvx;
             _usb = usb;
             _screens = screens;
+            _projectors = projectors;
             _cs = cs;
         }
 
@@ -100,6 +102,10 @@ namespace MCCCD_AA140
             _c.AA140.Display3PowerFb((sig, m) => sig.BoolValue = true);
             _c.AA140.Display4PowerFb((sig, m) => sig.BoolValue = true);
 
+            // Power the projectors ON (Sony ADCP over RS-232 via the D1/D2 NVX-D30
+            // COM ports). Done early so they warm up while routes/audio configure.
+            _projectors.PowerAllOn();
+
             // Restore last-active sources to D1, D2
             _nvx.RouteSourceToDisplay(_lastD1, 1);
             _nvx.RouteSourceToDisplay(_lastD2, 2);
@@ -161,7 +167,8 @@ namespace MCCCD_AA140
 
             // USB host left as-is on power-down (don't strand a connected laptop).
 
-            // Raise the projector screens on shutdown (momentary pulse).
+            // Power the projectors OFF (Sony ADCP over RS-232) and raise the screens.
+            _projectors.PowerAllOff();
             _screens.ScreenUp();
         }
     }

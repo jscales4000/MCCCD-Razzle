@@ -113,6 +113,7 @@ namespace MCCCD_AA140.Debug
                     else if (Eq(sub, "/debug.css"))             ServeResource(args, "debug.css");
                     else if (Eq(sub, "/events"))                HandleEventsPoll(args);
                     else if (Eq(sub, "/devices"))               HandleDevicesGet(args);
+                    else if (Eq(sub, "/sony/status"))           HandleSonyStatusGet(args);
                     else                                         Serve404(args, sub);
                 } else if (method == "POST") {
                     if      (sub.StartsWith("/devices/", StringComparison.OrdinalIgnoreCase)) HandleDevicePost(args, sub.Substring("/devices/".Length));
@@ -534,10 +535,67 @@ namespace MCCCD_AA140.Debug
                 case "power-off": if (id == 1) _projectors.PowerOff(1);    else _projectors.PowerOff(2);    break;
                 case "hdmi1":     if (id == 1) _projectors.SelectHdmi1(1); else _projectors.SelectHdmi1(2); break;
                 case "hdmi2":     if (id == 1) _projectors.SelectHdmi2(1); else _projectors.SelectHdmi2(2); break;
+                case "power-status": _projectors.QueryPowerStatus(id); break;
+                case "baud": {
+                    var qs2 = args.Context.Request.QueryString;
+                    var rs = qs2 != null ? qs2["rate"] : null;
+                    var ps = qs2 != null ? qs2["parity"] : null;
+                    int rate; if (int.TryParse(rs, out rate)) {
+                        int par = (ps == "even" || ps == "1") ? 1 : (ps == "odd" || ps == "2") ? 2 : 0;
+                        _projectors.SetBaud(id, rate, par);
+                    }
+                    break;
+                }
+                case "raw": {
+                    var hx = args.Context.Request.QueryString != null ? args.Context.Request.QueryString["hex"] : null;
+                    var bytes = HexToBytes(hx);
+                    if (bytes != null && bytes.Length > 0) _projectors.SendRaw(id, bytes);
+                    break;
+                }
                 default:          Serve404(args, "sony/" + sub); return;
             }
             DebugTrace.Command("sony-" + id, action);
             ServeOk(args);
+        }
+
+        // Parse a hex string ("A9172E..." or "A9 17 2E" / "0x.."/"$..") to bytes.
+        private static byte[] HexToBytes(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            var clean = s.Replace(" ", "").Replace(",", "").Replace("0x", "").Replace("0X", "").Replace("$", "");
+            if (clean.Length == 0 || clean.Length % 2 != 0) return null;
+            var b = new byte[clean.Length / 2];
+            for (int i = 0; i < b.Length; i++) {
+                if (!byte.TryParse(clean.Substring(i * 2, 2), System.Globalization.NumberStyles.HexNumber, null, out b[i])) return null;
+            }
+            return b;
+        }
+
+        // ─── /sony/status (GET) — projector serial-path diagnostics ─────
+        private void HandleSonyStatusGet(HttpCwsRequestEventArgs args)
+        {
+            if (_projectors == null) { ServeJson(args, 503, "{\"error\":\"no sony\"}"); return; }
+            var sb = new StringBuilder(256);
+            sb.Append("{\"proj1\":{\"enabled\":").Append(_projectors.Enabled1 ? "true" : "false")
+              .Append(",\"portResolved\":").Append(_projectors.PortResolved1 ? "true" : "false")
+              .Append(",\"ready\":").Append(_projectors.Ready1 ? "true" : "false")
+              .Append(",\"online\":").Append(_projectors.Projector1Online ? "true" : "false")
+              .Append(",\"rx\":").Append(_projectors.RxBytes1)
+              .Append(",\"portId\":");
+            JsonProtocol.AppendString(sb, _projectors.PortId1);
+            sb.Append(",\"last\":");
+            JsonProtocol.AppendString(sb, _projectors.LastStatus1 ?? "");
+            sb.Append("},\"proj2\":{\"enabled\":").Append(_projectors.Enabled2 ? "true" : "false")
+              .Append(",\"portResolved\":").Append(_projectors.PortResolved2 ? "true" : "false")
+              .Append(",\"ready\":").Append(_projectors.Ready2 ? "true" : "false")
+              .Append(",\"online\":").Append(_projectors.Projector2Online ? "true" : "false")
+              .Append(",\"rx\":").Append(_projectors.RxBytes2)
+              .Append(",\"portId\":");
+            JsonProtocol.AppendString(sb, _projectors.PortId2);
+            sb.Append(",\"last\":");
+            JsonProtocol.AppendString(sb, _projectors.LastStatus2 ?? "");
+            sb.Append("}}");
+            ServeJson(args, 200, sb.ToString());
         }
 
         // ─── /newline/<action> ──────────────────────────────────────────
