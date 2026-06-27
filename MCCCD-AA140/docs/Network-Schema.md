@@ -106,12 +106,14 @@ Legend: **IPID** = Crestron CIP logical binding · **mcast** = NVX video multica
 | Dec — Display 4 (podium) | DM-NVX-D30 | `10.1.33.124` | 0x24 | — | |
 | Dec — Display 5 (signage) | DM-NVX-D30 | `10.1.33.125` | 0x25 | — | independently routed |
 
-### Audio — Shure (.131–.133)
+### Audio — Shure (.131–.133) — ✅ LIVE on new IPs (verified 2026-06-26)
 | Device | Model | New IP | Legacy IP | Source file |
 |---|---|---|---|---|
-| Conferencing DSP | P300-IMX | `10.1.33.131` | `.2.151` | `ShureP300Service.cs:24` |
-| Ceiling mic A | MXA920W-S | `10.1.33.132` | `.2.181` | `ShureMxaService.cs:27` |
-| Ceiling mic B | MXA920W-S | `10.1.33.133` | `.2.182` | `ShureMxaService.cs:28` |
+| Conferencing DSP | P300-IMX | `10.1.33.131` ✅ | `.2.151` | `ShureP300Service.cs:24` (applied) |
+| Ceiling mic A | MXA920W-S | `10.1.33.132` ✅ | `.2.181` | `ShureMxaService.cs:27` (applied) |
+| Ceiling mic B | MXA920W-S | `10.1.33.133` ✅ | `.2.182` | `ShureMxaService.cs:28` (applied) |
+
+> The three Shure devices answer the Shure-ASCII control protocol on `:2202` at the new IPs (P300 `AA140-P300-DSP-01` FW 6.9.0.104; arrays `AA140-CM-01`/`-02`). This is the **first executed slice** of the re-IP; the rest of the schema remains PROPOSED. See `Network-ReIP-Code-Changes.md` for status.
 
 ### Cameras — 1Beyond (.141–.142, VISCA TCP 5500 + RTSP 554)
 | Device | Model | New IP | Legacy IP | Source files |

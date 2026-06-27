@@ -47,9 +47,9 @@
 
 | # | Device / Role | Model | Qty | In-Code IP | Assigned IP (field) | Notes |
 |---|---|---|---|---|---|---|
-| 14 | Audio conferencing DSP | P300-IMX | 1 | **192.168.2.151** | | Consistent across `ShureP300Service.cs` + `DeviceConfigStore.cs`. |
-| 15 | Ceiling array mic A | MXA920W-S | 1 | **192.168.2.181** | | |
-| 16 | Ceiling array mic B | MXA920W-S | 1 | **192.168.2.182** | | |
+| 14 | Audio conferencing DSP | P300-IMX | 1 | **10.1.33.131** | `10.1.33.131` ✅ | **Verified live 2026-06-26** — DEVICE_ID `AA140-P300-DSP-01`, FW 6.9.0.104. Code (`ShureP300Service.cs` + `DeviceConfigStore.cs`) re-IP'd to match. |
+| 15 | Ceiling array mic A | MXA920W-S | 1 | **10.1.33.132** | `10.1.33.132` ✅ | **Verified live 2026-06-26** — DEVICE_ID `AA140-CM-01`. |
+| 16 | Ceiling array mic B | MXA920W-S | 1 | **10.1.33.133** | `10.1.33.133` ✅ | **Verified live 2026-06-26** — DEVICE_ID `AA140-CM-02`. |
 
 ## 4. Cameras — 1Beyond (VISCA over TCP 5500 + RTSP 554)
 

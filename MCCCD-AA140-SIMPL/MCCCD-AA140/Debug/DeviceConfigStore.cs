@@ -4,9 +4,9 @@
 //
 // Schema (one entry per device key):
 //   {
-//     "p300":     { "host":"192.168.2.151", "enabled":true  },
-//     "mxa-a":    { "host":"192.168.2.181", "enabled":true  },
-//     "mxa-b":    { "host":"192.168.2.182", "enabled":true  },
+//     "p300":     { "host":"10.1.33.131", "enabled":true  },
+//     "mxa-a":    { "host":"10.1.33.132", "enabled":true  },
+//     "mxa-b":    { "host":"10.1.33.133", "enabled":true  },
 //     "sony-1":   { "host":"192.168.2.191", "enabled":false },
 //     "sony-2":   { "host":"192.168.2.192", "enabled":false },
 //     "newline":  { "host":"192.168.2.195", "enabled":false },
@@ -43,9 +43,9 @@ namespace MCCCD_AA140.Debug
         // Bake the as-shipped defaults so a missing file still gives the
         // services sane stub IPs to display in the debug UI.
         private static Dictionary<string, Entry> Defaults() => new Dictionary<string, Entry> {
-            { "p300",     new Entry { Host = "192.168.2.151", Enabled = true  } },
-            { "mxa-a",    new Entry { Host = "192.168.2.181", Enabled = true  } },
-            { "mxa-b",    new Entry { Host = "192.168.2.182", Enabled = true  } },
+            { "p300",     new Entry { Host = "10.1.33.131", Enabled = true  } },  // AA140-P300-DSP-01 (verified live 2026-06-26)
+            { "mxa-a",    new Entry { Host = "10.1.33.132", Enabled = true  } },  // AA140-CM-01 MXA920-S (verified live 2026-06-26)
+            { "mxa-b",    new Entry { Host = "10.1.33.133", Enabled = true  } },  // AA140-CM-02 MXA920-S (verified live 2026-06-26)
             { "sony-1",   new Entry { Host = "nvx-d1-com", Enabled = true } },  // RS-232 via D1 NVX-D30 COM
             { "sony-2",   new Entry { Host = "nvx-d2-com", Enabled = true } },  // RS-232 via D2 NVX-D30 COM
             { "newline",  new Entry { Host = "192.168.2.195", Enabled = false } },

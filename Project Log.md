@@ -2,6 +2,53 @@
 
 ---
 
+## v0.8.1 — Shure audio LIVE + device-host re-IP (2026-06-26)
+**Agent:** Claude Code (claude-opus-4-8, 1M)
+**Session type:** Hardware control test + device-host re-IP (Shure slice) + docs
+**Branch:** `feat/projector-rs232-d30` @ `fac477a` (changes uncommitted)
+**FRED project:** MCCCD-AA140 Touchpanel (`c1937681-e57d-4354-aa58-a5b0f6e9ca23`)
+**FRED status:** healthy.
+
+### Summary
+Asked to test Shure/mic control. Discovered the laptop is on the AV subnet
+(`10.1.33.106`) and **all three Shure devices are LIVE** on the re-IP'd
+`10.1.33.x` network — overturning the long-standing "P300 off-net / audio
+untestable" assumption. Verified read **and** write control directly, then
+executed the Shure slice of the 10.1.33 re-IP in code and updated the docs.
+
+### Done
+- **Verified live (direct Shure-ASCII probe, TCP 2202):**
+  - **P300 @ `10.1.33.131`** — `AA140-P300-DSP-01`, FW 6.9.0.104; ch 1–4 `Mic 1..4`
+    all `AUDIO_MUTE OFF`, program out ch17 gain 1100. Read + write confirmed via a
+    no-op gain round-trip (`SET 17 AUDIO_GAIN_HI_RES 1100` → echoed `REP`, no audible change).
+  - **MXA920 A @ `10.1.33.132`** (`AA140-CM-01`), **MXA920 B @ `10.1.33.133`** (`AA140-CM-02`), both MXA920-S.
+- **Re-IP'd Shure hosts in code:** `ShureP300Service.cs` (`P300_HOST`→`10.1.33.131`),
+  `ShureMxaService.cs` (`MXA_A/B_HOST`→`.132/.133`), `Debug/DeviceConfigStore.cs`
+  defaults + schema comment. Grep confirms no stale Shure IPs remain in SIMPL#.
+- **Docs:** `Network-ReIP-Code-Changes.md` → PARTIALLY EXECUTED (Shure rows ✅ DONE),
+  `Network-Schema.md` audio → LIVE, `IP-Address-Plan.md` field IPs filled.
+- **Memory:** added `project_shure_live_verified.md` (corrects the stale "off-net" fact).
+
+### FRED tasks
+- `40c1886c…`: retitled "P300 now ON NET — unblocked" (stays `todo`; handlers still open).
+- `85e96944…`: NEW, `review` — "Shure re-IP (code) APPLIED, awaiting processor build+verify."
+
+### Awaiting Jordan
+- Build the Phase 5 `.cpz` (blocked on VS `.csproj/.sln` bootstrap) + deploy, then
+  confirm the processor→P300 path (today's test was laptop→DSP, skips the processor).
+- If `/user/aa140/devices.json` exists on the processor, it OVERRIDES the new
+  defaults — update via debug panel or delete on deploy.
+
+### Next up
+1. (recommended) `GET 0 ALL` against `.131` to calibrate `CH_MIC_*` channel mapping (DSP names are generic `Mic 1-4`).
+2. Implement audited processor-side gaps (master fader / scenes / link / connected / matrix cross-point / MXA gate+LED).
+3. Build/deploy `.cpz`; verify full panel→processor→DSP path.
+
+### Commits
+- None (working-tree changes unpushed; Jordan to decide when to commit).
+
+---
+
 ## v0.8.0 — Source-First Consolidation + Merge to main (2026-06-24)
 **Agent:** Claude Code (claude-opus-4-8, 1M)
 **Session type:** Feature decision + consolidation + tap-highlight fix + merge

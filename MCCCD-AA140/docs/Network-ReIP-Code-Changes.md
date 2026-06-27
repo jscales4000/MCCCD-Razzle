@@ -4,7 +4,11 @@
 `192.168.1.x`/`192.168.2.x` addresses onto the `10.1.33.x` schema.
 **Companion:** `Network-Schema.md` (§3 target map, §5 scan, §6 migration plan).
 **Branch:** `feat/network-reip-10.1.33`.
-**Status:** READY TO APPLY — values verified against code on 2026-06-26 (read-only scan). **Not yet executed.**
+**Status:** PARTIALLY EXECUTED.
+- **2026-06-26 — Shure audio (Commit 4 + 5 Shure rows) APPLIED & FIELD-VERIFIED.** The P300 (`10.1.33.131`), MXA920 A (`10.1.33.132`), MXA920 B (`10.1.33.133`) are **live on the new IPs** — confirmed by direct Shure-ASCII probe from a laptop on `10.1.33.106` (P300 DEVICE_ID `AA140-P300-DSP-01` FW `6.9.0.104`; arrays `AA140-CM-01`/`AA140-CM-02` MXA920-S). Read **and** write (no-op gain round-trip) verified. Code constants in `ShureP300Service.cs`, `ShureMxaService.cs`, and the `DeviceConfigStore` p300/mxa-a/mxa-b entries are updated to match.
+- **Remainder NOT executed** — RMC4 processor, both panels, cameras, AirMedia, Sony, Newline code/IPs are still on legacy addresses. Do those as a coordinated code+hardware cutover per the caution below.
+
+> ⚠️ The Shure change was safe to apply alone because those devices were **already** re-addressed on the hardware — the edit just makes code match reality. The processor↔Shure path is still unproven (the SIMPL# `.cpz` isn't built/deployed yet, and the processor's own IP/route to `10.1.33.0/24` must be confirmed).
 
 > **This doc changes CODE constants only.** Setting the actual device static IPs
 > (in each device's web/Toolbox UI), the M4250 VLAN/IGMP config, and site DNS/NTP
@@ -26,9 +30,9 @@
 | RMC4 processor | `10.1.33.101` | `192.168.1.191` |
 | TS‑1070 tabletop | `10.1.33.102` | `192.168.2.80` |
 | TSW‑1070 wall | `10.1.33.103` | `192.168.2.78` |
-| Shure P300 DSP | `10.1.33.131` | `192.168.2.151` |
-| Shure MXA920 A | `10.1.33.132` | `192.168.2.181` |
-| Shure MXA920 B | `10.1.33.133` | `192.168.2.182` |
+| Shure P300 DSP | `10.1.33.131` ✅ live+applied | `192.168.2.151` |
+| Shure MXA920 A | `10.1.33.132` ✅ live+applied | `192.168.2.181` |
+| Shure MXA920 B | `10.1.33.133` ✅ live+applied | `192.168.2.182` |
 | 1Beyond cam Front (I20) | `10.1.33.141` | `192.168.2.174` |
 | 1Beyond cam Back (I12) | `10.1.33.142` | `192.168.2.173` |
 | AirMedia AM‑3200 | `10.1.33.151` | `192.168.1.177` |
@@ -71,9 +75,9 @@ Each block is an exact find → replace. Apply one commit per group.
 | `CameraService.cs` | 62 | `ViscaCameraClient("192.168.2.174", …, "cam-1")` → `"10.1.33.141"` |
 | `CameraService.cs` | 63 | `ViscaCameraClient("192.168.2.173", …, "cam-2")` → `"10.1.33.142"` |
 | `CameraService.cs` | 12 | comment `192.168.1.174 / .173` → `10.1.33.141 / .142` (stale) |
-| `ShureP300Service.cs` | 24 | `P300_HOST = "192.168.2.151"` → `"10.1.33.131"` |
-| `ShureMxaService.cs` | 27 | `MXA_A_HOST = "192.168.2.181"` → `"10.1.33.132"` |
-| `ShureMxaService.cs` | 28 | `MXA_B_HOST = "192.168.2.182"` → `"10.1.33.133"` |
+| `ShureP300Service.cs` | 24 | ✅ DONE `P300_HOST = "192.168.2.151"` → `"10.1.33.131"` |
+| `ShureMxaService.cs` | 27 | ✅ DONE `MXA_A_HOST = "192.168.2.181"` → `"10.1.33.132"` |
+| `ShureMxaService.cs` | 28 | ✅ DONE `MXA_B_HOST = "192.168.2.182"` → `"10.1.33.133"` |
 | `NewlineService.cs` | 25 | `DISPLAY_HOST = "192.168.2.171"` → `"10.1.33.173"` |
 | `SonyVplService.cs` | 30 | `PROJ1_HOST = "192.168.2.161"` → `"10.1.33.171"` |
 | `SonyVplService.cs` | 31 | `PROJ2_HOST = "192.168.2.162"` → `"10.1.33.172"` |
@@ -84,9 +88,9 @@ The runtime entries (L46–54) AND the doc-comment block (L7–15) must both cha
 
 | Key | Line | Old Host | New Host | Enabled today |
 |---|---|---|---|---|
-| p300 | 46 | `192.168.2.151` | `10.1.33.131` | true |
-| mxa-a | 47 | `192.168.2.181` | `10.1.33.132` | true |
-| mxa-b | 48 | `192.168.2.182` | `10.1.33.133` | true |
+| p300 | 46 | `192.168.2.151` | `10.1.33.131` ✅ DONE | true |
+| mxa-a | 47 | `192.168.2.181` | `10.1.33.132` ✅ DONE | true |
+| mxa-b | 48 | `192.168.2.182` | `10.1.33.133` ✅ DONE | true |
 | sony-1 | 49 | `192.168.2.191` | `10.1.33.171` | false |
 | sony-2 | 50 | `192.168.2.192` | `10.1.33.172` | false |
 | newline | 51 | `192.168.2.195` | `10.1.33.173` | false |
