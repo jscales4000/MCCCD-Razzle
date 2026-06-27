@@ -1,7 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { publishAnalog } from '../CrComLib';
 import { SIGNALS } from '../contract';
-import { homeRouteMode } from './session';
 import {
   display1SourceFb,
   display2SourceFb,
@@ -476,13 +475,19 @@ export function onPointerCancel(_e: PointerEvent): void {
 if (typeof document !== 'undefined') {
   document.addEventListener('click', (e) => {
     if (!get(armedSource)) return;
-    // Home's source-first "paint" mode owns its armed source — it persists
-    // until a different source is tapped and is cleared on Home mount. The
-    // click-outside disarm below is an Advanced-Routing affordance keyed to
-    // .chip/.tile; Home's controls are .hero-card/.disp-chip, so without this
-    // guard the very tap that arms a source on Home immediately disarms it
-    // (the "Send to All button flashes then vanishes" bug).
-    if (get(homeRouteMode) === 'source') return;
+    // This click-outside disarm is an ADVANCED-ROUTING affordance (keyed to
+    // .chip/.tile). It must NOT touch Home's source-first paint arm, which is
+    // armed via armForPaint() and persists until another source is tapped.
+    // Distinguish the two by the body 'any-armed' class: armChip()/startDrag()
+    // set it; armForPaint() deliberately does not. If 'any-armed' is absent the
+    // arm came from Home paint — leave it alone.
+    //
+    // (Previously this checked `homeRouteMode === 'source'`. That broke once the
+    // A/B toggle was removed and homeRouteMode was pinned to 'source': the guard
+    // then matched everywhere and silently disabled this listener — including on
+    // Advanced Routing. Keying on 'any-armed' is the correct, mode-independent
+    // discriminator and also drops a store read from every document click.)
+    if (!document.body.classList.contains('any-armed')) return;
     const target = e.target as Element | null;
     const onChip = target?.closest('.chip');
     const onTile = target?.closest('.tile');

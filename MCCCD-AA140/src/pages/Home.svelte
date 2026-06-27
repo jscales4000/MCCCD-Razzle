@@ -631,7 +631,8 @@
     cursor: pointer;
     font: inherit;
     text-align: left;
-    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+    /* box-shadow not transitioned — see .hero-card. Glow snaps in; cheap on GPU. */
+    transition: border-color 160ms ease, background-color 160ms ease;
   }
   .disp-chip:hover {
     background-color: rgba(51, 65, 85, 0.7);
@@ -741,7 +742,11 @@
     gap: 18px;
     padding: 36px 18px;
     cursor: pointer;
-    transition: border-color 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+    /* box-shadow intentionally NOT transitioned: animating a blurred shadow
+       repaints the whole card every frame on the panel's weak GPU (Chromium-91),
+       which is the main cause of "laggy" taps. State glows now apply instantly;
+       only transform (compositor-only) + border-color animate. */
+    transition: border-color 220ms ease, transform 220ms ease;
     position: relative;
     overflow: hidden;
     color: inherit;
@@ -761,27 +766,30 @@
   /* Route-tap confirmation flash — fires on the tapped card regardless of
      which displays were targeted, so the action always has visible result. */
   .hero-card.route-flash {
-    animation: route-flash 300ms ease-out;
+    animation: route-flash 200ms ease-out;
   }
+  /* Single spread-only ring (no blur radius) + border flash — far cheaper to
+     repaint than the old 32px-blur two-layer shadow, while reading the same. */
   @keyframes route-flash {
     0% {
       border-color: #f5a623;
-      box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.55), 0 0 32px rgba(245, 166, 35, 0.35);
+      box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.6);
     }
     100% {
       border-color: rgba(148, 163, 184, 0.2);
-      box-shadow: 0 0 0 0 rgba(245, 166, 35, 0), 0 0 0 rgba(245, 166, 35, 0);
+      box-shadow: 0 0 0 0 rgba(245, 166, 35, 0);
     }
   }
   /* Source-mode paint accent: a quick edge pulse on a chip when it receives the
      armed source. Reuses the chip's own border so the accent is on the element
      itself (no detached halo). Applied via .has-armed appearing. */
   .disp-chip.has-armed {
-    animation: chip-paint 280ms ease-out;
+    animation: chip-paint 200ms ease-out;
   }
+  /* Spread-only rings (no blur) — cheap per-frame repaint vs. the old 22px blur. */
   @keyframes chip-paint {
-    0%   { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.55), 0 0 22px rgba(34, 197, 94, 0.3); }
-    100% { box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35), 0 0 14px rgba(34, 197, 94, 0.1); }
+    0%   { box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.55); }
+    100% { box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.35); }
   }
   /* Armed card breathing stripe — subtle, ≤300ms loop disabled; one-shot lift. */
   .hero-card.armed { animation: card-arm 220ms ease-out; }
