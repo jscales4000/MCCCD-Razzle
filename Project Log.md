@@ -2,6 +2,66 @@
 
 ---
 
+## v0.8.2 — Sony VPL projector RS-232 control (8-E-1) + merge to main (2026-06-27)
+**Agent:** Claude Code (claude-opus-4-8, 1M)
+**Session type:** Hardware control (RS-232) — diagnose → fix → wire → merge → handoff
+**Branch:** `feat/projector-rs232-d30` → **merged to `main` @ `102b34e`** (branch deleted)
+**FRED:** MCCCD-AA140 Touchpanel (`c1937681-e57d-4354-aa58-a5b0f6e9ca23`) — healthy.
+
+### Summary
+Got the projectors under control. Rewrote `SonyVplService` from ADCP-over-TCP to
+**ADCP over RS-232 on the D1/D2 DM-NVX-D30 COM ports**, then chased a total
+no-comms condition to its root: **the Sony VPL-FHZ90L ADCP serial port is
+38400-8-EVEN-1**; the code shipped 8-N-1, which silently garbles every byte both
+directions. With EVEN parity both projectors give full bidirectional control.
+Wired them to the room power button, merged to main, and wrote a KB lessons doc.
+
+### Done
+- **Projector RS-232 control (FRED `dc6e9ab2`, review):** ADCP text commands over
+  `decoder.ComPorts[1]` (D1→proj1, D2→proj2). **Root cause = EVEN parity (8-E-1).**
+  Bidirectional (`power "on"/"off"`, `power_status ?` → `"on"/"standby"`),
+  **boot self-heal** (poll re-asserts 8-E-1 + a settle gap, then polls status).
+  Diagnostics: `/sony/status`, `/sony/<id>/baud?rate&parity`, `/raw?hex`,
+  `power-status`, rx byte counter.
+- **Panel power button now powers projectors:** `SystemPowerController` had no
+  projector reference; added it (PowerUp→`PowerAllOn`, PowerDown→`PowerAllOff`).
+  Verified end-to-end via `/power/on|off`.
+- **Shure re-IP committed** (P300 `.131`, MXA `.132/.133`, live-verified).
+- **Network diagnostics:** full 10.1.33 scan + M4250 logs → systemic instability
+  (DHCP churn, flat VLAN 1, no NTP, port 0/25 VLAN error). Separate from projectors.
+- **KB lesson doc:** `MCCCD-AA140/docs/Lessons-Learned/Sony-VPL-RS232-over-NVX-Lessons.md`.
+- **Merged** to main (`102b34e`); **fixed an accidental panel `src/` → `toDo/src/`
+  move** (restored from HEAD; stray `toDo/src/` copy left for manual delete).
+- Commits: `2b2a916`,`261f18e`,`08228e2`..`609121d`,`c4b2e14`,`c554511`,`102b34e`.
+
+### Awaiting Jordan
+- `dc6e9ab2` (review) — projector control: confirmed on glass, final sign-off.
+- **Push `main` to origin** — 10 commits unpushed (deferred with deploy creds).
+- Network commissioning: DHCP→static, AV VLAN 33, NTP/DNS, fix M4250 port 0/25.
+
+### Next up (recommended first two)
+1. **Deploy creds (NEW SESSION, per Jordan):** all devices now `admin/CrestronDO1!`;
+   deploy scripts default to `admin/password` — bake `CrestronDO1!` into
+   `package.json` / `deploy.py` + docs.
+2. **Push main to origin** (backup the 10 commits).
+3. Delete stray `MCCCD-AA140/toDo/src/`.
+4. Resolve network instability (static per schema, NTP, VLAN 33, IGMP querier).
+5. Optional: per-display projector input switching on the panel (`SelectHdmi1/2`).
+
+### Blockers & hard-won lessons
+- **Sony VPL serial = 8-E-1 (EVEN parity)** — the keeper; 8-N-1 = silent garble.
+- **NVX-D30 COM transport:** `SetComPortSpec` must re-apply after the decoder is
+  online + settle gap before transmit (boot config won't stick) → poll handles it.
+- **A working service is invisible until wired to the contract** (the power gap).
+- **Crestron ops:** `err` paginates over SSH; FIPS/Forced-Auth locks rapid SSH
+  (reboot clears); CWS POST needs Content-Length. RMC4 now `10.1.33.101`
+  (admin/CrestronDO1!), serial `2614JBH03037`, MAC `C4:42:68:92:A3:93`.
+
+### FRED
+- Handoff doc `d0ed0648`; task `dc6e9ab2` → review; activity logged.
+
+---
+
 ## v0.8.1 — Shure audio LIVE + device-host re-IP (2026-06-26)
 **Agent:** Claude Code (claude-opus-4-8, 1M)
 **Session type:** Hardware control test + device-host re-IP (Shure slice) + docs
