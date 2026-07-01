@@ -10,7 +10,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { ROOM_NAME, SIGNALS } from '../lib/contract';
   import { publishAnalog, publishDigital } from '../lib/CrComLib';
   import { goToPage } from '../lib/stores/page';
@@ -31,6 +31,8 @@
     display3SourceFb,
     display4SourceFb,
     routingModeFb,
+    initDisplayRoutingSubscriptions,
+    teardownDisplayRoutingSubscriptions,
   } from '../lib/stores/signals';
   import RoomPlan from '../components/routing/RoomPlan.svelte';
   import SourcePopover from '../components/routing/SourcePopover.svelte';
@@ -150,6 +152,9 @@
     if (target.closest('.popover') || target.closest('.marker') || target.closest('.sd-row')) return;
     closePopover();
   }
+
+  onMount(initDisplayRoutingSubscriptions);
+  onDestroy(teardownDisplayRoutingSubscriptions);
 
   onMount(() => {
     document.addEventListener('pointerdown', onDocPointerDown);
